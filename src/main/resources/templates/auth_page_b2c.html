@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Authentication Azure Active Directory Home Page</title>
+</head>
+<body>
+
+<form action="/gia/v1/auth/sign_out_b2c">
+    <input type="submit" value="Sign out">
+</form>
+
+<br>
+<p><h1>Authentification to app <label th:text="${app.title}"></label> using Azure B2C</h1></p>
+<h3>Logged in Account:</h3>
+<br>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>Environment</th>
+        <th>Id Token</th>
+    </tr>
+    </thead>
+    <tbody>
+        <td th:text="${account.environment()}"></td>
+        <td>
+            <div th:each="entry : *{idTokenClaims}">
+                <li th:text="${entry}"></li>
+            </div>
+        </td>
+    </tbody>
+</table>
+
+<br/>
+
+<form action="/gia/v1/auth/b2c-api">
+    <input type="submit" value="Call b2c api">
+</form>
+
+<span th:if="${b2c_api_call_res != null}">
+    <h3>B2C Api call result:</h3>
+
+    <div th:utext="${b2c_api_call_res}"> </div>
+</span>
+
+<form action="/gia/v1/auth/edit-profile">
+    <input type="submit" value="Edit Profile">
+</form>
+
+</body>
+</html>

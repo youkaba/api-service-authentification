@@ -1,0 +1,10 @@
+ca.qc.banq.gia.authentication
+ca.qc.banq.gia.authentication.config
+ca.qc.banq.gia.authentication.entities
+ca.qc.banq.gia.authentication.exceptions
+ca.qc.banq.gia.authentication.filter
+ca.qc.banq.gia.authentication.helpers
+ca.qc.banq.gia.authentication.models
+ca.qc.banq.gia.authentication.repositories
+ca.qc.banq.gia.authentication.rest
+ca.qc.banq.gia.authentication.servicesmetier
