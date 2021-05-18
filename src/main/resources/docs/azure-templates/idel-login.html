@@ -1,0 +1,131 @@
+ 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Pour acc&eacute;der &agrave; votre dossier | BAnQ</title>
+<link href="https://www.banq.qc.ca/biblio/css/login.css" rel="stylesheet" type="text/css" />
+
+<!-- Début Script de la page original portail -->
+<script type="text/javascript" language="JavaScript" src="https://www.banq.qc.ca/biblio/js/array.js"></script>
+<script type="text/javascript" language="JavaScript" src="https://www.banq.qc.ca/biblio/js/global.js"></script>
+<script type="text/javascript" language="JavaScript" src="https://www.banq.qc.ca/biblio/js/js_integ/integ.js"></script>
+<!-- Fin Script de la page original portail -->
+<script type="text/javascript" language="JavaScript" src="https://www.banq.qc.ca/biblio/js/login_detection.js"></script>
+<script type="text/javascript">
+function show( element ) {
+    if( document.getElementById(element).style.display == "block"){
+        document.getElementById(element).style.display = "none";
+    } else {
+        document.getElementById(element).style.display = "block";
+    }
+}
+function hide( element ) {
+    document.getElementById(element).style.display = "none";
+}
+</script>
+
+
+<!-- GA - Universal -->
+<script type="text/javascript">
+    //<![CDATA[
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-12469043-1', 'banq.qc.ca');
+    ga('send', 'pageview');
+    //]]>
+    </script>
+    <!-- GA - Universal Fin -->
+    </head>
+
+    <body>
+    
+    <div id="Global">
+    <div id="Entete" class="BarreNoire">
+        <p><a href="http://www.banq.qc.ca">Accueil</a> <a href="http://www.banq.qc.ca/aide/mon_dossier/">Aide</a> <a href="http://www.banq.qc.ca/accueil/index.html?language_id=1" class="Lang">English</a></p>
+		<img src="https://www.banq.qc.ca/images/interface17/BAnQ-accueil_N.png" alt="Biblioth&egrave;que et Archives nationales du Qu&eacute;bec." class="logoEntete" />
+    </div>
+
+    <div id="Contenu">
+
+    <p id="loginChemin">
+		<a href="http://www.banq.qc.ca/mon_dossier/mon_dossier.html">Mon dossier</a>&nbsp;&gt;&nbsp;Pour acc&eacute;der &agrave; votre dossier
+    </p>
+
+    <h1>Pour acc&eacute;der &agrave; votre dossier</h1>
+    
+    <form  name="sbLogin" action="/idp/profile/SAML2/Redirect/SSO;jsessionid=4F422B2F39024267E02EB38BC32AA435?execution=e1s1" method="post">
+    <div class="EnteteForm"></div>
+    <div class="Wrapper">
+    <div class="ColG">
+    <p class="Chapo">Entrez le num&eacute;ro de client (8 chiffres) et le mot de passe li&eacute;s &agrave; votre <a href="http://www.banq.qc.ca/mon_dossier/mon_dossier.html">dossier</a>.</p>
+
+    <div id="messageSafari" class="loginMsg" style="display:none;">
+		<div>Message aux abonnés utilisant le navigateur Web Safari.</div><br/>
+		Il est possible que vous éprouviez certaines difficultés de navigation après vous être authentifié sur le portail de BAnQ.
+		Nous vous recommandons d'utiliser les applications Firefox ou Google Chrome jusqu'à ce que ce problème soit définitivement réglé.
+		<br/><br/> Merci de votre compréhension.
+    </div>
+
+    <!-- Fin Avertissement pour les usagers Safari -->
+	<div id="api"></div>
+	<!-- 
+    <label for="NUM">Num&eacute;ro de client (8 chiffres)</label>
+    <input name="j_username" type="text" id="NUM" />
+    <label for="PWD">Mot de passe</label>
+    <input name="j_password" type="password" id="PWD" />
+	<input type="submit" name="_eventId_proceed" value="Connexion"></input>
+    <a href="https://www.banq.qc.ca/formulaires/extranet/index.html">Mot de passe perdu?</a>
+	-->
+    </div>
+    <div class="ColD">
+    <p class="Chapo">Vous n'êtes pas abonn&eacute;?</p>
+
+
+
+<p><a class="Bouton" href="javascript:show('contenu_reponse_abon')">Comment s'abonner?</a></p>
+
+    <!-- *********************  Début instruction abonnement extranet ************************************************ -->
+    <div id="contenu_reponse_abon" style="display:none;" class="divReponse">
+    <a href="javascript:hide('contenu_reponse_abon')"><img src="https://www.banq.qc.ca/extranet/images/interface/ic-fermer.gif" alt="Fermer" /></a>
+    <p>
+    Pour vous inscrire à l'extranet, veuillez compléter ce <a href="http://www.banq.qc.ca/idel/public/EditeurInscription.seam" class="inlineLink" >formulaire d’inscription.</a>
+    </p>
+    <p>
+    Vous recevrez votre numéro de client et mot de passe dans un délai maximum de trois jours ouvrables.
+    </p>
+    <p>
+    Pour toute question veuillez communiquer avec nous
+    <ul>
+    <li>par courriel à <a href="mailto:extranetediteur@banq.qc.ca" class="inlineLink" >extranetediteur@banq.qc.ca</a></li>
+    <li>par téléphone au 514 873-1101 poste 3837 ou au 1 800 363-9028 poste 3837 (au Québec)</li>
+    </ul>
+    </p>
+    </div>
+    <!-- Fin instruction abonnement extranet -->
+
+    <p><a href="http://www.banq.qc.ca/mon_dossier/a_propos_securite.html">&Agrave; propos de la s&eacute;curit&eacute;</a></p>
+    </div>
+
+    </div>
+
+    </form>
+    </div>
+
+    <p style="text-align:right;margin:0px;"><a href=" http://www.banq.qc.ca/documents/services/depot_legal/guide_technique_extranet.pdf" style="color: #31697F;">Guide technique à l'intention des utilisateurs de l'extranet [PDF - 992 Ko]</a></p>
+
+<p class="PdP">&copy; Tous droits r&eacute;serv&eacute;s. Biblioth&egrave;que et Archives nationales du Qu&eacute;bec</p>
+</div>
+<!--  element_login_default_fr.jsp  -->
+<script language="JavaScript" type="text/javascript">
+document.sbLogin.j_username.focus();
+</script>
+<script language="JavaScript" type="text/javascript">
+if(detectionSafari())
+    document.getElementById('messageSafari').style.display = "block";
+</script>
+</body>
+</html>

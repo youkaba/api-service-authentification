@@ -103,7 +103,7 @@ public class AuthPageController {
         String redirectUrl = serverHost.concat(servletPath);
         response.sendRedirect(endSessionEndpoint + "?post_logout_redirect_uri=" + URLEncoder.encode(redirectUrl, "UTF-8") + "&appid=" + authHelperAAD.getApp().getId() );
     }
-
+    
     /**
      * Recupere les infos de l'usager connecte
      * @param httpRequest

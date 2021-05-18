@@ -3,7 +3,9 @@
  */
 package ca.qc.banq.gia.authentication.config;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -48,6 +50,18 @@ public class WebMVCConfig implements WebMvcConfigurer {
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("/apidoc").setViewName("/apidoc/index.html");
     }
-    
+
+	/**
+	 * Message bundle
+	 * @return
+	 */
+	@Bean
+	public static ReloadableResourceBundleMessageSource messageSource() {
+		ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+		String[] resources = {"classpath:i18n/messages"};
+		messageSource.setBasenames(resources);
+		messageSource.setCacheSeconds(1);
+		return messageSource;
+	} 
 
 }

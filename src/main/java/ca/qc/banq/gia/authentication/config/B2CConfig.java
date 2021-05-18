@@ -22,12 +22,18 @@ public class B2CConfig {
 	private String tenant;
 	private String authorityBase;
 
-	private String policySignUpSignIn;
-	private String policyEditProfile;
-	private String policyResetPassword;
+	/** Retourne l'url B2C du flux de connexion */
+	public String getSignUpSignInAuthority(String policySignIn) {
+		return this.authorityBase.concat(policySignIn);
+	}
+	
+	/** Retourne l'url B2C du flux d'edition du profil usager */
+	public String getEditProfileAuthority(String policyEditProfile) {
+		return this.authorityBase.concat(policyEditProfile);
+	}
 
-	private String signUpSignInAuthority;
-	private String editProfileAuthority;
-	private String resetPasswordAuthority;
-
+	/** Retourne l'url B2C du flux de reinitialisation de mot de passe */
+	public String getResetPasswordAuthority(String policyResetPwd) {
+		return this.authorityBase.concat(policyResetPwd);
+	}
 }

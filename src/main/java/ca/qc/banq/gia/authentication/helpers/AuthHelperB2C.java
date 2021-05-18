@@ -28,7 +28,7 @@ import com.nimbusds.openid.connect.sdk.AuthenticationResponse;
 import com.nimbusds.openid.connect.sdk.AuthenticationSuccessResponse;
 
 import ca.qc.banq.gia.authentication.config.B2CConfig;
-import ca.qc.banq.gia.authentication.entities.App;
+import ca.qc.banq.gia.authentication.models.AppPayload;
 import lombok.Getter;
 
 /**
@@ -40,27 +40,27 @@ import lombok.Getter;
 @Component
 public class AuthHelperB2C {
 
-    static final String PRINCIPAL_SESSION_NAME = "principal";
-    static final String TOKEN_CACHE_SESSION_ATTRIBUTE = "token_cache";
+	final String PRINCIPAL_SESSION_NAME = "principal";
+    final String TOKEN_CACHE_SESSION_ATTRIBUTE = "token_cache";
 
     @Autowired
     B2CConfig configuration;
 
-    App app;
+    AppPayload app;
     
-    public void init(App app) {
+    public void init(AppPayload app) {
     	this.app = app;
     }
 
     private ConfidentialClientApplication createClientApplication() throws MalformedURLException {
         return ConfidentialClientApplication.builder(app.getClientId(),
                 ClientCredentialFactory.createFromSecret(app.getCertSecretValue()))
-                .b2cAuthority(configuration.getSignUpSignInAuthority())
+                .b2cAuthority(configuration.getSignUpSignInAuthority(app.getPolicySignUpSignIn()))
                 .build();
     }
 
     public IAuthenticationResult getAuthResultBySilentFlow(HttpServletRequest httpRequest, String scope) throws Throwable {
-        IAuthenticationResult result =  AuthHelperB2C.getAuthSessionObject(httpRequest);
+        IAuthenticationResult result =  getAuthSessionObject(httpRequest);
 
         IAuthenticationResult updatedResult;
         ConfidentialClientApplication app;
@@ -128,15 +128,15 @@ public class AuthHelperB2C {
     }
 
     private void storeTokenCacheInSession(HttpServletRequest httpServletRequest, String tokenCache){
-        httpServletRequest.getSession().setAttribute(AuthHelperB2C.TOKEN_CACHE_SESSION_ATTRIBUTE, tokenCache);
+        httpServletRequest.getSession().setAttribute(TOKEN_CACHE_SESSION_ATTRIBUTE, tokenCache);
     }
 
     public void setSessionPrincipal(HttpServletRequest httpRequest, IAuthenticationResult result) {
-        httpRequest.getSession().setAttribute(AuthHelperB2C.PRINCIPAL_SESSION_NAME, result);
+        httpRequest.getSession().setAttribute(PRINCIPAL_SESSION_NAME, result);
     }
 
     public void removePrincipalFromSession(HttpServletRequest httpRequest) {
-        httpRequest.getSession().removeAttribute(AuthHelperB2C.PRINCIPAL_SESSION_NAME);
+        httpRequest.getSession().removeAttribute(PRINCIPAL_SESSION_NAME);
     }
 
     public void updateAuthDataUsingSilentFlow(HttpServletRequest httpRequest) throws Throwable {
@@ -144,15 +144,15 @@ public class AuthHelperB2C {
         setSessionPrincipal(httpRequest, authResult);
     }
 
-    public static boolean isAuthenticationSuccessful(AuthenticationResponse authResponse) {
+    public  boolean isAuthenticationSuccessful(AuthenticationResponse authResponse) {
         return authResponse instanceof AuthenticationSuccessResponse;
     }
 
-    public static boolean isAuthenticated(HttpServletRequest request) {
+    public  boolean isAuthenticated(HttpServletRequest request) {
         return request.getSession().getAttribute(PRINCIPAL_SESSION_NAME) != null;
     }
 
-    public static IAuthenticationResult getAuthSessionObject(HttpServletRequest request) {
+    public  IAuthenticationResult getAuthSessionObject(HttpServletRequest request) {
         Object principalSession = request.getSession().getAttribute(PRINCIPAL_SESSION_NAME);
         if(principalSession instanceof IAuthenticationResult){
             return (IAuthenticationResult) principalSession;
@@ -161,7 +161,7 @@ public class AuthHelperB2C {
         }
     }
 
-    public static boolean containsAuthenticationCode(HttpServletRequest httpRequest) {
+    public  boolean containsAuthenticationCode(HttpServletRequest httpRequest) {
         Map<String, String[]> httpParameters = httpRequest.getParameterMap();
 
         boolean isPostRequest = httpRequest.getMethod().equalsIgnoreCase("POST");
@@ -171,4 +171,5 @@ public class AuthHelperB2C {
 
         return isPostRequest && containsErrorData || containsCode || containIdToken;
     }
+	
 }

@@ -4,13 +4,18 @@
 package ca.qc.banq.gia.authentication.servicesmetier;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import ca.qc.banq.gia.authentication.config.TranslatorConfig;
 import ca.qc.banq.gia.authentication.entities.App;
 import ca.qc.banq.gia.authentication.exceptions.GIAException;
+import ca.qc.banq.gia.authentication.filter.AuthFilter;
+import ca.qc.banq.gia.authentication.models.AppPayload;
 import ca.qc.banq.gia.authentication.repositories.AppRepository;
 
 
@@ -26,7 +31,10 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
 	AppRepository appRepo;
 	
 	@Autowired
-	TranslatorConfig translate;
+	TranslatorConfig translator;
+
+	@Value("${server.servlet.context-path}")
+	String servletPath;
 	
 	/*
 	 * (non-javadoc)
@@ -36,8 +44,11 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
 	public String saveApp(App app) {
 		App saved = appRepo.findById(app.getId()).orElse(null);
 		if(saved == null) app = appRepo.save(app);
-		else saved.update(app);
-		return translate.translate("app.saved.successfull");
+		else {
+			saved.update(app);
+			appRepo.save(saved);
+		}
+		return translator.translate("app.saved.successfull");
 	}
 
 	/*
@@ -47,7 +58,7 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
 	@Override
 	public String deleteApp(Long id) {
 		appRepo.deleteById(id);
-		return translate.translate("app.deleted.successfull");
+		return translator.translate("app.deleted.successfull");
 	}
 
 	/*
@@ -55,8 +66,8 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
 	 * @see ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService#findAll()
 	 */
 	@Override
-	public List<App> findAll() {
-		return appRepo.findAll();
+	public List<AppPayload> findAll() {
+		return appRepo.findAll().stream().map(app -> app.toDTO( getContextPath(app.getId()) ) ).collect(Collectors.toList());
 	}
 
 	/*
@@ -64,10 +75,15 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
 	 * @see ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService#findById(java.lang.Long)
 	 */
 	@Override
-	public App findById(Long id) {
+	public AppPayload findById(Long id) {
 		App app = appRepo.findById(id).orElse(null);
 		if(app == null) throw new GIAException("app.notfound");
-		return app;
+		return app.toDTO( getContextPath(app.getId()) );
 	}
 
+	private String getContextPath(Long id) {
+		try {
+			return ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString().concat("?" + AuthFilter.APP_ID + "=" + id );
+		}catch(Exception e) {return "";}
+	}
 }

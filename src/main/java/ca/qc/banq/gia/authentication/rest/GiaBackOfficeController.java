@@ -6,6 +6,7 @@ package ca.qc.banq.gia.authentication.rest;
 import java.util.List;
 
 import ca.qc.banq.gia.authentication.entities.App;
+import ca.qc.banq.gia.authentication.models.AppPayload;
 
 
 /**
@@ -32,12 +33,13 @@ public interface GiaBackOfficeController {
 	 * Recherche la liste de toutes les applications enregistrees
 	 * @return
 	 */
-	public List<App> findAll();
+	public List<AppPayload> findAll();
 
 	/**
 	 * Recherche une application a partir de son Id
 	 * @param id
 	 * @return
 	 */
-	public App findById(Long id);
+	public AppPayload findById(Long id);
+	
 }

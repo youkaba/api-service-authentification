@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import ca.qc.banq.gia.authentication.entities.App;
+import ca.qc.banq.gia.authentication.models.AppPayload;
 import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -33,7 +34,7 @@ public class GiaBackOfficeControllerImpl implements GiaBackOfficeController {
 
 	@Autowired
 	GiaBackOfficeService business;
-	
+
 	/*
 	 * (non-javadoc)
 	 * @see ca.qc.banq.gia.authentication.rest.GiaBackOfficeController#saveApp(ca.qc.banq.gia.authentication.entities.App)
@@ -63,7 +64,7 @@ public class GiaBackOfficeControllerImpl implements GiaBackOfficeController {
 	@Override
 	@GetMapping("/obtenirApplications")
 	@ApiOperation("Afficher la liste des applications")
-	public List<App> findAll() {
+	public List<AppPayload> findAll() {
 		return business.findAll();
 	}
 
@@ -74,7 +75,7 @@ public class GiaBackOfficeControllerImpl implements GiaBackOfficeController {
 	@Override
 	@GetMapping("/obtenirApplication/{id}")
 	@ApiOperation("Retrouver une application a partir de son id")
-	public App findById(@PathVariable("id") Long id) {
+	public AppPayload findById(@PathVariable("id") Long id) {
 		return business.findById(id);
 	}
 

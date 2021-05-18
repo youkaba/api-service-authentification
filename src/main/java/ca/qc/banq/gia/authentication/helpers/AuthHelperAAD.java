@@ -44,7 +44,7 @@ import com.nimbusds.openid.connect.sdk.AuthenticationResponseParser;
 import com.nimbusds.openid.connect.sdk.AuthenticationSuccessResponse;
 
 import ca.qc.banq.gia.authentication.config.AADConfig;
-import ca.qc.banq.gia.authentication.entities.App;
+import ca.qc.banq.gia.authentication.models.AppPayload;
 import ca.qc.banq.gia.authentication.models.StateData;
 import lombok.Getter;
 
@@ -63,10 +63,10 @@ public class AuthHelperAAD {
     @Autowired
     AADConfig configuration;
     
-    App app;
+    AppPayload app;
 
     //@PostConstruct
-    public void init(App app) {
+    public void init(AppPayload app) {
     	this.app = app;
     }
 

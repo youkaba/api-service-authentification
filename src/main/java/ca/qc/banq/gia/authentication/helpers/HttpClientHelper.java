@@ -3,19 +3,34 @@
 
 package ca.qc.banq.gia.authentication.helpers;
 
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 
  * @author <a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a>
  * @since 2021-05-12
  */
+@Slf4j
 public class HttpClientHelper {
 
 	public  HttpClientHelper() {}
@@ -49,4 +64,53 @@ public class HttpClientHelper {
         }
         return responseJson;
     }
+    
+
+	/**
+	 * Execution d'un webservice REST
+	 * @param <T>
+	 * @param url
+	 * @param method
+	 * @param queryParams
+	 * @param returnType
+	 * @param body
+	 * @param requestHeaders
+	 * @return
+	 */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	public static <T> T callRestAPI(String url, HttpMethod method, Map<String, Object> queryParams, Class<T> returnType, Object body, HttpHeaders requestHeaders) {
+
+		// Initialisation de la ressource bindee sur l'URL d'envoi
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl( url );
+		
+		// Si la la map des parametres est non vide
+		if(queryParams != null && !queryParams.isEmpty()) {
+			for(Entry<String, Object> entry : queryParams.entrySet()) {
+				builder.queryParam(entry.getKey(), entry.getValue());
+			}
+		}
+		
+		// Initialisation de l'objet RestTemplate
+		RestTemplate restTemplate = new RestTemplate();
+		if(requestHeaders == null) requestHeaders = getDefaultRequestHeaders();
+		//if(AUTH_TOKEN != null) requestHeaders.add("Authorization", AUTH_TOKEN);
+		
+	  	// objet contenant le corps et les param�tres entete
+	  	HttpEntity<?> request = new HttpEntity(body, requestHeaders);
+
+	  	// Logs
+	  	log.warn("URI = " + builder.build().toUri());
+	  	log.warn("REQUEST = " + request);
+	  	
+		// Envoi de la requete
+	  	ResponseEntity<T> responseEntity = restTemplate.exchange(builder.build().toUri(), method, request, returnType );
+	  	return responseEntity.getStatusCode().is2xxSuccessful() ? new ObjectMapper().convertValue(responseEntity.getBody(), returnType) : null;
+    }
+    
+    private static HttpHeaders getDefaultRequestHeaders() {
+	  	HttpHeaders requestHeaders = new HttpHeaders();
+	  	requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+	  	return requestHeaders;
+    }
+    
 }

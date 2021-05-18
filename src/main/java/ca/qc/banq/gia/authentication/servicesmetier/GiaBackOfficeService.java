@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import ca.qc.banq.gia.authentication.entities.App;
+import ca.qc.banq.gia.authentication.models.AppPayload;
 
 
 /**
@@ -35,12 +36,12 @@ public interface GiaBackOfficeService {
 	 * Recherche la liste de toutes les applications enregistrees
 	 * @return
 	 */
-	public List<App> findAll();
+	public List<AppPayload> findAll();
 
 	/**
 	 * Recherche une application a partir de son Id
 	 * @param id
 	 * @return
 	 */
-	public App findById(Long id);
+	public AppPayload findById(Long id);
 }

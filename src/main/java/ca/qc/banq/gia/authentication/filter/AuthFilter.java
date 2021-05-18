@@ -18,8 +18,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import ca.qc.banq.gia.authentication.entities.App;
 import ca.qc.banq.gia.authentication.entities.TypeAuth;
+import ca.qc.banq.gia.authentication.models.AppPayload;
 import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
 
 /**
@@ -40,7 +40,7 @@ public class AuthFilter implements Filter {
 	AuthFilterAAD filterAAD;
 	
 	@Autowired
-	GiaBackOfficeService giaBOService;
+	GiaBackOfficeService appService;
 	
 	/** Liste des URIs a filtrer */
 	List<String> excludedUrls = Arrays.asList("/", "/b2c", "/aad");
@@ -54,7 +54,7 @@ public class AuthFilter implements Filter {
 		
 		// On recherche l'id de l'application dans les attributs de la requete
 		String appId = request.getParameter(APP_ID) != null ? request.getParameter(APP_ID).toString() : null;
-		App app = appId != null ? giaBOService.findById(Long.valueOf(appId)) : null;
+		AppPayload app = appId != null ? appService.findById(Long.valueOf(appId)) : null;
 		
 		// Si aucune application na ete fournie dans l'url,
 		if(app == null) {

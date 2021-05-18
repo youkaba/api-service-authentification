@@ -17,6 +17,7 @@ import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import ca.qc.banq.gia.authentication.models.AppPayload;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -68,10 +69,17 @@ public class App implements Serializable {
 	@NotNull(message = "App.certSecretValue.NotNull")
 	private String certSecretValue;
 	
-	/** Etendue de l'application sur la plateforme Azure */
-	public String getApiScope() {
-		return this.typeAuth.equals(TypeAuth.B2C) ? this.clientId : null;
-	}
+	/** Flux utilisateur pour la connexion */
+	@Column(name = "flux_signin")
+	private String policySignUpSignIn;
+
+	/** Flux utilisateur pour la reinitialisation de mot de passe */
+	@Column(name = "flux_reset_pwd")
+	private String policyResetPassword;
+
+	/** Flux utilisateur pour la modification de profil utilisateur */
+	@Column(name = "flux_edit_profile")
+	private String policyEditProfile;
 	
 	/** MAJ de l'application */
 	@JsonIgnore
@@ -81,5 +89,12 @@ public class App implements Serializable {
 		this.homeUrl = app.getHomeUrl();
 		this.title = app.getTitle();
 		this.typeAuth = app.getTypeAuth();
+		this.policySignUpSignIn = app.getPolicySignUpSignIn();
+		this.policyResetPassword = app.getPolicyResetPassword();
+		this.policyEditProfile = app.getPolicyEditProfile();
+	}
+	
+	public AppPayload toDTO(String loginUrl) {
+		return new AppPayload(this.id, this.title, this.typeAuth, this.homeUrl, this.clientId, this.certSecretValue, this.typeAuth.equals(TypeAuth.B2C) ? this.clientId : "", loginUrl, this.policySignUpSignIn, this.policyResetPassword, this.policyEditProfile);
 	}
 }
