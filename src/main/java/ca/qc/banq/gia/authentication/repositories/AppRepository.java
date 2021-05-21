@@ -19,4 +19,5 @@ import ca.qc.banq.gia.authentication.entities.App;
 public interface AppRepository extends JpaRepository<App, Long> {
 
 	List<App> findByClientId(String clientId);
+	List<App> findByTitle(String title);
 }

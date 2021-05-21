@@ -33,6 +33,9 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
 	@Autowired
 	TranslatorConfig translator;
 
+	@Value("${server.host}")
+	String serverHost;
+	
 	@Value("${server.servlet.context-path}")
 	String servletPath;
 	
@@ -67,7 +70,7 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
 	 */
 	@Override
 	public List<AppPayload> findAll() {
-		return appRepo.findAll().stream().map(app -> app.toDTO( getContextPath(app.getId()) ) ).collect(Collectors.toList());
+		return appRepo.findAll().stream().map(app -> app.toDTO( getContextPath(app.getId()), getRedirectApp() ) ).collect(Collectors.toList());
 	}
 
 	/*
@@ -78,12 +81,28 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
 	public AppPayload findById(Long id) {
 		App app = appRepo.findById(id).orElse(null);
 		if(app == null) throw new GIAException("app.notfound");
-		return app.toDTO( getContextPath(app.getId()) );
+		return app.toDTO( getContextPath(app.getId()), getRedirectApp() );
+	}
+	
+	@Override
+	public AppPayload findByClientId(String clientId) {
+		App app = appRepo.findByClientId(clientId).stream().findFirst().orElse(null);
+		if(app == null) throw new GIAException("app.notfound");
+		return app.toDTO( getContextPath(app.getId()), getRedirectApp() );
 	}
 
+
 	private String getContextPath(Long id) {
-		try {
+		return serverHost.concat(servletPath).concat("?" + AuthFilter.APP_ID + "=" + id );
+		/* try {
 			return ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString().concat("?" + AuthFilter.APP_ID + "=" + id );
-		}catch(Exception e) {return "";}
+		}catch(Exception e) {return "";} */
+	}
+
+	private String getRedirectApp() {
+		return serverHost.concat(servletPath).concat("/redirect_app" );
+		/*try {
+			
+		}catch(Exception e) {return "";} */
 	}
 }

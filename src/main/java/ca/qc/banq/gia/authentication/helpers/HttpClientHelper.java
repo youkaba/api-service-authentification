@@ -32,6 +32,11 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class HttpClientHelper {
+	
+	public final static String ACCESS_TOKEN = "Authorization";
+	public static final String EXPDATE_SESSION_NAME = "expdate";
+	public static final String IDTOKEN_SESSION_NAME = "idtoken";
+	public static final String PRINCIPAL_SESSION_NAME = "principal";
 
 	public  HttpClientHelper() {}
 

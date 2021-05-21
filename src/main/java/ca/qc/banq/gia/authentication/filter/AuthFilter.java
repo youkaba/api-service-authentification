@@ -43,7 +43,7 @@ public class AuthFilter implements Filter {
 	GiaBackOfficeService appService;
 	
 	/** Liste des URIs a filtrer */
-	List<String> excludedUrls = Arrays.asList("/", "/b2c", "/aad");
+	List<String> excludedUrls = Arrays.asList("/", "/aad", "b2c");
 	
 	/*
 	 * (non-javadoc)

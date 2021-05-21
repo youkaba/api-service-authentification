@@ -24,16 +24,16 @@ public class B2CConfig {
 
 	/** Retourne l'url B2C du flux de connexion */
 	public String getSignUpSignInAuthority(String policySignIn) {
-		return this.authorityBase.concat(policySignIn);
+		return this.authorityBase.concat(policySignIn).concat("/");
 	}
 	
 	/** Retourne l'url B2C du flux d'edition du profil usager */
 	public String getEditProfileAuthority(String policyEditProfile) {
-		return this.authorityBase.concat(policyEditProfile);
+		return this.authorityBase.concat(policyEditProfile).concat("/");
 	}
 
 	/** Retourne l'url B2C du flux de reinitialisation de mot de passe */
 	public String getResetPasswordAuthority(String policyResetPwd) {
-		return this.authorityBase.concat(policyResetPwd);
+		return this.authorityBase.concat(policyResetPwd).concat("/");
 	}
 }

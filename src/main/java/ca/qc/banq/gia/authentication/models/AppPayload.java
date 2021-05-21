@@ -36,4 +36,5 @@ public class AppPayload implements Serializable {
 	String policySignUpSignIn;
 	String policyResetPassword;
 	String policyEditProfile;
+	String redirectApp;
 }

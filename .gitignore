@@ -39,3 +39,4 @@ target/
 HELP.md
 mvnw
 mvnw.cmd
+bin/

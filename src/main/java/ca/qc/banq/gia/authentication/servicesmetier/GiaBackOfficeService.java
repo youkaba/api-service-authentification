@@ -44,4 +44,11 @@ public interface GiaBackOfficeService {
 	 * @return
 	 */
 	public AppPayload findById(Long id);
+	
+	/**
+	 * 
+	 * @param clientId
+	 * @return
+	 */
+	public AppPayload findByClientId(String clientId);
 }

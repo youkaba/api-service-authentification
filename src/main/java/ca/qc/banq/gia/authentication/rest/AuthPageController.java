@@ -8,6 +8,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.ParseException;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -19,16 +20,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.microsoft.aad.msal4j.IAuthenticationResult;
 import com.microsoft.aad.msal4j.MsalInteractionRequiredException;
 import com.nimbusds.jwt.JWTParser;
 
+import ca.qc.banq.gia.authentication.entities.TypeAuth;
 import ca.qc.banq.gia.authentication.helpers.AuthHelperAAD;
 import ca.qc.banq.gia.authentication.helpers.AuthHelperB2C;
 import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
 import ca.qc.banq.gia.authentication.helpers.SessionManagementHelper;
+import ca.qc.banq.gia.authentication.models.AppPayload;
+import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
 
 
 /**
@@ -50,6 +55,9 @@ public class AuthPageController {
 	
 	@Value("${server.servlet.context-path}")
 	String servletPath;
+
+	@Autowired
+	GiaBackOfficeService appService;
 	
 	/**
 	 * Home Page Authentification B2C
@@ -57,11 +65,29 @@ public class AuthPageController {
 	 * @return
 	 * @throws ParseException
 	 */
-    @RequestMapping("/b2c")
-    public ModelAndView securePageB2C(HttpServletRequest httpRequest) throws ParseException {
+    @RequestMapping("/redirect_app")
+    public ModelAndView securePageB2C(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
     	ModelAndView mav = new ModelAndView("auth_page_b2c");
         setAccountInfoB2C(mav, httpRequest);
         return mav;
+    	/*
+    	 * francis.djiomou@banqb2cdev.onmicrosoft.com
+    	IAuthenticationResult auth = authHelperB2C.getAuthSessionObject(httpRequest);
+    	Map<String, Object> claims = JWTParser.parse(auth.idToken()).getJWTClaimsSet().getClaims();
+    	String clientId = claims.get("aud").toString();
+    	AppPayload app = appService.findByClientId(clientId);
+    	
+        if(auth != null && app != null) {
+	        httpResponse.addHeader(HttpClientHelper.ACCESS_TOKEN, auth.accessToken());
+	        httpResponse.addHeader(HttpClientHelper.EXPDATE_SESSION_NAME, String.valueOf(auth.expiresOnDate().getTime()) );
+	        httpResponse.addHeader(HttpClientHelper.IDTOKEN_SESSION_NAME, auth.idToken());
+	        httpResponse.sendRedirect(app.getHomeUrl());
+        } else {
+        	httpResponse.setStatus(500);
+			httpRequest.setAttribute("error", "unable to find IAuthenticationResult");
+			httpRequest.getRequestDispatcher("/error").forward(httpRequest, httpResponse);
+        }
+        */
     }
 
     /**
@@ -71,7 +97,7 @@ public class AuthPageController {
      * @throws ParseException
      */
     @RequestMapping("/aad")
-    public ModelAndView securePageAAD(HttpServletRequest httpRequest) throws ParseException {
+    public ModelAndView securePageAAD(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws ParseException {
         ModelAndView mav = new ModelAndView("auth_page_aad");
         setAccountInfoAAD(mav, httpRequest);
         return mav;
@@ -198,7 +224,7 @@ public class AuthPageController {
 	private void setAccountInfoB2C(ModelAndView model, HttpServletRequest httpRequest) throws ParseException {
         IAuthenticationResult auth = authHelperB2C.getAuthSessionObject(httpRequest);
         model.addObject("idTokenClaims", JWTParser.parse(auth.idToken()).getJWTClaimsSet().getClaims());
-        model.addObject("account", authHelperB2C.getAuthSessionObject(httpRequest).account());
+        model.addObject("account", auth.account());
         model.addObject("app", authHelperB2C.getApp());
     }
 

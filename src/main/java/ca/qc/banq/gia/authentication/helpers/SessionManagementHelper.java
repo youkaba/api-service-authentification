@@ -86,6 +86,10 @@ public class SessionManagementHelper {
 
     public static void setSessionPrincipal(HttpServletRequest httpRequest, IAuthenticationResult result) {
         httpRequest.getSession().setAttribute(AuthHelperAAD.PRINCIPAL_SESSION_NAME, result);
+        httpRequest.getSession().setAttribute(HttpClientHelper.ACCESS_TOKEN, result.accessToken());
+        httpRequest.getSession().setAttribute(HttpClientHelper.EXPDATE_SESSION_NAME, result.expiresOnDate());
+        httpRequest.getSession().setAttribute(HttpClientHelper.IDTOKEN_SESSION_NAME, result.idToken());
+
     }
 
     public static void removePrincipalFromSession(HttpServletRequest httpRequest) {

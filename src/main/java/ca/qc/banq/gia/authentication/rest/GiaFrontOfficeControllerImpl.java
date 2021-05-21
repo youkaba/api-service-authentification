@@ -78,7 +78,7 @@ public class GiaFrontOfficeControllerImpl implements GiaFrontOfficeController {
 	 * @see ca.qc.banq.gia.authentication.rest.GiaFrontOfficeController#signOut(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
 	@Override
-	@PostMapping("/signOut")
+	@GetMapping("/signOut")
     @ApiOperation("Cloture la session d'une application")
 	public void signOut(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
 		String appId = httpRequest.getHeader(AuthFilter.APP_ID);
