@@ -25,11 +25,10 @@ import lombok.ToString;
 @SuppressWarnings("serial")
 public class AppPayload implements Serializable {
 
-	Long id;
+	String clientId;
 	String title;
 	TypeAuth typeAuth;
 	String homeUrl;
-	String clientId;
 	String certSecretValue;
 	String apiScope;
 	String loginURL;

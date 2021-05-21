@@ -43,7 +43,7 @@ public class AuthFilter implements Filter {
 	GiaBackOfficeService appService;
 	
 	/** Liste des URIs a filtrer */
-	List<String> excludedUrls = Arrays.asList("/", "/aad", "b2c");
+	List<String> excludedUrls = Arrays.asList("/", "/redirect2_b2c", "redirect2_aad");
 	
 	/*
 	 * (non-javadoc)
@@ -54,11 +54,38 @@ public class AuthFilter implements Filter {
 		
 		// On recherche l'id de l'application dans les attributs de la requete
 		String appId = request.getParameter(APP_ID) != null ? request.getParameter(APP_ID).toString() : null;
-		AppPayload app = appId != null ? appService.findById(Long.valueOf(appId)) : null;
+		AppPayload app = appId != null ? appService.findById(appId) : null;
 		
+		HttpServletRequest httpRequest = (HttpServletRequest) request;
+		String path = httpRequest.getServletPath();
+		
+		switch(path) {
+			case "/": 
+				if( app == null ) {
+					HttpServletResponse httpResponse = (HttpServletResponse) response;
+					httpResponse.setStatus(500);
+		            request.setAttribute("error", "unable to find attribute appid");
+		            request.getRequestDispatcher("/error").forward(request, response);
+		            return;
+				} else {
+					if(app.getTypeAuth().equals(TypeAuth.B2C)) {
+						filterB2C.authHelper.init(app);
+						filterB2C.doFilter(request, response, chain);
+					} else {
+						filterAAD.authHelper.init(app);
+						filterAAD.doFilter(request, response, chain);
+					}
+				}
+				break;
+			case "/redirect2_b2c": filterB2C.doFilter(request, response, chain); break;
+			case "/redirect2_aad": filterAAD.doFilter(request, response, chain); break;
+			default: chain.doFilter(request, response); break;
+		}
+		
+		/*
 		// Si aucune application na ete fournie dans l'url,
 		if(app == null) {
-			HttpServletRequest httpRequest = (HttpServletRequest) request;
+			
 			if(excludedUrls.contains(httpRequest.getServletPath())) {
 				//  on affiche la page d'erreur
 				if( filterAAD.getAuthHelper().getApp() == null && filterB2C.getAuthHelper().getApp() == null ) {
@@ -93,6 +120,7 @@ public class AuthFilter implements Filter {
 			filterAAD.getAuthHelper().init(app);
 			filterAAD.doFilter(request, response, chain);
 		}
+		*/
 	}
 
 }

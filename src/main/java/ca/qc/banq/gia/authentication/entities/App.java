@@ -9,8 +9,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
@@ -39,10 +37,11 @@ import lombok.ToString;
 @SuppressWarnings("serial")
 public class App implements Serializable {
 
+	/** Client Id de l'application sur la plateforme Azure */
 	@Id
-	@Column
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long id;
+	@Column(name = "client_id")
+	@NotNull(message = "App.clientId.NotNull")
+	private String clientId;
 	
 	/** Nom de l'application */
 	@Column(name = "title")
@@ -58,11 +57,6 @@ public class App implements Serializable {
 	@Column(name = "home_url")
 	@NotNull(message = "App.homeUrl.NotNull")
 	private String homeUrl;
-
-	/** Client Id de l'application sur la plateforme Azure */
-	@Column(name = "client_id")
-	@NotNull(message = "App.clientId.NotNull")
-	private String clientId;
 
 	/** Valeur du certificat sur la plateforme Azure */
 	@Column(name = "cert_secret")
@@ -95,6 +89,6 @@ public class App implements Serializable {
 	}
 	
 	public AppPayload toDTO(String loginUrl, String redirectApp) {
-		return new AppPayload(this.id, this.title, this.typeAuth, this.homeUrl, this.clientId, this.certSecretValue, this.typeAuth.equals(TypeAuth.B2C) ? this.clientId : "", loginUrl, this.policySignUpSignIn, this.policyResetPassword, this.policyEditProfile, redirectApp);
+		return new AppPayload(this.clientId, this.title, this.typeAuth, this.homeUrl, this.certSecretValue, this.typeAuth.equals(TypeAuth.B2C) ? this.clientId : "", loginUrl, this.policySignUpSignIn, this.policyResetPassword, this.policyEditProfile, redirectApp);
 	}
 }

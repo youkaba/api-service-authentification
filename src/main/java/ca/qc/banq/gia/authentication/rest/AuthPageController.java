@@ -28,6 +28,7 @@ import com.microsoft.aad.msal4j.MsalInteractionRequiredException;
 import com.nimbusds.jwt.JWTParser;
 
 import ca.qc.banq.gia.authentication.entities.TypeAuth;
+import ca.qc.banq.gia.authentication.filter.AuthFilter;
 import ca.qc.banq.gia.authentication.helpers.AuthHelperAAD;
 import ca.qc.banq.gia.authentication.helpers.AuthHelperB2C;
 import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
@@ -65,13 +66,14 @@ public class AuthPageController {
 	 * @return
 	 * @throws ParseException
 	 */
-    @RequestMapping("/redirect_app")
-    public ModelAndView securePageB2C(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
-    	ModelAndView mav = new ModelAndView("auth_page_b2c");
+    @RequestMapping("/redirect2_b2c")
+    public void securePageB2C(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
+    	/*ModelAndView mav = new ModelAndView("auth_page_b2c");
         setAccountInfoB2C(mav, httpRequest);
-        return mav;
+        return mav;*/
     	/*
     	 * francis.djiomou@banqb2cdev.onmicrosoft.com
+    	 * */
     	IAuthenticationResult auth = authHelperB2C.getAuthSessionObject(httpRequest);
     	Map<String, Object> claims = JWTParser.parse(auth.idToken()).getJWTClaimsSet().getClaims();
     	String clientId = claims.get("aud").toString();
@@ -81,26 +83,54 @@ public class AuthPageController {
 	        httpResponse.addHeader(HttpClientHelper.ACCESS_TOKEN, auth.accessToken());
 	        httpResponse.addHeader(HttpClientHelper.EXPDATE_SESSION_NAME, String.valueOf(auth.expiresOnDate().getTime()) );
 	        httpResponse.addHeader(HttpClientHelper.IDTOKEN_SESSION_NAME, auth.idToken());
+	        httpResponse.addHeader(AuthFilter.APP_ID, clientId);
 	        httpResponse.sendRedirect(app.getHomeUrl());
         } else {
         	httpResponse.setStatus(500);
 			httpRequest.setAttribute("error", "unable to find IAuthenticationResult");
 			httpRequest.getRequestDispatcher("/error").forward(httpRequest, httpResponse);
         }
-        */
     }
-
-    /**
-     * Home Page Authentification AAD
-     * @param httpRequest
-     * @return
-     * @throws ParseException
-     */
-    @RequestMapping("/aad")
-    public ModelAndView securePageAAD(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws ParseException {
-        ModelAndView mav = new ModelAndView("auth_page_aad");
-        setAccountInfoAAD(mav, httpRequest);
-        return mav;
+    
+    @RequestMapping("/redirect2_aad")
+    public void securePageAAD(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
+    	/*ModelAndView mav = new ModelAndView("auth_page_b2c");
+        setAccountInfoB2C(mav, httpRequest);
+        return mav;*/
+    	/*
+    	 * francis.djiomou@banqb2cdev.onmicrosoft.com
+    	 * */
+    	IAuthenticationResult auth = authHelperAAD.getAuthResultBySilentFlow(httpRequest, httpResponse);
+    	Map<String, Object> claims = JWTParser.parse(auth.idToken()).getJWTClaimsSet().getClaims();
+    	String clientId = claims.get("aud").toString();
+    	AppPayload app = appService.findByClientId(clientId);
+    	
+        if(auth != null && app != null) {
+	        httpResponse.addHeader(HttpClientHelper.ACCESS_TOKEN, auth.accessToken());
+	        httpResponse.addHeader(HttpClientHelper.EXPDATE_SESSION_NAME, String.valueOf(auth.expiresOnDate().getTime()) );
+	        httpResponse.addHeader(HttpClientHelper.IDTOKEN_SESSION_NAME, auth.idToken());
+	        httpResponse.addHeader(AuthFilter.APP_ID, clientId);
+	        httpResponse.sendRedirect(app.getHomeUrl());
+        } else {
+        	httpResponse.setStatus(500);
+			httpRequest.setAttribute("error", "unable to find IAuthenticationResult");
+			httpRequest.getRequestDispatcher("/error").forward(httpRequest, httpResponse);
+        }
+    }
+    
+    @RequestMapping("/sign_out")
+    public void signOut(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
+    	String clientId = httpRequest.getHeader(AuthFilter.APP_ID);
+    	AppPayload app = clientId != null ? appService.findByClientId(clientId) : null;
+    	if(app != null) {
+	        httpRequest.getSession().invalidate();
+	        if(app.getTypeAuth().equals(TypeAuth.B2C)) httpResponse.sendRedirect(app.getLoginURL() );
+	        else httpResponse.sendRedirect("https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri=" + URLEncoder.encode(app.getLoginURL(), "UTF-8") );
+    	} else {
+        	httpResponse.setStatus(500);
+			httpRequest.setAttribute("error", "unable to find appid");
+			httpRequest.getRequestDispatcher("/error").forward(httpRequest, httpResponse);
+        }
     }
 
     /**
@@ -113,7 +143,7 @@ public class AuthPageController {
     public void signOutB2C(HttpServletRequest httpRequest, HttpServletResponse response) throws IOException {
         httpRequest.getSession().invalidate();
         String redirectUrl = serverHost.concat(servletPath);
-        response.sendRedirect(redirectUrl + "?appid=" + authHelperB2C.getApp().getId() );
+        response.sendRedirect(redirectUrl + "?appid=" + authHelperB2C.getApp().getClientId() );
     }
     
     /**
@@ -127,7 +157,7 @@ public class AuthPageController {
         httpRequest.getSession().invalidate();
         String endSessionEndpoint = "https://login.microsoftonline.com/common/oauth2/v2.0/logout";
         String redirectUrl = serverHost.concat(servletPath);
-        response.sendRedirect(endSessionEndpoint + "?post_logout_redirect_uri=" + URLEncoder.encode(redirectUrl, "UTF-8") + "&appid=" + authHelperAAD.getApp().getId() );
+        response.sendRedirect(endSessionEndpoint + "?post_logout_redirect_uri=" + URLEncoder.encode(redirectUrl, "UTF-8") + "&appid=" + authHelperAAD.getApp().getClientId() );
     }
     
     /**

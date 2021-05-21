@@ -53,7 +53,7 @@ public class GiaBackOfficeControllerImpl implements GiaBackOfficeController {
 	@Override
 	@DeleteMapping("/supprimerApplication/{id}")
 	@ApiOperation("Supprimer une application")
-	public String deleteApp(@PathVariable("id") Long id) {
+	public String deleteApp(@PathVariable("id") String id) {
 		return business.deleteApp(id);
 	}
 
@@ -75,7 +75,7 @@ public class GiaBackOfficeControllerImpl implements GiaBackOfficeController {
 	@Override
 	@GetMapping("/obtenirApplication/{id}")
 	@ApiOperation("Retrouver une application a partir de son id")
-	public AppPayload findById(@PathVariable("id") Long id) {
+	public AppPayload findById(@PathVariable("id") String id) {
 		return business.findById(id);
 	}
 

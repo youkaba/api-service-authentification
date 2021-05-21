@@ -17,5 +17,4 @@ import ca.qc.banq.gia.authentication.models.UserInfo;
 public interface GiaFrontOfficeController {
 
 	public UserInfo getConnectedUser(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable;
-	public void signOut(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable;
 }

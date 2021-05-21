@@ -30,7 +30,7 @@ public interface GiaBackOfficeService {
 	 * Supprime une App
 	 * @param id
 	 */
-	public String deleteApp(Long id);
+	public String deleteApp(String id);
 	
 	/**
 	 * Recherche la liste de toutes les applications enregistrees
@@ -43,7 +43,7 @@ public interface GiaBackOfficeService {
 	 * @param id
 	 * @return
 	 */
-	public AppPayload findById(Long id);
+	public AppPayload findById(String id);
 	
 	/**
 	 * 

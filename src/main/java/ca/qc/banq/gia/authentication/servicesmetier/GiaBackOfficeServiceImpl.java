@@ -9,10 +9,10 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import ca.qc.banq.gia.authentication.config.TranslatorConfig;
 import ca.qc.banq.gia.authentication.entities.App;
+import ca.qc.banq.gia.authentication.entities.TypeAuth;
 import ca.qc.banq.gia.authentication.exceptions.GIAException;
 import ca.qc.banq.gia.authentication.filter.AuthFilter;
 import ca.qc.banq.gia.authentication.models.AppPayload;
@@ -45,7 +45,7 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
 	 */
 	@Override
 	public String saveApp(App app) {
-		App saved = appRepo.findById(app.getId()).orElse(null);
+		App saved = appRepo.findById(app.getClientId()).orElse(null);
 		if(saved == null) app = appRepo.save(app);
 		else {
 			saved.update(app);
@@ -59,7 +59,7 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
 	 * @see ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService#deleteApp(java.lang.Long)
 	 */
 	@Override
-	public String deleteApp(Long id) {
+	public String deleteApp(String id) {
 		appRepo.deleteById(id);
 		return translator.translate("app.deleted.successfull");
 	}
@@ -70,7 +70,7 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
 	 */
 	@Override
 	public List<AppPayload> findAll() {
-		return appRepo.findAll().stream().map(app -> app.toDTO( getContextPath(app.getId()), getRedirectApp() ) ).collect(Collectors.toList());
+		return appRepo.findAll().stream().map(app -> app.toDTO( getContextPath(app.getClientId()), getRedirectApp(app.getTypeAuth()) ) ).collect(Collectors.toList());
 	}
 
 	/*
@@ -78,29 +78,29 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
 	 * @see ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService#findById(java.lang.Long)
 	 */
 	@Override
-	public AppPayload findById(Long id) {
+	public AppPayload findById(String id) {
 		App app = appRepo.findById(id).orElse(null);
 		if(app == null) throw new GIAException("app.notfound");
-		return app.toDTO( getContextPath(app.getId()), getRedirectApp() );
+		return app.toDTO( getContextPath(app.getClientId()), getRedirectApp(app.getTypeAuth()) );
 	}
 	
 	@Override
 	public AppPayload findByClientId(String clientId) {
-		App app = appRepo.findByClientId(clientId).stream().findFirst().orElse(null);
+		App app = appRepo.findById(clientId).stream().findFirst().orElse(null);
 		if(app == null) throw new GIAException("app.notfound");
-		return app.toDTO( getContextPath(app.getId()), getRedirectApp() );
+		return app.toDTO( getContextPath(app.getClientId()), getRedirectApp(app.getTypeAuth()) );
 	}
 
 
-	private String getContextPath(Long id) {
+	private String getContextPath(String id) {
 		return serverHost.concat(servletPath).concat("?" + AuthFilter.APP_ID + "=" + id );
 		/* try {
 			return ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString().concat("?" + AuthFilter.APP_ID + "=" + id );
 		}catch(Exception e) {return "";} */
 	}
 
-	private String getRedirectApp() {
-		return serverHost.concat(servletPath).concat("/redirect_app" );
+	private String getRedirectApp(TypeAuth typeauth) {
+		return serverHost.concat(servletPath).concat(typeauth.equals(TypeAuth.B2C) ? "/redirect2_b2c" : "redirect2_aad" );
 		/*try {
 			
 		}catch(Exception e) {return "";} */

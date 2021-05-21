@@ -34,9 +34,7 @@ public class ListenerConfig extends ContextLoaderListener {
 	 * Initialisation d'une liste dapplications par defaut pour des tests
 	 */
 	App[] initApps = new App[] {
-			new App(null, "IDEL Extranet", TypeAuth.B2C, "http://localhost:8080/idel-local/extranet/redirectVersAccueilExtranet.seam", "68fb0e8c-7754-49ed-a7a7-7c084b9b7bd9", "gPpG_DVWH4KV9B42eoNZVOg7~p4-u8iQ-M", "B2C_1_signupsignin1", "", ""),
-			new App(null, "IDEL Intranet", TypeAuth.AAD, "http://localhost:8080/idel-local/intranet/IntranetAccueil.seam", "68fb0e8c-7754-49ed-a7a7-7c084b9b7bd9", "gPpG_DVWH4KV9B42eoNZVOg7~p4-u8iQ-M", "B2C_1_signupsignin1", "", ""),
-			new App(null, "msal-b2c-web-sample", TypeAuth.B2C, "https://jwt.ms", "68fb0e8c-7754-49ed-a7a7-7c084b9b7bd9", "gPpG_DVWH4KV9B42eoNZVOg7~p4-u8iQ-M", "B2C_1_signupsignin1", "", "")
+			new App("68fb0e8c-7754-49ed-a7a7-7c084b9b7bd9", "IDEL Extranet", TypeAuth.B2C, "http://localhost:8080/idel-local/extranet/redirectVersAccueilExtranet.seam", "gPpG_DVWH4KV9B42eoNZVOg7~p4-u8iQ-M", "B2C_1_signupsignin1", "", "")
 	};
 	
 	/* (non-Javadoc)
@@ -62,7 +60,7 @@ public class ListenerConfig extends ContextLoaderListener {
 		try {
 			
 			for(App app : initApps) {
-				if(appRepo.findByTitle(app.getTitle()).isEmpty()) appRepo.save(app);
+				if(!appRepo.existsById(app.getClientId())) appRepo.save(app);
 			}
 			
 		} catch(Exception e) {
