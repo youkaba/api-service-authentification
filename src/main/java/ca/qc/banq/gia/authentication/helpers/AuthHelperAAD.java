@@ -223,7 +223,7 @@ public class AuthHelperAAD {
     }
 
     public String getRedirectUriSignIn() {
-        return app.getHomeUrl();
+        return app.getRedirectApp();
     }
 
     public String getRedirectUriGraph() {

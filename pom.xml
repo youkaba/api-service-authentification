@@ -10,12 +10,12 @@
 	</parent>
 	<groupId>ca.qc.banq.gia</groupId>
 	<artifactId>banq-authentication-service</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.1</version>
 	<name>banq-authentication-service</name>
 	<description>BAnQ Authentication Library for Java</description>
 	
 	<properties>
-		<java.version>11</java.version>
+		<java.version>15</java.version>
 		<swagger.version>2.9.2</swagger.version>
 	</properties>
 	<dependencies>

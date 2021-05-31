@@ -70,7 +70,7 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
 	 */
 	@Override
 	public List<AppPayload> findAll() {
-		return appRepo.findAll().stream().map(app -> app.toDTO( getContextPath(app.getClientId()), getRedirectApp(app.getTypeAuth()) ) ).collect(Collectors.toList());
+		return appRepo.findAll().stream().map(app -> app.toDTO( getLoginUrl(app.getClientId()), getRedirectApp(app.getTypeAuth()), getLogoutUrl(app.getClientId()) ) ).collect(Collectors.toList());
 	}
 
 	/*
@@ -81,28 +81,26 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
 	public AppPayload findById(String id) {
 		App app = appRepo.findById(id).orElse(null);
 		if(app == null) throw new GIAException("app.notfound");
-		return app.toDTO( getContextPath(app.getClientId()), getRedirectApp(app.getTypeAuth()) );
+		return app.toDTO( getLoginUrl(app.getClientId()), getRedirectApp(app.getTypeAuth()), getLogoutUrl(app.getClientId()) );
 	}
 	
 	@Override
 	public AppPayload findByClientId(String clientId) {
-		App app = appRepo.findById(clientId).stream().findFirst().orElse(null);
+		App app = appRepo.findById(clientId).orElse(null);
 		if(app == null) throw new GIAException("app.notfound");
-		return app.toDTO( getContextPath(app.getClientId()), getRedirectApp(app.getTypeAuth()) );
+		return app.toDTO( getLoginUrl(app.getClientId()), getRedirectApp(app.getTypeAuth()), getLogoutUrl(app.getClientId()) );
 	}
 
 
-	private String getContextPath(String id) {
+	private String getLoginUrl(String id) {
 		return serverHost.concat(servletPath).concat("?" + AuthFilter.APP_ID + "=" + id );
-		/* try {
-			return ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString().concat("?" + AuthFilter.APP_ID + "=" + id );
-		}catch(Exception e) {return "";} */
 	}
 
 	private String getRedirectApp(TypeAuth typeauth) {
-		return serverHost.concat(servletPath).concat(typeauth.equals(TypeAuth.B2C) ? "/redirect2_b2c" : "redirect2_aad" );
-		/*try {
-			
-		}catch(Exception e) {return "";} */
+		return serverHost.concat(servletPath).concat(typeauth.equals(TypeAuth.B2C) ? "/redirect2_b2c" : "/redirect2_aad" );
+	}
+
+	private String getLogoutUrl(String id) {
+		return serverHost.concat(servletPath).concat("/sign_out").concat("?" + AuthFilter.APP_ID + "=" + id );
 	}
 }

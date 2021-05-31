@@ -88,7 +88,7 @@ public class App implements Serializable {
 		this.policyEditProfile = app.getPolicyEditProfile();
 	}
 	
-	public AppPayload toDTO(String loginUrl, String redirectApp) {
-		return new AppPayload(this.clientId, this.title, this.typeAuth, this.homeUrl, this.certSecretValue, this.typeAuth.equals(TypeAuth.B2C) ? this.clientId : "", loginUrl, this.policySignUpSignIn, this.policyResetPassword, this.policyEditProfile, redirectApp);
+	public AppPayload toDTO(String loginUrl, String redirectApp, String loginOut) {
+		return new AppPayload(this.clientId, this.title, this.typeAuth, this.homeUrl, this.certSecretValue, this.typeAuth.equals(TypeAuth.B2C) ? this.clientId : "", loginUrl, loginOut, this.policySignUpSignIn, this.policyResetPassword, this.policyEditProfile, redirectApp);
 	}
 }

@@ -35,8 +35,13 @@ public class HttpClientHelper {
 	
 	public final static String ACCESS_TOKEN = "Authorization";
 	public static final String EXPDATE_SESSION_NAME = "expdate";
-	public static final String IDTOKEN_SESSION_NAME = "idtoken";
+	//public static final String IDTOKEN_SESSION_NAME = "idtoken";
 	public static final String PRINCIPAL_SESSION_NAME = "principal";
+	public static final String UID_SESSION_NAME = "unique_name";
+	public final static String GET_USERINFOS_REST_URL = "get_user_infos";
+	public final static String SIGNIN_URL = "signin_url";
+	public final static String SIGNOUT_URL = "signout_url";
+	public final static String BAnQ_CUSTOM_USERID = "extension_BAnQclientID";
 
 	public  HttpClientHelper() {}
 

@@ -3,28 +3,25 @@
 
 package ca.qc.banq.gia.authentication.rest;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.text.ParseException;
+import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.json.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.microsoft.aad.msal4j.IAuthenticationResult;
-import com.microsoft.aad.msal4j.MsalInteractionRequiredException;
 import com.nimbusds.jwt.JWTParser;
 
 import ca.qc.banq.gia.authentication.entities.TypeAuth;
@@ -32,9 +29,11 @@ import ca.qc.banq.gia.authentication.filter.AuthFilter;
 import ca.qc.banq.gia.authentication.helpers.AuthHelperAAD;
 import ca.qc.banq.gia.authentication.helpers.AuthHelperB2C;
 import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
-import ca.qc.banq.gia.authentication.helpers.SessionManagementHelper;
 import ca.qc.banq.gia.authentication.models.AppPayload;
+import ca.qc.banq.gia.authentication.models.TokenResponse;
+import ca.qc.banq.gia.authentication.models.UserInfo;
 import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
+import lombok.extern.slf4j.Slf4j;
 
 
 /**
@@ -42,6 +41,7 @@ import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
  * @author <a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a>
  * @since 2021-05-12
  */
+@Slf4j
 @Controller
 public class AuthPageController {
 
@@ -59,6 +59,19 @@ public class AuthPageController {
 
 	@Autowired
 	GiaBackOfficeService appService;
+
+	/**
+	 * Page d'Accueil de l'idp
+	 * @return
+	 * @throws Throwable
+	 */
+	@RequestMapping("/home")
+    public ModelAndView home() throws Throwable {
+		ModelAndView mav = new ModelAndView("index");
+		List<AppPayload> apps = appService.findAll();
+		mav.addObject("apps", apps);
+		return mav;
+	}
 	
 	/**
 	 * Home Page Authentification B2C
@@ -68,23 +81,33 @@ public class AuthPageController {
 	 */
     @RequestMapping("/redirect2_b2c")
     public void securePageB2C(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
-    	/*ModelAndView mav = new ModelAndView("auth_page_b2c");
-        setAccountInfoB2C(mav, httpRequest);
-        return mav;*/
-    	/*
-    	 * francis.djiomou@banqb2cdev.onmicrosoft.com
-    	 * */
+    	
     	IAuthenticationResult auth = authHelperB2C.getAuthSessionObject(httpRequest);
     	Map<String, Object> claims = JWTParser.parse(auth.idToken()).getJWTClaimsSet().getClaims();
+    	log.error("claims=" + claims.toString());
     	String clientId = claims.get("aud").toString();
+    	String uid = claims.get(HttpClientHelper.BAnQ_CUSTOM_USERID).toString(); //String uid = "11340729";
+    	String code = httpRequest.getParameter("code");
+    	log.error("auth.accessToken = " + auth.accessToken());
+    	clientId = StringUtils.removeStart(clientId, "[");
+    	clientId = StringUtils.removeEnd(clientId, "]");
     	AppPayload app = appService.findByClientId(clientId);
     	
-        if(auth != null && app != null) {
-	        httpResponse.addHeader(HttpClientHelper.ACCESS_TOKEN, auth.accessToken());
-	        httpResponse.addHeader(HttpClientHelper.EXPDATE_SESSION_NAME, String.valueOf(auth.expiresOnDate().getTime()) );
-	        httpResponse.addHeader(HttpClientHelper.IDTOKEN_SESSION_NAME, auth.idToken());
-	        httpResponse.addHeader(AuthFilter.APP_ID, clientId);
-	        httpResponse.sendRedirect(app.getHomeUrl());
+        if(code != null && app != null) {
+        	
+        	TokenResponse token = getToken(code, app, httpRequest);
+        	
+        	try {
+        		UserInfo user = getUserInfos(token.getAccess_token());
+        		uid = user.getUserPrincipalName();
+        	} catch(Exception ex) {
+        		log.error(ex.getMessage());
+        	}
+        	
+        	//String query = "?" + HttpClientHelper.ACCESS_TOKEN + "=" + auth.accessToken() + "&" + HttpClientHelper.EXPDATE_SESSION_NAME + "=" + String.valueOf(auth.expiresOnDate().getTime()) + "&" + HttpClientHelper.UID_SESSION_NAME + "=" + uid + "&" + AuthFilter.APP_ID + "=" + clientId + "&" + HttpClientHelper.SIGNIN_URL + "=" +  URLEncoder.encode(app.getLoginURL(), "UTF-8") + "&" + HttpClientHelper.SIGNOUT_URL + "=" +  URLEncoder.encode(app.getLogoutURL(), "UTF-8") ;
+        	String query = "?" + HttpClientHelper.ACCESS_TOKEN + "=" + token.getAccess_token() + "&" + HttpClientHelper.EXPDATE_SESSION_NAME + "=" + token.getExpires_in() + "&" + HttpClientHelper.UID_SESSION_NAME + "=" + uid + "&" + AuthFilter.APP_ID + "=" + clientId + "&" + HttpClientHelper.SIGNIN_URL + "=" + URLEncoder.encode(app.getLoginURL(), "UTF-8") + "&" + HttpClientHelper.SIGNOUT_URL + "=" + URLEncoder.encode(app.getLogoutURL(), "UTF-8");
+        	httpResponse.sendRedirect(app.getHomeUrl().concat(query));
+        	
         } else {
         	httpResponse.setStatus(500);
 			httpRequest.setAttribute("error", "unable to find IAuthenticationResult");
@@ -92,183 +115,120 @@ public class AuthPageController {
         }
     }
     
+    /***
+     * Obtien un token d'acces a partir d'une authorization
+     * @param code
+     * @param app
+     * @param request
+     * @return
+     * @throws Exception
+     */
+	public TokenResponse getToken(String code, AppPayload app, HttpServletRequest request) throws Exception {
+        String url = authHelperB2C.getConfiguration().getSignUpSignInAuthority(app.getPolicySignUpSignIn()).replace("/tfp", "") + "oauth2/v2.0/token?" +
+                "grant_type=authorization_code&" +
+                "code="+ code +"&" +
+                "redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), "UTF-8") +
+                "&client_id=" + app.getClientId() +
+                "&client_secret=" + app.getCertSecretValue() +
+                "&scope=" + URLEncoder.encode("openid offline_access profile " + app.getApiScope(), "UTF-8") +
+                (StringUtils.isEmpty(request.getParameter("claims")) ? "" : "&claims=" + request.getParameter("claims"));
+        
+    	HttpHeaders requestHeaders = new HttpHeaders();
+	  	requestHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED); //MediaType.APPLICATION_JSON);
+	  	
+	  	TokenResponse token = HttpClientHelper.callRestAPI(url, HttpMethod.POST, null, TokenResponse.class, null, requestHeaders);
+	  	return token;
+	}
+
+	/**
+	 * Renouvelle un token d'acces (apres son expiration)
+	 * @param refresh_token
+	 * @param app
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	public TokenResponse refreshToken(String refresh_token, AppPayload app, HttpServletRequest request) throws Exception {
+        String url = authHelperB2C.getConfiguration().getSignUpSignInAuthority(app.getPolicySignUpSignIn()).replace("/tfp", "") + "oauth2/v2.0/token?" +
+                "grant_type=refresh_token&" +
+                "refresh_token="+ refresh_token +"&" +
+                "redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), "UTF-8") +
+                "&client_id=" + app.getClientId() +
+                "&client_secret=" + app.getCertSecretValue() +
+                "&scope=" + URLEncoder.encode("openid offline_access profile " + app.getApiScope(), "UTF-8") +
+                (StringUtils.isEmpty(request.getParameter("claims")) ? "" : "&claims=" + request.getParameter("claims"));
+        
+    	HttpHeaders requestHeaders = new HttpHeaders();
+	  	requestHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED); //MediaType.APPLICATION_JSON);
+	  	
+	  	TokenResponse token = HttpClientHelper.callRestAPI(url, HttpMethod.POST, null, TokenResponse.class, null, requestHeaders);
+	  	return token;
+	}
+	
+	/**
+	 * Recupere les infos de l'utilisateur connecte a partir de l'API Microsoft Graph
+	 * @param token
+	 * @return
+	 */
+	public UserInfo getUserInfos(String token) {
+    	HttpHeaders requestHeaders = new HttpHeaders();
+	  	requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+	  	requestHeaders.setBearerAuth(token);
+    	UserInfo infos = HttpClientHelper.callRestAPI(authHelperAAD.getMsGraphEndpointHost() + "v1.0/me", HttpMethod.GET, null, UserInfo.class, null, requestHeaders);
+    	return infos;
+	}
+    
+    /**
+     * Authentification Azure AD (pour les utilisateurs employes)
+     * @param httpRequest requete http
+     * @param httpResponse reponse http
+     * @throws Throwable
+     */
     @RequestMapping("/redirect2_aad")
     public void securePageAAD(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
-    	/*ModelAndView mav = new ModelAndView("auth_page_b2c");
-        setAccountInfoB2C(mav, httpRequest);
-        return mav;*/
-    	/*
-    	 * francis.djiomou@banqb2cdev.onmicrosoft.com
-    	 * */
     	IAuthenticationResult auth = authHelperAAD.getAuthResultBySilentFlow(httpRequest, httpResponse);
     	Map<String, Object> claims = JWTParser.parse(auth.idToken()).getJWTClaimsSet().getClaims();
     	String clientId = claims.get("aud").toString();
+    	clientId = StringUtils.removeStart(clientId, "[");
+    	clientId = StringUtils.removeEnd(clientId, "]");
+    	System.err.println("claims=" + claims.toString());
+    	System.err.println("auth.accessToken = " + auth.accessToken());
+    	//String uid = claims.get(HttpClientHelper.UID_SESSION_NAME).toString();
     	AppPayload app = appService.findByClientId(clientId);
     	
+    	String uid = "Stephane.Tellier";
+    	
         if(auth != null && app != null) {
-	        httpResponse.addHeader(HttpClientHelper.ACCESS_TOKEN, auth.accessToken());
-	        httpResponse.addHeader(HttpClientHelper.EXPDATE_SESSION_NAME, String.valueOf(auth.expiresOnDate().getTime()) );
-	        httpResponse.addHeader(HttpClientHelper.IDTOKEN_SESSION_NAME, auth.idToken());
-	        httpResponse.addHeader(AuthFilter.APP_ID, clientId);
-	        httpResponse.sendRedirect(app.getHomeUrl());
+        	UserInfo user = getUserInfos(auth.accessToken());
+        	uid = user.getUserPrincipalName();
+        	String query = "?" + HttpClientHelper.ACCESS_TOKEN + "=" + auth.accessToken() + "&" + HttpClientHelper.EXPDATE_SESSION_NAME + "=" + String.valueOf(auth.expiresOnDate().getTime()) + "&" + HttpClientHelper.UID_SESSION_NAME + "=" + uid + "&" + AuthFilter.APP_ID + "=" + clientId + "&" + HttpClientHelper.SIGNIN_URL + "=" +  URLEncoder.encode(app.getLoginURL(), "UTF-8") + "&" + HttpClientHelper.SIGNOUT_URL + "=" +  URLEncoder.encode(app.getLogoutURL(), "UTF-8") ;
+	        httpResponse.sendRedirect(app.getHomeUrl().concat(query));
         } else {
         	httpResponse.setStatus(500);
-			httpRequest.setAttribute("error", "unable to find IAuthenticationResult");
+			httpRequest.setAttribute("error", "unable to find IAuthenticationResult or clientId");
 			httpRequest.getRequestDispatcher("/error").forward(httpRequest, httpResponse);
         }
     }
     
+    /**
+     * Deconnexion d'une application
+     * @param httpRequest
+     * @param httpResponse
+     * @throws Throwable
+     */
     @RequestMapping("/sign_out")
     public void signOut(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
-    	String clientId = httpRequest.getHeader(AuthFilter.APP_ID);
+    	String clientId = httpRequest.getParameter(AuthFilter.APP_ID);
     	AppPayload app = clientId != null ? appService.findByClientId(clientId) : null;
     	if(app != null) {
 	        httpRequest.getSession().invalidate();
 	        if(app.getTypeAuth().equals(TypeAuth.B2C)) httpResponse.sendRedirect(app.getLoginURL() );
-	        else httpResponse.sendRedirect("https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri=" + URLEncoder.encode(app.getLoginURL(), "UTF-8") );
+	        else httpResponse.sendRedirect("https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), "UTF-8") );
     	} else {
         	httpResponse.setStatus(500);
 			httpRequest.setAttribute("error", "unable to find appid");
 			httpRequest.getRequestDispatcher("/error").forward(httpRequest, httpResponse);
         }
     }
-
-    /**
-     * Deconnexion B2C
-     * @param httpRequest
-     * @param response
-     * @throws IOException
-     */
-    @RequestMapping("/sign_out_b2c")
-    public void signOutB2C(HttpServletRequest httpRequest, HttpServletResponse response) throws IOException {
-        httpRequest.getSession().invalidate();
-        String redirectUrl = serverHost.concat(servletPath);
-        response.sendRedirect(redirectUrl + "?appid=" + authHelperB2C.getApp().getClientId() );
-    }
     
-    /**
-     * Deconnexion AAD
-     * @param httpRequest
-     * @param response
-     * @throws IOException
-     */
-    @RequestMapping("/sign_out_aad")
-    public void signOutAAD(HttpServletRequest httpRequest, HttpServletResponse response) throws IOException {
-        httpRequest.getSession().invalidate();
-        String endSessionEndpoint = "https://login.microsoftonline.com/common/oauth2/v2.0/logout";
-        String redirectUrl = serverHost.concat(servletPath);
-        response.sendRedirect(endSessionEndpoint + "?post_logout_redirect_uri=" + URLEncoder.encode(redirectUrl, "UTF-8") + "&appid=" + authHelperAAD.getApp().getClientId() );
-    }
-    
-    /**
-     * Recupere les infos de l'usager connecte
-     * @param httpRequest
-     * @param httpResponse
-     * @return
-     * @throws Throwable
-     */
-    @RequestMapping("/graph/me")
-    public ModelAndView getUserFromGraph(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
-
-        IAuthenticationResult result;
-        ModelAndView mav;
-        try {
-            result = authHelperAAD.getAuthResultBySilentFlow(httpRequest, httpResponse);
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof MsalInteractionRequiredException) {
-
-                // If silent call returns MsalInteractionRequired, then redirect to Authorization endpoint
-                // so user can consent to new scopes
-                String state = UUID.randomUUID().toString();
-                String nonce = UUID.randomUUID().toString();
-
-                SessionManagementHelper.storeStateAndNonceInSession(httpRequest.getSession(), state, nonce);
-                String authorizationCodeUrl = authHelperAAD.getAuthorizationCodeUrl(
-                        httpRequest.getParameter("claims"),
-                        "User.Read",
-                        authHelperAAD.getRedirectUriGraph(),
-                        state,
-                        nonce);
-
-                return new ModelAndView("redirect:" + authorizationCodeUrl);
-            } else {
-
-                mav = new ModelAndView("error");
-                mav.addObject("error", e);
-                return mav;
-            }
-        }
-
-        if (result == null) {
-            mav = new ModelAndView("error");
-            mav.addObject("error", new Exception("AuthenticationResult not found in session."));
-        } else {
-            mav = new ModelAndView("auth_page_aad");
-            setAccountInfoAAD(mav, httpRequest);
-
-            try {
-                mav.addObject("userInfo", getUserInfoFromGraph(result.accessToken()));
-
-                return mav;
-            } catch (Exception e) {
-                mav = new ModelAndView("error");
-                mav.addObject("error", e);
-            }
-        }
-        return mav;
-    }
-
-    /**
-     * Recupere les infos de l'utilisateur connecte a partir de l'API Microsoft Graph
-     * @param accessToken
-     * @return
-     * @throws Exception
-     */
-    private String getUserInfoFromGraph(String accessToken) throws Exception {
-        // Microsoft Graph user endpoint
-        URL url = new URL(authHelperAAD.getMsGraphEndpointHost() + "v1.0/me");
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-        // Set the appropriate header fields in the request header.
-        conn.setRequestProperty("Authorization", "Bearer " + accessToken);
-        conn.setRequestProperty("Accept", "application/json");
-
-        String response = HttpClientHelper.getResponseStringFromConn(conn);
-
-        int responseCode = conn.getResponseCode();
-        if(responseCode != HttpURLConnection.HTTP_OK) {
-            throw new IOException(response);
-        }
-
-        JSONObject responseObject = HttpClientHelper.processResponse(responseCode, response);
-        return responseObject.toString();
-    }
-    
-    /**
-     * Met a jour les infos de l'utilisateur sur la page Homme de B2C
-     * @param model
-     * @param httpRequest
-     * @throws ParseException
-     */
-    @SuppressWarnings("static-access")
-	private void setAccountInfoB2C(ModelAndView model, HttpServletRequest httpRequest) throws ParseException {
-        IAuthenticationResult auth = authHelperB2C.getAuthSessionObject(httpRequest);
-        model.addObject("idTokenClaims", JWTParser.parse(auth.idToken()).getJWTClaimsSet().getClaims());
-        model.addObject("account", auth.account());
-        model.addObject("app", authHelperB2C.getApp());
-    }
-
-    /**
-     * Met a jour les infos de l'utilisateur sur la page Homme de AAD
-     * @param model
-     * @param httpRequest
-     * @throws ParseException
-     */
-    private void setAccountInfoAAD(ModelAndView model, HttpServletRequest httpRequest) throws ParseException {
-        IAuthenticationResult auth = SessionManagementHelper.getAuthSessionObject(httpRequest);
-        String tenantId = JWTParser.parse(auth.idToken()).getJWTClaimsSet().getStringClaim("tid");
-        model.addObject("tenantId", tenantId);
-        model.addObject("account", SessionManagementHelper.getAuthSessionObject(httpRequest).account());
-        model.addObject("app", authHelperAAD.getApp());
-    }
 }

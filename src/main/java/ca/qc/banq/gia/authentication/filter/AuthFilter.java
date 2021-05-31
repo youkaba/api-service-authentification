@@ -13,7 +13,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -61,13 +60,7 @@ public class AuthFilter implements Filter {
 		
 		switch(path) {
 			case "/": 
-				if( app == null ) {
-					HttpServletResponse httpResponse = (HttpServletResponse) response;
-					httpResponse.setStatus(500);
-		            request.setAttribute("error", "unable to find attribute appid");
-		            request.getRequestDispatcher("/error").forward(request, response);
-		            return;
-				} else {
+				if( app != null ) {
 					if(app.getTypeAuth().equals(TypeAuth.B2C)) {
 						filterB2C.authHelper.init(app);
 						filterB2C.doFilter(request, response, chain);
@@ -75,52 +68,13 @@ public class AuthFilter implements Filter {
 						filterAAD.authHelper.init(app);
 						filterAAD.doFilter(request, response, chain);
 					}
-				}
+				} else httpRequest.getRequestDispatcher("/home").forward(httpRequest, response);
 				break;
 			case "/redirect2_b2c": filterB2C.doFilter(request, response, chain); break;
 			case "/redirect2_aad": filterAAD.doFilter(request, response, chain); break;
 			default: chain.doFilter(request, response); break;
 		}
 		
-		/*
-		// Si aucune application na ete fournie dans l'url,
-		if(app == null) {
-			
-			if(excludedUrls.contains(httpRequest.getServletPath())) {
-				//  on affiche la page d'erreur
-				if( filterAAD.getAuthHelper().getApp() == null && filterB2C.getAuthHelper().getApp() == null ) {
-					HttpServletResponse httpResponse = (HttpServletResponse) response;
-					httpResponse.setStatus(500);
-		            request.setAttribute("error", "unable to find attribute appid");
-		            request.getRequestDispatcher("/error").forward(request, response);
-		            return;
-				} else {
-					if(filterAAD.getAuthHelper().getApp() != null) {
-						// On execute le filtre de request pour l'authentification AAD
-						filterAAD.doFilter(request, response, chain);
-						return;
-					} else {
-						// On execute le filtre de request pour l'authentification B2C
-						filterB2C.doFilter(request, response, chain);
-						return;
-					}
-				}
-			}
-			chain.doFilter(request, response);
-			return;
-		}
-		
-		// Si l'application sollicitee fournit un type d'authentification B2C
-		if(app.getTypeAuth().equals(TypeAuth.B2C)) {
-			// On execute le filtre de request pour l'authentification B2C
-			filterB2C.getAuthHelper().init(app);
-			filterB2C.doFilter(request, response, chain);
-		} else {
-			// On execute le filtre de request pour l'authentification AAD
-			filterAAD.getAuthHelper().init(app);
-			filterAAD.doFilter(request, response, chain);
-		}
-		*/
 	}
 
 }

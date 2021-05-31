@@ -32,6 +32,7 @@ public class AppPayload implements Serializable {
 	String certSecretValue;
 	String apiScope;
 	String loginURL;
+	String logoutURL;
 	String policySignUpSignIn;
 	String policyResetPassword;
 	String policyEditProfile;
