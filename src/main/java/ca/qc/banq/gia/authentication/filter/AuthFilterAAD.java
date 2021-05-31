@@ -56,9 +56,10 @@ public class AuthFilterAAD {
                     authHelper.processAuthenticationCodeRedirect(httpRequest, currentUri, fullUrl);
 
                     // remove query params so that containsAuthenticationCode will not be true on future requests
-                    ((HttpServletResponse) response).sendRedirect(currentUri);
+                    /*((HttpServletResponse) response).sendRedirect(currentUri);
 
-                    chain.doFilter(request, response);
+                    chain.doFilter(request, response); */
+                    request.getRequestDispatcher("/redirect2_aad2").forward(request, response);
                     return;
                 }
 

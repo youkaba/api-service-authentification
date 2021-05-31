@@ -15,7 +15,7 @@
 	<description>BAnQ Authentication Library for Java</description>
 	
 	<properties>
-		<java.version>15</java.version>
+		<java.version>11</java.version>
 		<swagger.version>2.9.2</swagger.version>
 	</properties>
 	<dependencies>

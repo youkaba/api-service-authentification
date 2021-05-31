@@ -93,19 +93,9 @@ public class AuthPageController {
     	clientId = StringUtils.removeEnd(clientId, "]");
     	AppPayload app = appService.findByClientId(clientId);
     	
-        if(code != null && app != null) {
+        if( app != null) {
         	
-        	TokenResponse token = getToken(code, app, httpRequest);
-        	
-        	try {
-        		UserInfo user = getUserInfos(token.getAccess_token());
-        		uid = user.getUserPrincipalName();
-        	} catch(Exception ex) {
-        		log.error(ex.getMessage());
-        	}
-        	
-        	//String query = "?" + HttpClientHelper.ACCESS_TOKEN + "=" + auth.accessToken() + "&" + HttpClientHelper.EXPDATE_SESSION_NAME + "=" + String.valueOf(auth.expiresOnDate().getTime()) + "&" + HttpClientHelper.UID_SESSION_NAME + "=" + uid + "&" + AuthFilter.APP_ID + "=" + clientId + "&" + HttpClientHelper.SIGNIN_URL + "=" +  URLEncoder.encode(app.getLoginURL(), "UTF-8") + "&" + HttpClientHelper.SIGNOUT_URL + "=" +  URLEncoder.encode(app.getLogoutURL(), "UTF-8") ;
-        	String query = "?" + HttpClientHelper.ACCESS_TOKEN + "=" + token.getAccess_token() + "&" + HttpClientHelper.EXPDATE_SESSION_NAME + "=" + token.getExpires_in() + "&" + HttpClientHelper.UID_SESSION_NAME + "=" + uid + "&" + AuthFilter.APP_ID + "=" + clientId + "&" + HttpClientHelper.SIGNIN_URL + "=" + URLEncoder.encode(app.getLoginURL(), "UTF-8") + "&" + HttpClientHelper.SIGNOUT_URL + "=" + URLEncoder.encode(app.getLogoutURL(), "UTF-8");
+        	String query = "?" + HttpClientHelper.ACCESS_TOKEN + "=" + auth.accessToken() + "&" + HttpClientHelper.EXPDATE_SESSION_NAME + "=" + String.valueOf(auth.expiresOnDate().getTime()) + "&" + HttpClientHelper.UID_SESSION_NAME + "=" + uid + "&" + AuthFilter.APP_ID + "=" + clientId + "&" + HttpClientHelper.SIGNIN_URL + "=" +  URLEncoder.encode(app.getLoginURL(), "UTF-8") + "&" + HttpClientHelper.SIGNOUT_URL + "=" +  URLEncoder.encode(app.getLogoutURL(), "UTF-8") ;
         	httpResponse.sendRedirect(app.getHomeUrl().concat(query));
         	
         } else {
@@ -184,7 +174,7 @@ public class AuthPageController {
      * @param httpResponse reponse http
      * @throws Throwable
      */
-    @RequestMapping("/redirect2_aad")
+    @RequestMapping("/redirect2_aad2")
     public void securePageAAD(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
     	IAuthenticationResult auth = authHelperAAD.getAuthResultBySilentFlow(httpRequest, httpResponse);
     	Map<String, Object> claims = JWTParser.parse(auth.idToken()).getJWTClaimsSet().getClaims();
