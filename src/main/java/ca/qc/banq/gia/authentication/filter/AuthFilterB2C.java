@@ -36,6 +36,7 @@ import com.nimbusds.openid.connect.sdk.AuthenticationSuccessResponse;
 
 import ca.qc.banq.gia.authentication.helpers.AuthHelperB2C;
 import ca.qc.banq.gia.authentication.helpers.CookieHelper;
+import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
 //import ca.qc.banq.gia.authentication.helpers.CookieHelper;
 import lombok.Getter;
 
@@ -79,6 +80,20 @@ public class AuthFilterB2C {
                 }
                 if (isAccessTokenExpired(httpRequest)) {
                 	authHelper.updateAuthDataUsingSilentFlow(httpRequest);
+                }
+                if (authHelper.isAuthenticated(httpRequest) && !isAccessTokenExpired(httpRequest)) {
+                	IAuthenticationResult auth = authHelper.getAuthSessionObject(httpRequest);
+                	Map<String, Object> claims = JWTParser.parse(auth.idToken()).getJWTClaimsSet().getClaims();
+                	if(claims.get(HttpClientHelper.BAnQ_CUSTOM_USERID) == null) {
+                		httpResponse.setStatus(500);
+            			httpRequest.setAttribute("error", "unable to find " + HttpClientHelper.BAnQ_CUSTOM_USERID + " property within the claim");
+            			httpRequest.getRequestDispatcher("/error").forward(httpRequest, httpResponse);
+            			return;
+                	}
+                	String uid = claims.get(HttpClientHelper.BAnQ_CUSTOM_USERID).toString();
+                	String query = "?" + HttpClientHelper.ACCESS_TOKEN + "=" + auth.accessToken() + "&" + HttpClientHelper.EXPDATE_SESSION_NAME + "=" + String.valueOf(auth.expiresOnDate().getTime()) + "&" + HttpClientHelper.UID_SESSION_NAME + "=" + uid + "&" + AuthFilter.APP_ID + "=" + authHelper.getApp().getClientId() + "&" + HttpClientHelper.SIGNIN_URL + "=" +  URLEncoder.encode(authHelper.getApp().getLoginURL(), "UTF-8") + "&" + HttpClientHelper.SIGNOUT_URL + "=" +  URLEncoder.encode(authHelper.getApp().getLogoutURL(), "UTF-8") ;
+                    httpResponse.sendRedirect(authHelper.getApp().getHomeUrl().concat(query));
+                    return;
                 }
             } catch (MsalException authException) {
                 // something went wrong (like expiration or revocation of token)

@@ -4,6 +4,7 @@
 package ca.qc.banq.gia.authentication.filter;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.Date;
 import java.util.Map;
 
@@ -19,16 +20,21 @@ import org.springframework.stereotype.Component;
 
 import com.microsoft.aad.msal4j.IAuthenticationResult;
 import com.microsoft.aad.msal4j.MsalException;
+import com.nimbusds.jwt.JWTParser;
 
 import ca.qc.banq.gia.authentication.helpers.AuthHelperAAD;
+import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
 import ca.qc.banq.gia.authentication.helpers.SessionManagementHelper;
+import ca.qc.banq.gia.authentication.models.UserInfo;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Filtre de requetes pour l'authentification AAD
  * @author <a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a>
  * @since 2021-05-12
  */
+@Slf4j
 @Getter
 @Component
 public class AuthFilterAAD {
@@ -65,17 +71,32 @@ public class AuthFilterAAD {
 
                 // check if user has a AuthData in the session
                 if (!isAuthenticated(httpRequest)) {
-                        // not authenticated, redirecting to login.microsoft.com so user can authenticate
-                        authHelper.sendAuthRedirect(
-                                httpRequest,
-                                httpResponse,
-                                null,
-                                authHelper.getRedirectUriSignIn());
-                        return;
+                    // not authenticated, redirecting to login.microsoft.com so user can authenticate
+                    authHelper.sendAuthRedirect(httpRequest,httpResponse,null,authHelper.getRedirectUriSignIn());
+                    return;
                 }
 
                 if (isAccessTokenExpired(httpRequest)) {
                     updateAuthDataUsingSilentFlow(httpRequest, httpResponse);
+                }
+                
+                if (isAuthenticated(httpRequest) && !isAccessTokenExpired(httpRequest)) {
+                	
+                	IAuthenticationResult auth = authHelper.getAuthResultBySilentFlow(httpRequest, httpResponse);
+                	
+                    if(auth != null) {
+                    	Map<String, Object> claims = JWTParser.parse(auth.idToken()).getJWTClaimsSet().getClaims();
+                    	log.error("claims = " + claims);
+                    	UserInfo user = authHelper.getUserInfos(auth.accessToken());
+                    	String uid = user.getUserPrincipalName();
+                    	String query = "?" + HttpClientHelper.ACCESS_TOKEN + "=" + auth.accessToken() + "&" + HttpClientHelper.EXPDATE_SESSION_NAME + "=" + String.valueOf(auth.expiresOnDate().getTime()) + "&" + HttpClientHelper.UID_SESSION_NAME + "=" + uid + "&" + AuthFilter.APP_ID + "=" + authHelper.getApp().getClientId() + "&" + HttpClientHelper.SIGNIN_URL + "=" +  URLEncoder.encode(authHelper.getApp().getLoginURL(), "UTF-8") + "&" + HttpClientHelper.SIGNOUT_URL + "=" +  URLEncoder.encode(authHelper.getApp().getLogoutURL(), "UTF-8") ;
+            	        httpResponse.sendRedirect(authHelper.getApp().getHomeUrl().concat(query));
+                    } else {
+                    	httpResponse.setStatus(500);
+            			httpRequest.setAttribute("error", "unable to find IAuthenticationResult");
+            			httpRequest.getRequestDispatcher("/error").forward(httpRequest, httpResponse);
+                    }
+                    return;
                 }
             } catch (MsalException authException) {
                 // something went wrong (like expiration or revocation of token)
@@ -118,9 +139,9 @@ public class AuthFilterAAD {
         return request.getSession().getAttribute(AuthHelperAAD.PRINCIPAL_SESSION_NAME) != null;
     }
 
-    private void updateAuthDataUsingSilentFlow(HttpServletRequest httpRequest, HttpServletResponse httpResponse)
-            throws Throwable {
+    private void updateAuthDataUsingSilentFlow(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
         IAuthenticationResult authResult = authHelper.getAuthResultBySilentFlow(httpRequest, httpResponse);
         SessionManagementHelper.setSessionPrincipal(httpRequest, authResult);
     }
+
 }

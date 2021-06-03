@@ -24,6 +24,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import com.microsoft.aad.msal4j.AuthorizationCodeParameters;
@@ -46,6 +49,7 @@ import com.nimbusds.openid.connect.sdk.AuthenticationSuccessResponse;
 import ca.qc.banq.gia.authentication.config.AADConfig;
 import ca.qc.banq.gia.authentication.models.AppPayload;
 import ca.qc.banq.gia.authentication.models.StateData;
+import ca.qc.banq.gia.authentication.models.UserInfo;
 import lombok.Getter;
 
 /**
@@ -70,8 +74,7 @@ public class AuthHelperAAD {
     	this.app = app;
     }
 
-    public void processAuthenticationCodeRedirect(HttpServletRequest httpRequest, String currentUri, String fullUrl)
-            throws Throwable {
+    public void processAuthenticationCodeRedirect(HttpServletRequest httpRequest, String currentUri, String fullUrl) throws Throwable {
 
         Map<String, List<String>> params = new HashMap<>();
         for (String key : httpRequest.getParameterMap().keySet()) {
@@ -83,48 +86,31 @@ public class AuthHelperAAD {
         AuthenticationResponse authResponse = AuthenticationResponseParser.parse(new URI(fullUrl), params);
         if (AuthHelperAAD.isAuthenticationSuccessful(authResponse)) {
             AuthenticationSuccessResponse oidcResponse = (AuthenticationSuccessResponse) authResponse;
+            
             // validate that OIDC Auth Response matches Code Flow (contains only requested artifacts)
             validateAuthRespMatchesAuthCodeFlow(oidcResponse);
-
-            IAuthenticationResult result = getAuthResultByAuthCode(
-                    httpRequest,
-                    oidcResponse.getAuthorizationCode(),
-                    currentUri);
-
+            
+            IAuthenticationResult result = getAuthResultByAuthCode(httpRequest, oidcResponse.getAuthorizationCode(), currentUri);
+            
             // validate nonce to prevent reply attacks (code maybe substituted to one with broader access)
             validateNonce(stateData, getNonceClaimValueFromIdToken(result.idToken()));
 
             SessionManagementHelper.setSessionPrincipal(httpRequest, result);
         } else {
             AuthenticationErrorResponse oidcResponse = (AuthenticationErrorResponse) authResponse;
-            throw new Exception(String.format("Request for auth code failed: %s - %s",
-                    oidcResponse.getErrorObject().getCode(),
-                    oidcResponse.getErrorObject().getDescription()));
+            throw new Exception(String.format("Request for auth code failed: %s - %s", oidcResponse.getErrorObject().getCode(), oidcResponse.getErrorObject().getDescription()));
         }
     }
 
-    public IAuthenticationResult getAuthResultBySilentFlow(HttpServletRequest httpRequest, HttpServletResponse httpResponse)
-            throws Throwable {
-
+    public IAuthenticationResult getAuthResultBySilentFlow(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
         IAuthenticationResult result =  SessionManagementHelper.getAuthSessionObject(httpRequest);
-
         IConfidentialClientApplication app = createClientApplication();
-
         Object tokenCache = httpRequest.getSession().getAttribute("token_cache");
-        if (tokenCache != null) {
-            app.tokenCache().deserialize(tokenCache.toString());
-        }
-
-        SilentParameters parameters = SilentParameters.builder(
-                Collections.singleton("User.Read"),
-                result.account()).build();
-
+        if (tokenCache != null) app.tokenCache().deserialize(tokenCache.toString());
+        SilentParameters parameters = SilentParameters.builder(Collections.singleton("User.Read"), result.account()).build();
         CompletableFuture<IAuthenticationResult> future = app.acquireTokenSilently(parameters);
         IAuthenticationResult updatedResult = future.get();
-
-        //update session with latest token cache
         SessionManagementHelper.storeTokenCacheInSession(httpRequest, app.tokenCache().serialize());
-
         return updatedResult;
     }
 
@@ -139,14 +125,12 @@ public class AuthHelperAAD {
     }
 
     private void validateAuthRespMatchesAuthCodeFlow(AuthenticationSuccessResponse oidcResponse) throws Exception {
-        if (oidcResponse.getIDToken() != null || oidcResponse.getAccessToken() != null ||
-                oidcResponse.getAuthorizationCode() == null) {
+        if (oidcResponse.getIDToken() != null || oidcResponse.getAccessToken() != null || oidcResponse.getAuthorizationCode() == null) {
             throw new Exception(FAILED_TO_VALIDATE_MESSAGE + "unexpected set of artifacts received");
         }
     }
 
-    public void sendAuthRedirect(HttpServletRequest httpRequest, HttpServletResponse httpResponse, String scope, String redirectURL)
-            throws IOException {
+    public void sendAuthRedirect(HttpServletRequest httpRequest, HttpServletResponse httpResponse, String scope, String redirectURL) throws IOException {
 
         // state parameter to validate response from Authorization server and nonce parameter to validate idToken
         String state = UUID.randomUUID().toString();
@@ -159,56 +143,29 @@ public class AuthHelperAAD {
         httpResponse.sendRedirect(authorizationCodeUrl);
     }
 
-    public String getAuthorizationCodeUrl(String claims, String scope, String registeredRedirectURL, String state, String nonce)
-            throws MalformedURLException {
+    public String getAuthorizationCodeUrl(String claims, String scope, String registeredRedirectURL, String state, String nonce) throws MalformedURLException {
 
         String updatedScopes = scope == null ? "" : scope;
-
         PublicClientApplication pca = PublicClientApplication.builder(app.getClientId()).authority(configuration.getAuthority()).build();
-
-        AuthorizationRequestUrlParameters parameters =
-                AuthorizationRequestUrlParameters
-                        .builder(registeredRedirectURL,
-                                Collections.singleton(updatedScopes))
-                        .responseMode(ResponseMode.QUERY)
-                        .prompt(Prompt.SELECT_ACCOUNT)
-                        .state(state)
-                        .nonce(nonce)
-                        .claimsChallenge(claims)
-                        .build();
-
+        AuthorizationRequestUrlParameters parameters = AuthorizationRequestUrlParameters.builder(registeredRedirectURL, Collections.singleton(updatedScopes))
+                        .responseMode(ResponseMode.QUERY).prompt(Prompt.SELECT_ACCOUNT).state(state).nonce(nonce).claimsChallenge(claims).build();
         return pca.getAuthorizationRequestUrl(parameters).toString();
     }
 
-    private IAuthenticationResult getAuthResultByAuthCode(
-            HttpServletRequest httpServletRequest,
-            AuthorizationCode authorizationCode,
-            String currentUri) throws Throwable {
-
+    private IAuthenticationResult getAuthResultByAuthCode(HttpServletRequest httpServletRequest, AuthorizationCode authorizationCode, String currentUri) throws Throwable {
         IAuthenticationResult result;
         ConfidentialClientApplication app;
         try {
             app = createClientApplication();
-
             String authCode = authorizationCode.getValue();
-            AuthorizationCodeParameters parameters = AuthorizationCodeParameters.builder(
-                    authCode,
-                    new URI(currentUri)).
-                    build();
-
+            AuthorizationCodeParameters parameters = AuthorizationCodeParameters.builder(authCode, new URI(currentUri)).build();
             Future<IAuthenticationResult> future = app.acquireToken(parameters);
-
             result = future.get();
         } catch (ExecutionException e) {
             throw e.getCause();
         }
-
-        if (result == null) {
-            throw new ServiceUnavailableException("authentication result was null");
-        }
-
+        if (result == null) throw new ServiceUnavailableException("authentication result was null");
         SessionManagementHelper.storeTokenCacheInSession(httpServletRequest, app.tokenCache().serialize());
-
         return result;
     }
 
@@ -233,4 +190,18 @@ public class AuthHelperAAD {
     public String getMsGraphEndpointHost(){
         return configuration.getMsGraphEndpointHost();
     }
+
+	/**
+	 * Recupere les infos de l'utilisateur connecte a partir de l'API Microsoft Graph
+	 * @param token
+	 * @return
+	 */
+	public UserInfo getUserInfos(String token) {
+    	HttpHeaders requestHeaders = new HttpHeaders();
+	  	requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+	  	requestHeaders.setBearerAuth(token);
+    	UserInfo infos = HttpClientHelper.callRestAPI(configuration.getMsGraphEndpointHost() + "v1.0/me", HttpMethod.GET, null, UserInfo.class, null, requestHeaders);
+    	return infos;
+	}
+    
 }

@@ -4,7 +4,6 @@
 package ca.qc.banq.gia.authentication.rest;
 
 import java.net.URLEncoder;
-import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
@@ -73,38 +72,25 @@ public class AuthPageController {
 		return mav;
 	}
 	
-	/**
-	 * Home Page Authentification B2C
-	 * @param httpRequest
-	 * @return
-	 * @throws ParseException
-	 */
-    @RequestMapping("/redirect2_b2c")
-    public void securePageB2C(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
+	@RequestMapping("/redirect2_aad2")
+	public void redirectAAD(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
+
+    	IAuthenticationResult auth = authHelperAAD.getAuthResultBySilentFlow(httpRequest, httpResponse);
     	
-    	IAuthenticationResult auth = authHelperB2C.getAuthSessionObject(httpRequest);
-    	Map<String, Object> claims = JWTParser.parse(auth.idToken()).getJWTClaimsSet().getClaims();
-    	log.error("claims=" + claims.toString());
-    	String clientId = claims.get("aud").toString();
-    	String uid = claims.get(HttpClientHelper.BAnQ_CUSTOM_USERID).toString(); //String uid = "11340729";
-    	String code = httpRequest.getParameter("code");
-    	log.error("auth.accessToken = " + auth.accessToken());
-    	clientId = StringUtils.removeStart(clientId, "[");
-    	clientId = StringUtils.removeEnd(clientId, "]");
-    	AppPayload app = appService.findByClientId(clientId);
-    	
-        if( app != null) {
-        	
-        	String query = "?" + HttpClientHelper.ACCESS_TOKEN + "=" + auth.accessToken() + "&" + HttpClientHelper.EXPDATE_SESSION_NAME + "=" + String.valueOf(auth.expiresOnDate().getTime()) + "&" + HttpClientHelper.UID_SESSION_NAME + "=" + uid + "&" + AuthFilter.APP_ID + "=" + clientId + "&" + HttpClientHelper.SIGNIN_URL + "=" +  URLEncoder.encode(app.getLoginURL(), "UTF-8") + "&" + HttpClientHelper.SIGNOUT_URL + "=" +  URLEncoder.encode(app.getLogoutURL(), "UTF-8") ;
-        	httpResponse.sendRedirect(app.getHomeUrl().concat(query));
-        	
+        if(auth != null) {
+        	Map<String, Object> claims = JWTParser.parse(auth.idToken()).getJWTClaimsSet().getClaims();
+        	log.error("claims = " + claims);
+        	UserInfo user = authHelperAAD.getUserInfos(auth.accessToken());
+        	String uid = user.getUserPrincipalName();
+        	String query = "?" + HttpClientHelper.ACCESS_TOKEN + "=" + auth.accessToken() + "&" + HttpClientHelper.EXPDATE_SESSION_NAME + "=" + String.valueOf(auth.expiresOnDate().getTime()) + "&" + HttpClientHelper.UID_SESSION_NAME + "=" + uid + "&" + AuthFilter.APP_ID + "=" + authHelperAAD.getApp().getClientId() + "&" + HttpClientHelper.SIGNIN_URL + "=" +  URLEncoder.encode(authHelperAAD.getApp().getLoginURL(), "UTF-8") + "&" + HttpClientHelper.SIGNOUT_URL + "=" +  URLEncoder.encode(authHelperAAD.getApp().getLogoutURL(), "UTF-8") ;
+	        httpResponse.sendRedirect(authHelperAAD.getApp().getHomeUrl().concat(query));
         } else {
         	httpResponse.setStatus(500);
 			httpRequest.setAttribute("error", "unable to find IAuthenticationResult");
 			httpRequest.getRequestDispatcher("/error").forward(httpRequest, httpResponse);
         }
-    }
-    
+	}
+	
     /***
      * Obtien un token d'acces a partir d'une authorization
      * @param code
@@ -155,51 +141,6 @@ public class AuthPageController {
 	  	return token;
 	}
 	
-	/**
-	 * Recupere les infos de l'utilisateur connecte a partir de l'API Microsoft Graph
-	 * @param token
-	 * @return
-	 */
-	public UserInfo getUserInfos(String token) {
-    	HttpHeaders requestHeaders = new HttpHeaders();
-	  	requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-	  	requestHeaders.setBearerAuth(token);
-    	UserInfo infos = HttpClientHelper.callRestAPI(authHelperAAD.getMsGraphEndpointHost() + "v1.0/me", HttpMethod.GET, null, UserInfo.class, null, requestHeaders);
-    	return infos;
-	}
-    
-    /**
-     * Authentification Azure AD (pour les utilisateurs employes)
-     * @param httpRequest requete http
-     * @param httpResponse reponse http
-     * @throws Throwable
-     */
-    @RequestMapping("/redirect2_aad2")
-    public void securePageAAD(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
-    	IAuthenticationResult auth = authHelperAAD.getAuthResultBySilentFlow(httpRequest, httpResponse);
-    	Map<String, Object> claims = JWTParser.parse(auth.idToken()).getJWTClaimsSet().getClaims();
-    	String clientId = claims.get("aud").toString();
-    	clientId = StringUtils.removeStart(clientId, "[");
-    	clientId = StringUtils.removeEnd(clientId, "]");
-    	System.err.println("claims=" + claims.toString());
-    	System.err.println("auth.accessToken = " + auth.accessToken());
-    	//String uid = claims.get(HttpClientHelper.UID_SESSION_NAME).toString();
-    	AppPayload app = appService.findByClientId(clientId);
-    	
-    	String uid = "Stephane.Tellier";
-    	
-        if(auth != null && app != null) {
-        	UserInfo user = getUserInfos(auth.accessToken());
-        	uid = user.getUserPrincipalName();
-        	String query = "?" + HttpClientHelper.ACCESS_TOKEN + "=" + auth.accessToken() + "&" + HttpClientHelper.EXPDATE_SESSION_NAME + "=" + String.valueOf(auth.expiresOnDate().getTime()) + "&" + HttpClientHelper.UID_SESSION_NAME + "=" + uid + "&" + AuthFilter.APP_ID + "=" + clientId + "&" + HttpClientHelper.SIGNIN_URL + "=" +  URLEncoder.encode(app.getLoginURL(), "UTF-8") + "&" + HttpClientHelper.SIGNOUT_URL + "=" +  URLEncoder.encode(app.getLogoutURL(), "UTF-8") ;
-	        httpResponse.sendRedirect(app.getHomeUrl().concat(query));
-        } else {
-        	httpResponse.setStatus(500);
-			httpRequest.setAttribute("error", "unable to find IAuthenticationResult or clientId");
-			httpRequest.getRequestDispatcher("/error").forward(httpRequest, httpResponse);
-        }
-    }
-    
     /**
      * Deconnexion d'une application
      * @param httpRequest
