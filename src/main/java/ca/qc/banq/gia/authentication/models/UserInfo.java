@@ -9,12 +9,14 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 /**
  * @author <a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a>
  * @since 2021-05-13
  */
 @Data
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @SuppressWarnings("serial")

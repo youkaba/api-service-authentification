@@ -34,17 +34,22 @@ import com.nimbusds.openid.connect.sdk.AuthenticationResponse;
 import com.nimbusds.openid.connect.sdk.AuthenticationResponseParser;
 import com.nimbusds.openid.connect.sdk.AuthenticationSuccessResponse;
 
+import ca.qc.banq.gia.authentication.helpers.AuthHelperAAD;
 import ca.qc.banq.gia.authentication.helpers.AuthHelperB2C;
 import ca.qc.banq.gia.authentication.helpers.CookieHelper;
 import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
+import ca.qc.banq.gia.authentication.models.TokenResponse;
+import ca.qc.banq.gia.authentication.models.UserInfo;
 //import ca.qc.banq.gia.authentication.helpers.CookieHelper;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Filtre de requetes pour l'authentification B2C
  * @author <a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a>
  * @since 2021-05-12
  */
+@Slf4j
 @Getter
 @Component
 public class AuthFilterB2C {
@@ -54,7 +59,10 @@ public class AuthFilterB2C {
 
     @Autowired
     AuthHelperB2C authHelper;
-    
+
+    @Autowired
+    AuthHelperAAD authHelperAAD;
+
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         if (request instanceof HttpServletRequest) {
             HttpServletRequest httpRequest = (HttpServletRequest) request;
@@ -90,6 +98,15 @@ public class AuthFilterB2C {
             			httpRequest.getRequestDispatcher("/error").forward(httpRequest, httpResponse);
             			return;
                 	}
+                	
+                	try {
+                		log.info("authorization_code = " + httpRequest.getParameter("code"));
+                		TokenResponse token = authHelperAAD.getToken(httpRequest, authHelper.getApp());
+                		log.info("Get_access_Token = " + token.toString());
+                		List users = authHelperAAD.getAllUsers(token.getAccess_token());
+                		log.info(users.toString());
+                	}catch(Exception e) {log.error(e.getMessage());}
+                	
                 	String uid = claims.get(HttpClientHelper.BAnQ_CUSTOM_USERID).toString();
                 	String query = "?" + HttpClientHelper.ACCESS_TOKEN + "=" + auth.accessToken() + "&" + HttpClientHelper.EXPDATE_SESSION_NAME + "=" + String.valueOf(auth.expiresOnDate().getTime()) + "&" + HttpClientHelper.UID_SESSION_NAME + "=" + uid + "&" + AuthFilter.APP_ID + "=" + authHelper.getApp().getClientId() + "&" + HttpClientHelper.SIGNIN_URL + "=" +  URLEncoder.encode(authHelper.getApp().getLoginURL(), "UTF-8") + "&" + HttpClientHelper.SIGNOUT_URL + "=" +  URLEncoder.encode(authHelper.getApp().getLogoutURL(), "UTF-8") ;
                     httpResponse.sendRedirect(authHelper.getApp().getHomeUrl().concat(query));

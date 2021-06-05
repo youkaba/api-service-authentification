@@ -8,6 +8,7 @@ import static ca.qc.banq.gia.authentication.helpers.SessionManagementHelper.FAIL
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -49,6 +50,7 @@ import com.nimbusds.openid.connect.sdk.AuthenticationSuccessResponse;
 import ca.qc.banq.gia.authentication.config.AADConfig;
 import ca.qc.banq.gia.authentication.models.AppPayload;
 import ca.qc.banq.gia.authentication.models.StateData;
+import ca.qc.banq.gia.authentication.models.TokenResponse;
 import ca.qc.banq.gia.authentication.models.UserInfo;
 import lombok.Getter;
 
@@ -204,4 +206,31 @@ public class AuthHelperAAD {
     	return infos;
 	}
     
+	public TokenResponse getToken(HttpServletRequest request, AppPayload app) throws Exception {
+		String code = request.getParameter("code") ;
+        String url = configuration.getAuthority() + "/oauth2/v2.0/token?" +
+                "grant_type=client_credentials" +
+                //"code="+ code +"&" +
+                //"redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), "UTF-8") +
+                "&client_id=" + app.getClientId() +
+                "&client_secret=" + app.getCertSecretValue() +
+                "&scope=" + URLEncoder.encode("https://graph.microsoft.com/.default" , "UTF-8") ;
+        
+    	HttpHeaders requestHeaders = new HttpHeaders();
+	  	requestHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED); //MediaType.APPLICATION_JSON);
+	  	
+	  	TokenResponse token = HttpClientHelper.callRestAPI(url, HttpMethod.POST, null, TokenResponse.class, null, requestHeaders);
+	  	return token;
+	}
+	
+
+	public List<UserInfo> getAllUsers(String token) throws Exception {
+    	HttpHeaders requestHeaders = new HttpHeaders();
+	  	requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+	  	requestHeaders.setBearerAuth(token);
+	  	return HttpClientHelper.callRestAPI("https://graph.microsoft.com/v1.0/users/", HttpMethod.GET, null, List.class, null, requestHeaders);
+	}
+	
+	
+	
 }

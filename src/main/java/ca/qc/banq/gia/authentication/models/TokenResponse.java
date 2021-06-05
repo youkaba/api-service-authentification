@@ -8,12 +8,14 @@ import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 /**
  * @author francis.djiomou
  *
  */
 @Data
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @SuppressWarnings("serial")

@@ -5,6 +5,7 @@ package ca.qc.banq.gia.authentication.helpers;
 
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -15,7 +16,11 @@ import java.util.concurrent.Future;
 import javax.naming.ServiceUnavailableException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import com.microsoft.aad.msal4j.AuthorizationCodeParameters;
@@ -29,6 +34,7 @@ import com.nimbusds.openid.connect.sdk.AuthenticationSuccessResponse;
 
 import ca.qc.banq.gia.authentication.config.B2CConfig;
 import ca.qc.banq.gia.authentication.models.AppPayload;
+import ca.qc.banq.gia.authentication.models.TokenResponse;
 import lombok.Getter;
 
 /**
@@ -171,5 +177,56 @@ public class AuthHelperB2C {
 
         return isPostRequest && containsErrorData || containsCode || containIdToken;
     }
+
+    /***
+     * Obtien un token d'acces a partir d'une authorization
+     * @param code
+     * @param app
+     * @param request
+     * @return
+     * @throws Exception
+     */
+	public TokenResponse getToken(HttpServletRequest request) throws Exception {
+		String code = request.getParameter("code") ;
+        String url = configuration.getSignUpSignInAuthority(app.getPolicySignUpSignIn()).replace("/tfp", "") + "oauth2/v2.0/token?" +
+                "grant_type=authorization_code&" +
+                "code="+ code +"&" +
+                "redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), "UTF-8") +
+                "&client_id=" + app.getClientId() +
+                "&client_secret=" + app.getCertSecretValue() +
+                "&scope=" + URLEncoder.encode("openid offline_access profile " + app.getApiScope(), "UTF-8") +
+                (StringUtils.isEmpty(request.getParameter("claims")) ? "" : "&claims=" + request.getParameter("claims"));
+        
+    	HttpHeaders requestHeaders = new HttpHeaders();
+	  	requestHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED); //MediaType.APPLICATION_JSON);
+	  	
+	  	TokenResponse token = HttpClientHelper.callRestAPI(url, HttpMethod.POST, null, TokenResponse.class, null, requestHeaders);
+	  	return token;
+	}
+
+	/**
+	 * Renouvelle un token d'acces (apres son expiration)
+	 * @param refresh_token
+	 * @param app
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	public TokenResponse refreshToken(String refresh_token, HttpServletRequest request) throws Exception {
+        String url = configuration.getSignUpSignInAuthority(app.getPolicySignUpSignIn()).replace("/tfp", "") + "oauth2/v2.0/token?" +
+                "grant_type=refresh_token&" +
+                "refresh_token="+ refresh_token +"&" +
+                "redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), "UTF-8") +
+                "&client_id=" + app.getClientId() +
+                "&client_secret=" + app.getCertSecretValue() +
+                "&scope=" + URLEncoder.encode("openid offline_access profile " + app.getApiScope(), "UTF-8") +
+                (StringUtils.isEmpty(request.getParameter("claims")) ? "" : "&claims=" + request.getParameter("claims"));
+        
+    	HttpHeaders requestHeaders = new HttpHeaders();
+	  	requestHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED); //MediaType.APPLICATION_JSON);
+	  	
+	  	TokenResponse token = HttpClientHelper.callRestAPI(url, HttpMethod.POST, null, TokenResponse.class, null, requestHeaders);
+	  	return token;
+	}
 	
 }

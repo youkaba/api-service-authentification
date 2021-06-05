@@ -13,7 +13,7 @@
 		}
     </script>
 </head>
-<body>
+<body style="background-image:url('https://venngage-wordpress.s3.amazonaws.com/uploads/2018/09/Minimalist-Crumpled-Paper-Simple-Background-Image.jpg')">
 <h3 style="text-align:center;">BAnQ Authentication Service - Applications</h3>
 <br>
 <br>
@@ -23,9 +23,28 @@
     <input type="submit" value="Login" class="btn btn-primary"> th:href="${app.loginURL}" target="_blank"
 </form> -->
 <div class="container">
-	<div th:each="app : *{apps}">
-    	<li><a th:href="${app.loginURL}" target="_blank" th:text="${app.title}" />  </li>
-    </div>
+
+<table class="table table-striped table-hover table-bordered" caption="Liste des Applcations enregistrées">
+    <thead class="table-light">
+    <tr>
+        <th scope="col">N°</th>
+        <th scope="col">Application</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="app,iterStat : *{apps}">
+        <th scope="row" th:text="${iterStat.count}"></th>
+        <td>
+            <div>
+                <li><a th:href="${app.loginURL}" target="_blank" th:text="${app.title}" />  </li>
+            </div>
+        </td>
+    </tr>
+    </tbody>
+</table>
+	<!-- <div th:each="app,iterStat : *{apps}">
+    	<li><a th:href="${app.loginURL}" target="_blank" th:text="${iterStat.count + ' - ' + app.title}" />  </li>
+    </div> -->
 </div>
 
 </body>

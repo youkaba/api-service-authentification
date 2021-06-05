@@ -10,12 +10,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -29,7 +25,6 @@ import ca.qc.banq.gia.authentication.helpers.AuthHelperAAD;
 import ca.qc.banq.gia.authentication.helpers.AuthHelperB2C;
 import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
 import ca.qc.banq.gia.authentication.models.AppPayload;
-import ca.qc.banq.gia.authentication.models.TokenResponse;
 import ca.qc.banq.gia.authentication.models.UserInfo;
 import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
 import lombok.extern.slf4j.Slf4j;
@@ -66,7 +61,7 @@ public class AuthPageController {
 	 */
 	@RequestMapping("/home")
     public ModelAndView home() throws Throwable {
-		ModelAndView mav = new ModelAndView("index");
+		ModelAndView mav = new ModelAndView("index2");
 		List<AppPayload> apps = appService.findAll();
 		mav.addObject("apps", apps);
 		return mav;
@@ -89,56 +84,6 @@ public class AuthPageController {
 			httpRequest.setAttribute("error", "unable to find IAuthenticationResult");
 			httpRequest.getRequestDispatcher("/error").forward(httpRequest, httpResponse);
         }
-	}
-	
-    /***
-     * Obtien un token d'acces a partir d'une authorization
-     * @param code
-     * @param app
-     * @param request
-     * @return
-     * @throws Exception
-     */
-	public TokenResponse getToken(String code, AppPayload app, HttpServletRequest request) throws Exception {
-        String url = authHelperB2C.getConfiguration().getSignUpSignInAuthority(app.getPolicySignUpSignIn()).replace("/tfp", "") + "oauth2/v2.0/token?" +
-                "grant_type=authorization_code&" +
-                "code="+ code +"&" +
-                "redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), "UTF-8") +
-                "&client_id=" + app.getClientId() +
-                "&client_secret=" + app.getCertSecretValue() +
-                "&scope=" + URLEncoder.encode("openid offline_access profile " + app.getApiScope(), "UTF-8") +
-                (StringUtils.isEmpty(request.getParameter("claims")) ? "" : "&claims=" + request.getParameter("claims"));
-        
-    	HttpHeaders requestHeaders = new HttpHeaders();
-	  	requestHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED); //MediaType.APPLICATION_JSON);
-	  	
-	  	TokenResponse token = HttpClientHelper.callRestAPI(url, HttpMethod.POST, null, TokenResponse.class, null, requestHeaders);
-	  	return token;
-	}
-
-	/**
-	 * Renouvelle un token d'acces (apres son expiration)
-	 * @param refresh_token
-	 * @param app
-	 * @param request
-	 * @return
-	 * @throws Exception
-	 */
-	public TokenResponse refreshToken(String refresh_token, AppPayload app, HttpServletRequest request) throws Exception {
-        String url = authHelperB2C.getConfiguration().getSignUpSignInAuthority(app.getPolicySignUpSignIn()).replace("/tfp", "") + "oauth2/v2.0/token?" +
-                "grant_type=refresh_token&" +
-                "refresh_token="+ refresh_token +"&" +
-                "redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), "UTF-8") +
-                "&client_id=" + app.getClientId() +
-                "&client_secret=" + app.getCertSecretValue() +
-                "&scope=" + URLEncoder.encode("openid offline_access profile " + app.getApiScope(), "UTF-8") +
-                (StringUtils.isEmpty(request.getParameter("claims")) ? "" : "&claims=" + request.getParameter("claims"));
-        
-    	HttpHeaders requestHeaders = new HttpHeaders();
-	  	requestHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED); //MediaType.APPLICATION_JSON);
-	  	
-	  	TokenResponse token = HttpClientHelper.callRestAPI(url, HttpMethod.POST, null, TokenResponse.class, null, requestHeaders);
-	  	return token;
 	}
 	
     /**
