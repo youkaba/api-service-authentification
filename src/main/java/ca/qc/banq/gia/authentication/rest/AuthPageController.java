@@ -58,14 +58,14 @@ public class AuthPageController {
 	 * Page d'Accueil de l'idp
 	 * @return
 	 * @throws Throwable
-	 */
+	 *
 	@RequestMapping("/home")
     public ModelAndView home() throws Throwable {
 		ModelAndView mav = new ModelAndView("index2");
 		List<AppPayload> apps = appService.findAll();
 		mav.addObject("apps", apps);
 		return mav;
-	}
+	} */
 	
 	@RequestMapping("/redirect2_aad2")
 	public void redirectAAD(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {

@@ -103,4 +103,9 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
 	private String getLogoutUrl(String id) {
 		return serverHost.concat(servletPath).concat("/sign_out").concat("?" + AuthFilter.APP_ID + "=" + id );
 	}
+
+	@Override
+	public List<AppPayload> findLikeTitle(String title) {
+		return appRepo.findLikeTitle(title).stream().map(app -> app.toDTO( getLoginUrl(app.getClientId()), getRedirectApp(app.getTypeAuth()), getLogoutUrl(app.getClientId()) ) ).collect(Collectors.toList());
+	}
 }

@@ -3,10 +3,13 @@
  */
 package ca.qc.banq.gia.authentication.exceptions;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolationException;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -66,6 +69,11 @@ public class ExceptionHandlerConfig extends ResponseEntityExceptionHandler  {
 		
 		// Log
         log.error(ex.getMessage(), ex);
+        HttpServletRequest req = ((HttpServletRequest)request);
+        req.setAttribute("error", erreurs);
+        try {
+			req.getRequestDispatcher("/error").forward(req, null);
+		} catch (ServletException | IOException e) {}
         
         // Return Response
         return new ResponseEntity<List<String>>(erreurs, status);

@@ -1,0 +1,23 @@
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{fragments/layout :: layout (~{::body},'apps')}">
+
+<body>
+
+  <h2>Application</h2>
+  <form th:object="${app}" class="form-horizontal" id="add-app-form" method="post">
+    <div class="form-group has-feedback">
+      <input th:replace="~{fragments/inputField :: input ('Nom de l\'application', 'title', 'text')}" />
+      <input th:replace="~{fragments/inputField :: input ('Client ID', 'clientId', 'text')}" />
+      <input th:replace="~{fragments/inputField :: input ('Valeur du certificat secret', 'certSecretValue', 'text')}" />
+      <input th:replace="~{fragments/inputField :: input ('Url de la page d\'accueil', 'homeUrl', 'text')}" />
+      <input th:replace="~{fragments/inputField :: input ('Flux de connexion', 'policySignUpSignIn', 'text')}" />
+      <input th:replace="~{fragments/selectField :: select ('Type d\'authentification', 'typeAuth', ${types})}" />
+    </div>
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button th:with="text=${app['nouveau']} ? 'Sauvegarder' : 'Mettre a jour'"
+          class="btn btn-default" type="submit" th:text="${text}">Sauvegarder</button>
+      </div>
+    </div>
+  </form>
+</body>
+</html>

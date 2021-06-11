@@ -51,4 +51,11 @@ public interface GiaBackOfficeService {
 	 * @return
 	 */
 	public AppPayload findByClientId(String clientId);
+	
+	/**
+	 * Recherche par nom d'application
+	 * @param title
+	 * @return
+	 */
+	public List<AppPayload> findLikeTitle(String title);
 }

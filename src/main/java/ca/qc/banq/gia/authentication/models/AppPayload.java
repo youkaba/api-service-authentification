@@ -5,6 +5,8 @@ package ca.qc.banq.gia.authentication.models;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import ca.qc.banq.gia.authentication.entities.TypeAuth;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -37,4 +39,9 @@ public class AppPayload implements Serializable {
 	String policyResetPassword;
 	String policyEditProfile;
 	String redirectApp;
+	
+	@JsonIgnore
+	public boolean isNouveau() {
+		return this.clientId == null || this.clientId.isEmpty();
+	}
 }

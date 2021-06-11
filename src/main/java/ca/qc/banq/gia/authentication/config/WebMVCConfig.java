@@ -39,7 +39,8 @@ public class WebMVCConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
     	// Add location to Swagger Docs
-    	registry.addResourceHandler("**").addResourceLocations("classpath:/docs/");
+    	registry.addResourceHandler("**", "/webjars/**").addResourceLocations("classpath:/docs/", "classpath:/static/", "classpath:/META-INF/resources/webjars/");
+    	//registry.addResourceHandler("/webjars/**").addResourceLocations("/webjars/");
     }
     
     /*

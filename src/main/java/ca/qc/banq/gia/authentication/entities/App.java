@@ -11,6 +11,8 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -41,10 +43,13 @@ public class App implements Serializable {
 	@Id
 	@Column(name = "client_id")
 	@NotNull(message = "App.clientId.NotNull")
+	@NotEmpty(message = "App.clientId.NotNull")
 	private String clientId;
 	
 	/** Nom de l'application */
 	@Column(name = "title")
+	@NotNull(message = "App.title.NotNull")
+	@NotEmpty(message = "App.title.NotNull")
 	private String title;
 	
 	/** Type d'authentification */
@@ -91,4 +96,7 @@ public class App implements Serializable {
 	public AppPayload toDTO(String loginUrl, String redirectApp, String loginOut) {
 		return new AppPayload(this.clientId, this.title, this.typeAuth, this.homeUrl, this.certSecretValue, this.typeAuth.equals(TypeAuth.B2C) ? this.clientId : "", loginUrl, loginOut, this.policySignUpSignIn, this.policyResetPassword, this.policyEditProfile, redirectApp);
 	}
+	
+	@Transient
+	private boolean nouveau = true;
 }

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+
+<html xmlns:th="https://www.thymeleaf.org"
+  th:replace="~{fragments/layout :: layout (~{::body},'apps')}">
+
+  <body>
+  
+  
+    <h2>Infos sur l'application</h2>
+  
+    <table class="table table-striped" th:object="${app}">
+      <tr>
+        <th>Nom de l'application:</th>
+        <td><b th:text="*{title}"></b></td>
+      </tr>
+      <tr>
+        <th>Id Client (Azure):</th>
+        <td th:text="*{clientId}"></td>
+      </tr>
+      <tr>
+        <th>Certificat secret:</th>
+        <td th:text="*{certSecretValue}"></td>
+      </tr>
+      <tr>
+        <th>Type d'authentification:</th>
+        <td th:text="*{typeAuth}"></td>
+      </tr>
+      <tr>
+        <th>Flux de connexion:</th>
+        <td th:text="*{policySignUpSignIn}"></td>
+      </tr>
+      <tr>
+        <th>Url de redirection:</th>
+        <td th:text="*{redirectApp}"></td>
+      </tr>
+      <tr>
+        <th>Url de connexion:</th>
+        <td th:text="*{loginURL}"></td>
+      </tr>
+      <tr>
+        <th>Url de la Page d'accueil:</th>
+        <td th:text="*{homeUrl}"></td>
+      </tr>
+      <tr>
+        <th>Url de deconnexion:</th>
+        <td th:text="*{logoutURL}"></td>
+      </tr>
+    </table>
+  
+    <a th:href="@{{id}/edit(id=${app.clientId})}" class="btn btn-default">Modifier</a>
+    
+  </body>
+
+</html>

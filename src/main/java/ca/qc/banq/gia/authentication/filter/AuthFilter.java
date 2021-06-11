@@ -68,7 +68,7 @@ public class AuthFilter implements Filter {
 						filterAAD.authHelper.init(app);
 						filterAAD.doFilter(request, response, chain);
 					}
-				} else httpRequest.getRequestDispatcher("/home").forward(httpRequest, response);
+				} else chain.doFilter(request, response); //httpRequest.getRequestDispatcher("/home").forward(httpRequest, response);
 				break;
 			case "/redirect2_b2c": filterB2C.doFilter(request, response, chain); break;
 			case "/redirect2_aad": filterAAD.doFilter(request, response, chain); break;
