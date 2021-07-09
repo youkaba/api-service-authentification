@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import ca.qc.banq.gia.authentication.config.TranslatorConfig;
@@ -15,6 +16,7 @@ import ca.qc.banq.gia.authentication.entities.App;
 import ca.qc.banq.gia.authentication.entities.TypeAuth;
 import ca.qc.banq.gia.authentication.exceptions.GIAException;
 import ca.qc.banq.gia.authentication.filter.AuthFilter;
+import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
 import ca.qc.banq.gia.authentication.models.AppPayload;
 import ca.qc.banq.gia.authentication.repositories.AppRepository;
 
@@ -32,6 +34,9 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
 	
 	@Autowired
 	TranslatorConfig translator;
+	
+	/*@Autowired
+	PasswordEncoder passwordEncoder; */
 
 	@Value("${server.host}")
 	String serverHost;
@@ -93,15 +98,15 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
 
 
 	private String getLoginUrl(String id) {
-		return serverHost.concat(servletPath).concat("?" + AuthFilter.APP_ID + "=" + id );
+		return serverHost.concat(servletPath).concat(HttpClientHelper.SIGNIN_ENDPOINT).concat("?" + HttpClientHelper.CLIENTID_PARAM + "=" + id );
 	}
 
 	private String getRedirectApp(TypeAuth typeauth) {
-		return serverHost.concat(servletPath).concat(typeauth.equals(TypeAuth.B2C) ? "/redirect2_b2c" : "/redirect2_aad" );
+		return serverHost.concat(servletPath).concat(typeauth.equals(TypeAuth.B2C) ? HttpClientHelper.REDIRECTB2C_ENDPOINT : HttpClientHelper.REDIRECTAAD_ENDPOINT );
 	}
 
 	private String getLogoutUrl(String id) {
-		return serverHost.concat(servletPath).concat("/sign_out").concat("?" + AuthFilter.APP_ID + "=" + id );
+		return serverHost.concat(servletPath).concat(HttpClientHelper.SIGNOUT_ENDPOINT).concat("?" + HttpClientHelper.CLIENTID_PARAM + "=" + id );
 	}
 
 	@Override

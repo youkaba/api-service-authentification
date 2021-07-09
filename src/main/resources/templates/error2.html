@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>Mot de passe oubli&eacute; ?</title>
+<link href="https://www.banq.qc.ca/banq/css/BAnQerreur.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" language="JavaScript" src="https://www.banq.qc.ca/banq/js/BAnQerreur.js"></script>
+</head>
+
+<body onload="correctPNG();">
+
+<div id="Global">
+
+<div id="Entete">
+    <div><img src="https://www.banq.qc.ca/banq/images/titre_banq.png" alt="Biblioth&egrave;que et Archives nationales du Qu&eacute;bec." />
+    </div>
+    <a href="https://www.banq.qc.ca/"><img src="https://www.banq.qc.ca/banq/images/logo_banq_accueil.gif" alt="Biblioth&egrave;que et Archives nationales du Qu&eacute;bec" width="161" height="66" /></a>      
+</div>  
+  
+<div id="Contenu">
+    <p><h1>Something wrong happened...</h1></p><br />
+    <p th:text="${message}">Exception message</p>
+    <div id="api"></div>
+    <br /><p>Retourner &agrave; l'<a href="https://www.banq.qc.ca/">accueil</a>.</p>
+</div>
+
+<hr />
+
+</body>
+</html>

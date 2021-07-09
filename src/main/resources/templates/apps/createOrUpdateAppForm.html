@@ -10,6 +10,7 @@
       <input th:replace="~{fragments/inputField :: input ('Valeur du certificat secret', 'certSecretValue', 'text')}" />
       <input th:replace="~{fragments/inputField :: input ('Url de la page d\'accueil', 'homeUrl', 'text')}" />
       <input th:replace="~{fragments/inputField :: input ('Flux de connexion', 'policySignUpSignIn', 'text')}" />
+      <input th:replace="~{fragments/inputField :: input ('Flux d\'activation', 'policyResetPassword', 'text')}" />
       <input th:replace="~{fragments/selectField :: select ('Type d\'authentification', 'typeAuth', ${types})}" />
     </div>
     <div class="form-group">

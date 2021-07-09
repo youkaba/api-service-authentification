@@ -23,6 +23,7 @@ import lombok.ToString;
 public class UserInfo implements Serializable {
 
 	//"@odata.context": "https://graph.microsoft.com/v1.0/$metadata#users/$entity",
+	private String id;
 	private List<String> businessPhones;
 	private String displayName;
 	private String givenName;
@@ -33,6 +34,5 @@ public class UserInfo implements Serializable {
 	private String preferredLanguage;
 	private String surname;
 	private String userPrincipalName;
-	private String id;
 	
 }

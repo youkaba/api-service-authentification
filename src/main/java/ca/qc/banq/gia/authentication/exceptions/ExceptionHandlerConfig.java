@@ -45,7 +45,7 @@ public class ExceptionHandlerConfig extends ResponseEntityExceptionHandler  {
 	 * @param request
 	 * @return
 	 */
-	@ExceptionHandler(value = { Exception.class, GIAException.class, ConstraintViolationException.class })
+	@ExceptionHandler(value = { Throwable.class, GIAException.class, ConstraintViolationException.class })
 	protected ResponseEntity<List<String>> handleConflict(Exception ex, WebRequest request) {
 		
 		// Calcul du statut et du message d'erreur a retourner

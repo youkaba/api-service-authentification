@@ -49,6 +49,7 @@ import com.nimbusds.openid.connect.sdk.AuthenticationSuccessResponse;
 
 import ca.qc.banq.gia.authentication.config.AADConfig;
 import ca.qc.banq.gia.authentication.models.AppPayload;
+import ca.qc.banq.gia.authentication.models.GetTokenRequestPayload;
 import ca.qc.banq.gia.authentication.models.StateData;
 import ca.qc.banq.gia.authentication.models.TokenResponse;
 import ca.qc.banq.gia.authentication.models.UserInfo;
@@ -217,9 +218,9 @@ public class AuthHelperAAD {
                 "&scope=" + URLEncoder.encode("https://graph.microsoft.com/.default" , "UTF-8") ;
         
     	HttpHeaders requestHeaders = new HttpHeaders();
-	  	requestHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED); //MediaType.APPLICATION_JSON);
+	  	requestHeaders.setContentType(MediaType.APPLICATION_JSON); // MediaType.APPLICATION_FORM_URLENCODED); //
 	  	
-	  	TokenResponse token = HttpClientHelper.callRestAPI(url, HttpMethod.POST, null, TokenResponse.class, null, requestHeaders);
+	  	TokenResponse token = HttpClientHelper.callRestAPI(configuration.getAccessGraphTokenUri(), HttpMethod.POST, null, TokenResponse.class, new GetTokenRequestPayload(HttpClientHelper.GRANT_TYPE_CREDENTIAL, app.getCertSecretValue(), app.getClientId(), configuration.getMsGraphScope()), requestHeaders);
 	  	return token;
 	}
 	

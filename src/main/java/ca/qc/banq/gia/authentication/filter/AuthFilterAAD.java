@@ -3,13 +3,9 @@
 
 package ca.qc.banq.gia.authentication.filter;
 
-import java.io.IOException;
-import java.net.URLEncoder;
 import java.util.Date;
 import java.util.Map;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -20,10 +16,8 @@ import org.springframework.stereotype.Component;
 
 import com.microsoft.aad.msal4j.IAuthenticationResult;
 import com.microsoft.aad.msal4j.MsalException;
-import com.nimbusds.jwt.JWTParser;
 
 import ca.qc.banq.gia.authentication.helpers.AuthHelperAAD;
-import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
 import ca.qc.banq.gia.authentication.helpers.SessionManagementHelper;
 import ca.qc.banq.gia.authentication.models.UserInfo;
 import lombok.Getter;
@@ -46,7 +40,7 @@ public class AuthFilterAAD {
 	 * (non-javadoc)
 	 * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
 	 */
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+    public void doFilter(ServletRequest request, ServletResponse response) throws Throwable {
 
         if (request instanceof HttpServletRequest) {
             HttpServletRequest httpRequest = (HttpServletRequest) request;
@@ -65,7 +59,8 @@ public class AuthFilterAAD {
                     /*((HttpServletResponse) response).sendRedirect(currentUri);
 
                     chain.doFilter(request, response); */
-                    request.getRequestDispatcher("/redirect2_aad2").forward(request, response);
+                    //request.getRequestDispatcher("/redirect2_aad2").forward(request, response);
+                    redirectToAppHomePage(httpRequest, httpResponse);
                     return;
                 }
 
@@ -81,52 +76,32 @@ public class AuthFilterAAD {
                 }
                 
                 if (isAuthenticated(httpRequest) && !isAccessTokenExpired(httpRequest)) {
-                	
-                	IAuthenticationResult auth = authHelper.getAuthResultBySilentFlow(httpRequest, httpResponse);
-                	
-                    if(auth != null) {
-                    	Map<String, Object> claims = JWTParser.parse(auth.idToken()).getJWTClaimsSet().getClaims();
-                    	log.error("claims = " + claims);
-                    	UserInfo user = authHelper.getUserInfos(auth.accessToken());
-                    	String uid = user.getUserPrincipalName();
-                    	String query = "?" + HttpClientHelper.ACCESS_TOKEN + "=" + auth.accessToken() + "&" + HttpClientHelper.EXPDATE_SESSION_NAME + "=" + String.valueOf(auth.expiresOnDate().getTime()) + "&" + HttpClientHelper.UID_SESSION_NAME + "=" + uid + "&" + AuthFilter.APP_ID + "=" + authHelper.getApp().getClientId() + "&" + HttpClientHelper.SIGNIN_URL + "=" +  URLEncoder.encode(authHelper.getApp().getLoginURL(), "UTF-8") + "&" + HttpClientHelper.SIGNOUT_URL + "=" +  URLEncoder.encode(authHelper.getApp().getLogoutURL(), "UTF-8") ;
-            	        httpResponse.sendRedirect(authHelper.getApp().getHomeUrl().concat(query));
-                    } else {
-                    	httpResponse.setStatus(500);
-            			httpRequest.setAttribute("error", "unable to find IAuthenticationResult");
-            			httpRequest.getRequestDispatcher("/error").forward(httpRequest, httpResponse);
-                    }
+                	redirectToAppHomePage(httpRequest, httpResponse);
                     return;
                 }
             } catch (MsalException authException) {
                 // something went wrong (like expiration or revocation of token)
                 // we should invalidate AuthData stored in session and redirect to Authorization server
                 SessionManagementHelper.removePrincipalFromSession(httpRequest);
-                authHelper.sendAuthRedirect(
-                        httpRequest,
-                        httpResponse,
-                        null,
-                        authHelper.getRedirectUriSignIn());
-                return;
-            } catch (Throwable exc) {
-                httpResponse.setStatus(500);
-                System.out.println(exc.getMessage());
-                request.setAttribute("error", exc.getMessage());
-                request.getRequestDispatcher("/error").forward(request, response);
+                authHelper.sendAuthRedirect( httpRequest, httpResponse, null, authHelper.getRedirectUriSignIn());
                 return;
             }
         }
-        chain.doFilter(request, response);
+        //chain.doFilter(request, response);
+    }
+    
+    private void redirectToAppHomePage(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
+    	IAuthenticationResult auth = authHelper.getAuthResultBySilentFlow(httpRequest, httpResponse);
+    	UserInfo user = authHelper.getUserInfos(auth.accessToken());
+    	httpResponse.sendRedirect(SessionManagementHelper.buildRedirectAppHomeUrl(auth, user.getUserPrincipalName(), authHelper.getApp()));
     }
 
     private boolean containsAuthenticationCode(HttpServletRequest httpRequest) {
         Map<String, String[]> httpParameters = httpRequest.getParameterMap();
-
         boolean isPostRequest = httpRequest.getMethod().equalsIgnoreCase("POST");
         boolean containsErrorData = httpParameters.containsKey("error");
         boolean containIdToken = httpParameters.containsKey("id_token");
         boolean containsCode = httpParameters.containsKey("code");
-
         return isPostRequest && containsErrorData || containsCode || containIdToken;
     }
 

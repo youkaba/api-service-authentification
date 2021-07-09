@@ -4,14 +4,13 @@
 package ca.qc.banq.gia.authentication.rest;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,6 +18,10 @@ import ca.qc.banq.gia.authentication.exceptions.GIAException;
 import ca.qc.banq.gia.authentication.helpers.AuthHelperAAD;
 import ca.qc.banq.gia.authentication.helpers.AuthHelperB2C;
 import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
+import ca.qc.banq.gia.authentication.models.AppPayload;
+import ca.qc.banq.gia.authentication.models.CreateUserRequestPayload;
+import ca.qc.banq.gia.authentication.models.GetTokenRequestPayload;
+import ca.qc.banq.gia.authentication.models.TokenResponse;
 import ca.qc.banq.gia.authentication.models.UserInfo;
 import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
 import io.swagger.annotations.Api;
@@ -50,21 +53,33 @@ public class GiaFrontOfficeControllerImpl implements GiaFrontOfficeController {
 	@Autowired
 	GiaBackOfficeService business;
 	
-	/*
-	 * (non-javadoc)
-	 * @see ca.qc.banq.gia.authentication.rest.GiaFrontOfficeController#getUserFromGraph(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-	 */
 	@Override
-    @GetMapping("/obtenirInfosUtilisateur")
-    @ApiOperation("Retourne les infos de l'utilisateur connecte")
-	public UserInfo getConnectedUser(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
-    	String access_token = httpRequest.getHeader("Authorization");
-    	if(access_token == null || access_token.isEmpty()) throw new GIAException("invalid.access_token");
+    @PostMapping(HttpClientHelper.CREATEUSER_ENDPOINT)
+    @ApiOperation("Cree un nouvel utilisateur dans Azure B2C")
+	public UserInfo createUserIntoAzureB2C(HttpServletRequest httpRequest, CreateUserRequestPayload request) throws Throwable {
+		
+		// Recuperation des parametres d'entete de la requete
+		String appId = httpRequest.getParameter(HttpClientHelper.CLIENTID_PARAM) ;
+		
+		// Check params
+		if(appId == null) throw new GIAException("invalid client_id");
+		
+		AppPayload app = business.findByClientId(appId);
+		if(app == null) throw new GIAException("invalid client_id");
+		
+		// Initialisation du headers
     	HttpHeaders requestHeaders = new HttpHeaders();
-	  	requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-	  	requestHeaders.setBearerAuth(access_token);
-	  	UserInfo infos = HttpClientHelper.callRestAPI(authHelperAAD.getMsGraphEndpointHost() + "v1.0/me", HttpMethod.GET, null, UserInfo.class, null, requestHeaders);
-	  	return infos;
+	  	requestHeaders.setContentType(MediaType.APPLICATION_JSON); // MediaType.APPLICATION_FORM_URLENCODED); //
+	  	
+	  	// Obtention du Token d'acces a GraphAPI
+	  	TokenResponse token = HttpClientHelper.callRestAPI(authHelperAAD.getConfiguration().getAccessGraphTokenUri(), HttpMethod.POST, null, TokenResponse.class, new GetTokenRequestPayload(HttpClientHelper.GRANT_TYPE_CREDENTIAL, app.getCertSecretValue(), app.getClientId(), authHelperAAD.getConfiguration().getMsGraphScope()), requestHeaders);
+	  	requestHeaders.setBearerAuth(token.getAccess_token());
+	  	
+	  	// Creation d'un compte utilisateur via GraphAPI
+	  	UserInfo user = HttpClientHelper.callRestAPI(authHelperAAD.getConfiguration().getMsGraphUsersEndpoint(), HttpMethod.POST, null, UserInfo.class, request, requestHeaders );
+		
+	  	// Retourne l'utilisateur cree
+	  	return user;
 	}
 
 }

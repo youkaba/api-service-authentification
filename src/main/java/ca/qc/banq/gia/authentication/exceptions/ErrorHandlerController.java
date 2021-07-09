@@ -30,7 +30,7 @@ public class ErrorHandlerController implements ErrorController {
      */
     @RequestMapping(value = PATH)
     public ModelAndView returnErrorPage(HttpServletRequest req, HttpServletResponse response) {
-        ModelAndView mav = new ModelAndView("error");
+        ModelAndView mav = new ModelAndView("error2");
         mav.addObject("message", req.getAttribute("error"));
         return  mav;
     }

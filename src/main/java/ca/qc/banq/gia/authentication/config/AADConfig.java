@@ -22,5 +22,7 @@ public class AADConfig {
 	private String authority;
 	private String redirectUriGraph;
 	private String msGraphEndpointHost;
-	
+	private String msGraphScope;
+	private String accessGraphTokenUri;
+	private String msGraphUsersEndpoint;
 }

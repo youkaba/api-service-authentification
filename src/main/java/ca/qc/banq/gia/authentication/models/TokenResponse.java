@@ -25,6 +25,7 @@ public class TokenResponse implements Serializable {
 	String token_type;
 	String scope;
 	String expires_in;
+	String ext_expires_in;
 	String access_token;
 	String refresh_token;
 	

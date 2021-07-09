@@ -1,0 +1,504 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="fr" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<script>
+     dataLayer =  window.dataLayer || [];
+</script >
+
+<!-- Google Tag Manager -->
+<script type="text/javascript">
+//<![CDATA[
+(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-MZT2GP');
+//]]>
+</script>
+<!-- End Google Tag Manager -->
+<title>Re-initialisation de mot de passe | BAnQ</title>
+   
+<!-- BAnQ - 2019 - Head Commun -->
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Language" content="fr" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<meta http-equiv="Content-Script-Type" content="text/JavaScript" />
+<meta http-equiv="imagetoolbar" content="no" />
+<meta name="google-site-verification" content="uSPqW7TA6qiDI3Akt_SuCIvoVfyTeM_urQuRpaGxeUM" />
+<meta name="msvalidate.01" content="CBE61F018207F7CD4135F4C0F5CBA146" />
+<meta name="robots" content="index,follow" />
+<meta name="revisit-after" content="7 days" />
+<meta property="og:title" content="index.html | BAnQ" />
+<meta property="og:description" content="Vous cherchez un livre ou une activité, sur place ou à distance? Découvrez les services et collections que BAnQ vous offre!" />
+<meta property="og:image" content=" https://acpt-www.banq.qc.ca/images/og/defaut_portail_og.png " />
+<meta property="og:url" content="https://acpt-www.banq.qc.ca/formulaires/extranet/index.html" />
+
+<link href="http://purl.org/dc/elements/1.1/" rel="schema.dc" />
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,500,500i,700,700i&display=swap" rel="stylesheet">
+<link href="https://acpt-www.banq.qc.ca/biblio/css/banq01-structure.css?v=20200804" rel="stylesheet" type="text/css" />
+<link href="https://acpt-www.banq.qc.ca/biblio/css/banq02-contenu-general.css?v=20200113" rel="stylesheet" type="text/css" />
+<link href="https://acpt-www.banq.qc.ca/biblio/css/banq03-contenu-specifique.css?v=20200826" rel="stylesheet" type="text/css" />
+<link href="https://acpt-www.banq.qc.ca/biblio/css/banq04-valorisationRMS.css?v=20200113" rel="stylesheet" type="text/css" />
+<!--[if IE 8]><link href="https://acpt-www.banq.qc.ca/biblio/css/BAnQ-IE8.css" rel="stylesheet" type="text/css" /><![endif]-->
+<!--[if IE 9]><link href="https://acpt-www.banq.qc.ca/biblio/css/BAnQ-IE9.css" rel="stylesheet" type="text/css" /><![endif]-->
+<link href="https://acpt-www.banq.qc.ca/biblio/css/banq_cm16.css?v=20200922" rel="stylesheet" type="text/css" /> 
+<link href="https://acpt-www.banq.qc.ca/biblio/css/banq_cm19.css?v=20200917" rel="stylesheet" type="text/css" /> 
+<link rel="stylesheet" href="https://acpt-www.banq.qc.ca/biblio/font-awesome/css/font-awesome.min.css" />
+<link rel="apple-touch-icon" href="https://acpt-www.banq.qc.ca/images/interface09/icones/icone_BAnQ_Apple.png" />
+
+<script src="https://acpt-www.banq.qc.ca/biblio/js/array.js"></script>
+<script src="https://acpt-www.banq.qc.ca/biblio/js/global.js"></script>
+<script src="https://acpt-www.banq.qc.ca/biblio/js/js_integ/integ.js"></script>
+<script src="https://acpt-www.banq.qc.ca/biblio/js/jquery.js"></script>
+<script src="https://acpt-www.banq.qc.ca/biblio/js/jquery_portail.js"></script>
+<script src="https://acpt-www.banq.qc.ca/biblio/js/jquery.hoverIntent.minified.js"></script>
+<script src="https://acpt-www.banq.qc.ca/biblio/js/jquery.cookie.js"></script>
+<script src="https://acpt-www.banq.qc.ca/biblio/js/divers/recherche_portail_2.js"></script>
+<script src="https://acpt-www.banq.qc.ca/biblio/js/divers/tagmanager_events_2.js"></script>
+
+  <script>
+    $(document).ready(function() {
+        $('.ouvreRecherche').click(function() {
+    		$('.modalRecherche').show();
+            $(".menuNosSites").removeClass("menuSitesOuvert");
+            $("li").removeClass("menuHeuresOuvert");
+            $("li").removeClass("userOuvert");
+            $("#keyword").focus();
+    	});	
+    	
+        $('.fondNoir').click(function() {
+    		$('.modalRecherche').hide();
+    	});
+    	
+        $('.closeModaleRecherche').click(function() {
+    		$('.modalRecherche').hide();
+    	});
+    });
+</script>
+
+</head>
+  
+<body class="Apropos">
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MZT2GP"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+     
+   		
+<div class="Invisible sr-only">
+  <a href="http://mobile.banq.qc.ca" title="lien vers les services mobiles.">BAnQ pour appareils mobiles.</a>
+</div>
+<div class="Invisible sr-only">
+  <a href="https://acpt-www.banq.qc.ca/sqla/index.html" title="lien vers le SQLA">Service qu&eacute;b&eacute;cois du livre adapt&eacute;</a>
+</div>
+<div class="Invisible sr-only">
+  <a href="#Contenu1" title="lien permettant de passer directement au contenu. Touche d'acc&egrave;s clavier=2." accesskey="2">Aller directement au contenu.</a>
+  <a href="#MenuPrincipal" title="lien permettant d'aller directement au menu des principales rubriques: Touche d'acc&egrave;s clavier=M." accesskey="M">Aller directement au menu des principales rubriques.</a>
+  <a href="#MenuContext" title="lien permettant d'aller directement au menu contextuel. Touche d'acc&egrave;s clavier=S." accesskey="S">Aller directement au menu contextuel.</a>
+</div>
+
+<a id="haut"></a>   
+
+   <div class="X12">
+          		<div class="ContainerCouleur">  
+  <header>
+    <ul class="miniMenuTop">
+        <li><a href="https://acpt-www.banq.qc.ca/a_propos_banq/index.html">À propos</a></li>
+        <li><a href="https://acpt-www.banq.qc.ca/outils/nous_joindre/index.html" accesskey="9" title="Nous joindre. Touche d'accès clavier=9.">Nous joindre</a></li>
+        <!--li><a href="https://acpt-www.banq.qc.ca/aide/index.html" accesskey="H" title="Aide. Touche d'accès clavier=H.">Aide</a></li-->
+        <li class="menuHeures">
+            <button class="ouvreMenuHeures">
+                Heures et coordonnées
+                <i class="fa fa-caret-down" aria-hidden="true"></i>
+                <i class="fa fa-caret-up" aria-hidden="true"></i>
+            </button>
+            <ul>
+                <li><a href="https://acpt-www.banq.qc.ca/a_propos_banq/informations_pratiques/grande_bibliotheque/">
+                    <i class="fa fa-caret-right" aria-hidden="true"></i> Grande Bibliothèque
+                </a></li>
+                <li><a href="https://acpt-www.banq.qc.ca/a_propos_banq/informations_pratiques/centre_conservation/">
+                    <i class="fa fa-caret-right" aria-hidden="true"></i> Bibliothèque nationale
+                </a></li>
+                <li><a href="https://acpt-www.banq.qc.ca/archives/entrez_archives/centres_archives/">
+                    <i class="fa fa-caret-right" aria-hidden="true"></i> Archives nationales
+                </a></li>
+            </ul>
+        </li>
+        <li><a href="https://acpt-www.banq.qc.ca/formulaires/extranet/index.html?language_id=1" lang="en" xml:lang="en">English</a></li>  
+    </ul>
+    <div class="enteteLogo"> 
+					<div  itemprop itemtype="http://schema.org/Organization">
+				<a itemprop="url" href="https://acpt-www.banq.qc.ca/">
+					<img itemprop="logo" src="https://acpt-www.banq.qc.ca/images/interface17/BAnQ_logo_95.png" alt="BAnQ - Bibliothèque et Archives nationales du Québec." /></a>
+			</div>
+			 <p class="titreSection">
+																	  &Agrave; propos de BA<span>n</span>Q
+							</p>
+		    </div>
+  </header>
+</div>
+
+   
+		   		<div id="enteteBarreMenu">
+    <div class="flexBarre">
+		<div class="flexBarreG">
+			                                <ul>
+                    <li>
+                        <a href="https://acpt-www.banq.qc.ca/accueil/" class="iconeBarreMenu" accesskey="1" title="Retour à l'accueil. Touche d'accès clavier=1.">
+                            <i class="fa fa-home" aria-hidden="true"><span class="sr-only">Retour à l'accueil.</span></i>
+                        </a>
+                    </li>
+                    <li class="menuNosSites">
+                        <button class="ouvreMenuSites">
+                            Nos sites Web
+                            <i class="fa fa-caret-down" aria-hidden="true"></i>
+                            <i class="fa fa-caret-up" aria-hidden="true"></i>
+                        </button>
+                        <ul class="listeMenuSites">
+                            <li>
+                                <a href="http://jeunes.banq.qc.ca/">
+                                    <i class="fa fa-caret-right" aria-hidden="true"></i>
+                                    Espace Jeunes
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://square.banq.qc.ca/">
+                                    <i class="fa fa-caret-right" aria-hidden="true"></i>
+                                    Le Square
+                                </a>
+                            </li>
+                            <!--li>
+                                <a href="http://saintsulpice.banq.qc.ca/">
+                                    <i class="fa fa-caret-right" aria-hidden="true"></i>
+                                   BAnQ  Saint-Sulpice
+                                </a>
+                            </li-->
+                        </ul>
+                    </li>
+                </ul>
+					</div>
+		<div class="flexBarreD">
+			                                <ul>
+                    <li>
+                        <button class="ouvreRecherche">
+                            <img src="https://acpt-www.banq.qc.ca/images/interface17/boiteChercher.png" alt="Chercher" />
+                        </button>
+                        <div class="modalRecherche" style="display:none;">
+                            <div class="fondNoir"></div>
+                            <div class="intModalRecherche">
+                               <button class="closeModaleRecherche">
+                                    <i class="fa fa-times"><span class="sr-only">Fermer la fenêtre de recherche</span></i>
+                                </button>
+                               <h2>Chercher</h2>
+                                <form id="rechercheBarre" method="get" action="/techno/recherche/rms.html">
+                                    <label for="keyword" class="sr-only">Saisissez les termes de votre recherche&nbsp;:</label>
+                                    <input type="text" id="keyword" name="q" title="Entrez ici le(s) terme(s) de votre recherche. Touche d'accès clavier=4." accesskey="4" />
+                                    <input type="hidden" name="lang" value="lang_fr"/>
+                                    <fieldset>
+                                        <legend class="sr-only">Limites de la recherche:</legend>
+                                            <ul>
+                                                <li>
+                                                    <span class="rechCheck">
+                                                        <label for="catalogue">
+                                                            <input type="radio" name="selectRecherche" id="catalogue">
+                                                            Catalogue <i class="fa fa-external-link" aria-hidden="true"></i>
+                                                        </label>
+                                                    </span>
+                                                    <span>Livres, musique, films, revues, etc.</span>
+                                                </li>
+                                                <li>
+                                                    <span class="rechCheck">
+                                                        <label for="archives">
+                                                            <input type="radio" name="selectRecherche" id="archives">
+                                                            Pistard <i class="fa fa-external-link" aria-hidden="true"></i>
+                                                        </label>
+                                                    </span>
+                                                    <span>Interface de recherche des Archives nationales</span>
+                                                </li>
+                                                <li>
+                                                    <span class="rechCheck">
+                                                        <label for="collection">
+                                                            <input type="radio" name="selectRecherche" id="collection">
+                                                            BAnQ numérique <i class="fa fa-external-link" aria-hidden="true"></i>
+                                                        </label>
+                                                    </span>
+                                                    <span>Patrimoine documentaire numérisé et ressources numériques</span>
+                                                </li>
+                                                <li>
+                                                    <span class="rechCheck">
+                                                        <label for="portail">
+                                                            <input type="radio" name="selectRecherche" id="portail">
+                                                            Site Web de BAnQ
+                                                        </label>
+                                                    </span>
+                                                </li>
+                                                <li>
+                                                    <span class="rechCheck">
+                                                        <label for="tout">
+                                                            <input type="radio" name="selectRecherche" id="tout" checked>
+                                                            Tout
+                                                        </label>
+                                                    </span>
+                                                </li>
+                                            </ul>
+                                    </fieldset>
+                                   <input type="button" value="Chercher" onclick="selectSearchForm();" class="submitSearch">
+
+                                </form> 
+                                <button class="closeModaleRecherche sr-only">
+                                    Fermer la fenêtre de recherche
+                                </button>
+                            </div>
+                        </div>
+                    </li>
+                                        <li class="userOff">
+                        <a href="https://acpt-www.banq.qc.ca/mon_dossier/mon_dossier.html?language_id=3" class="iconeBarreMenu">
+                            Mon dossier
+                            <i class="fa fa-user" aria-hidden="true"><span class="sr-only">Utilisateur non authentifié.</span></i>
+                        </a>
+                    </li>
+                                    </ul>
+			                         <div style="display:none">
+                <!-- Formulaire Cap-->
+                <form id="rechercheCap" method="get" action="https://cap.banq.qc.ca/query" target="_blank">
+                    <input name="q" type="hidden" id="keywordCap"/>
+                </form>
+
+                <!-- Formulaire Archives-->
+                <!--<form id="recherchePistard" method="get" action="http://pistard.banq.qc.ca/unite_chercheurs/portail_recherche">-->
+                <form id="recherchePistard" method="get" action="/techno/recherche/pistard_proxy.html" target="_blank">
+                    <input id="p_terme1" name="p_terme1" type="hidden" />
+                </form>
+
+                <!-- Formulaire Collection-->
+                <form id="rechercheCollection" method="get" action="/techno/recherche/collectionnumerique.html" target="_blank">
+                    <input id="keywordCol" name="q" type="hidden" />
+                    <input id="nbResult" name="nbResult" type="hidden" value="20" />
+                </form>
+                <!-- Formulaire Portail-->
+                <form id="recherchePortail" method="get" action="/techno/recherche/portail.html">
+                    <input id="keywordPort" name="q" type="hidden" />
+                                            <input id="lang" name="lang" type="hidden" value="lang_fr" /> 
+                                    </form>
+            </div>
+            <script type="text/javascript">
+                //<![CDATA[
+                    $("#keyword").keypress(function(e){
+                        if (e.keyCode == 13){           
+                            e.preventDefault();
+                            selectSearchForm();
+                        }
+                    });
+                //]]>
+            </script>
+		</div>
+	</div>
+</div>
+   
+	<div id="menuGeneriqueContainer">
+						   		<a id="MenuPrincipal"></a>
+
+<div id="menuGenerique" class="menuGeneriqueFr">
+    <ul>
+        <li class="w12"><a href="https://acpt-www.banq.qc.ca/services/">Services</a></li>
+        <li class="w12"><a href="https://acpt-www.banq.qc.ca/recherches/">Recherche</a></li>
+        <li class="w12"><a href="https://acpt-www.banq.qc.ca/decouvertes/">Découvertes</a></li>
+        <li class="w12"><a href="https://acpt-www.banq.qc.ca/collections/">Collections</a></li>
+        <li class="w10"><a href="https://acpt-www.banq.qc.ca/activites/visites/">Visites</a></li>
+        <li class="w12"><a href="https://acpt-www.banq.qc.ca/activites/">Activités</a></li>
+        <li class="w14"><a href="https://acpt-www.banq.qc.ca/services/services_specialises/services_adaptes/">Services adaptés</a></li>
+        <li class="w14"><a href="https://acpt-www.banq.qc.ca//acpt-numerique.banq.qc.ca/">BA<span>n</span>Q numérique</a></li>
+    </ul>
+    <ul class="visible-xs-block visible-sm cacheExSite">
+      <li><a href="https://acpt-www.banq.qc.ca/a_propos_banq/index.html">À propos de BAnQ</a></li>
+      <li><a href="https://acpt-www.banq.qc.ca/outils/nous_joindre/index.html" accesskey="9" title="Nous joindre. Touche d'accès clavier=9.">Nous joindre</a></li>
+      <!--li><a href="https://acpt-www.banq.qc.ca/aide/index.html" accesskey="H" title="Aide. Touche d'accès clavier=H.">Aide</a></li-->
+       <li class="menuHeuresMobile">
+            <span>Heures et coordonnées</span>
+        	<ul>
+        		<li><a href="https://acpt-www.banq.qc.ca/a_propos_banq/informations_pratiques/grande_bibliotheque/">
+        			<i class="fa fa-caret-right" aria-hidden="true"></i> Grande bibliothèque
+        		</a></li>
+        		<li><a href="https://acpt-www.banq.qc.ca/a_propos_banq/informations_pratiques/centre_conservation/">
+        			<i class="fa fa-caret-right" aria-hidden="true"></i> Bibliothèque nationale
+        		</a></li>
+        		<li><a href="https://acpt-www.banq.qc.ca/archives/entrez_archives/centres_archives/">
+        			<i class="fa fa-caret-right" aria-hidden="true"></i> Archives nationales
+        		</a></li>
+        	</ul>
+        </li>
+      <li><a href="https://acpt-www.banq.qc.ca/formulaires/extranet/index.html?language_id=1">English</a></li>  
+    </ul>
+</div>
+
+   	</div>
+
+<div id="Contenu" class="LargeD LargeG">
+
+<div id="ColCentre">
+<a id="Contenu1" title="D&eacute;but du Contenu de la page"></a>
+
+  <div class="">
+   		  	 
+	        <div class=""><!-- classContenu -->
+            <h1>Formulaire d'envoi de mot de passe</h1>
+<!--p style="color:red;border:2px solid red;padding:10px;">Veuillez noter qu’en raison d’un problème technique, il est actuellement impossible d'utiliser ce formulaire. 
+Tout est mis en œuvre pour rétablir cet accès le plus tôt possible. Veuillez nous excuser des inconvénients.</p-->
+
+    <div class="GlobalForm">
+    	<div id="api"></div>
+    	<!--
+        <p style="margin:10px 0 30px 0;">Veuillez entrer l'adresse de courrier électronique mentionnée à votre dossier pour recevoir votre numéro d'utilisateur et votre mot de passe par courriel.</p>
+        <form action="./index.html" method="post">
+            <div style="margin-left:auto;margin-right:auto;margin-bottom:20px;width:265px;">
+                <label for="email_client">Courriel</label>
+                <div id="email_clientMessage" class="messageErreur"></div>
+                <input type="text" id="email_client" name="email_client" size="40" maxlength="254" />
+            </div>
+            <input type="hidden" name="is_submited" value="1"/>
+            <div class="BlocBouton">
+                <input class="Bouton ButSubmit" value="Envoyer" type="submit" />
+            </div>
+        </form>
+        -->
+    </div>
+
+    </div>
+
+  </div>
+</div><!--FIN DIV COL CENTRE -->
+  
+</div><!-- Fin Contenu -->
+
+		   		<footer>
+	<div id="footer1">
+		<div class="container">
+			<div class="col-xs-12 col-sm-6 col-md-3 col-lg-4">
+				<h2>Accessibilité</h2>
+				<ul>
+					<li><a href="https://acpt-www.banq.qc.ca/outils/accessibilite/">Accessibilité du portail</a></li>
+					<li><a href="https://acpt-www.banq.qc.ca/services/services_specialises/services_adaptes/sqla.html">SQLA</a></li>
+					<li><a href="https://acpt-www.banq.qc.ca/services/services_specialises/services_adaptes/">Services adaptés</a></li>
+				</ul>
+			</div>
+			<div class="col-xs-12 col-sm-6 col-md-6 col-lg-5">
+				<h2>Nos blogues</h2>
+				<ul>
+					<li><a href="http://blogues.banq.qc.ca/chezmoi/">BAnQ chez moi</a></li>
+					<li><a href="http://blogues.banq.qc.ca/journalintime/">Journal intime de la Grande Bibliothèque</a></li>
+					<li><a href="http://blogues.banq.qc.ca/carnetbibliothequenationale/">Carnet de la Bibliothèque nationale</a></li>
+					<li><a href="http://blogues.banq.qc.ca/instantanes/">Instantanés – La vitrine des Archives</a></li>
+				</ul>
+			</div>
+			<div class="col-xs-12 col-sm-6 col-md-3 col-lg-3">
+				<h2>Liens rapides</h2>
+				<ul>
+					<li><a href="https://acpt-www.banq.qc.ca/services/abonnement/abonnement_carte/">Abonnement</a></li>
+					<li><a href="https://acpt-www.banq.qc.ca/services/services_reproduction/demander/">Reproduction de document</a></li>
+					<li><a href="https://acpt-www.banq.qc.ca/services/suggestions_achat/index.html">Suggestion d'achat</a></li>
+					<li><a href="https://acpt-www.banq.qc.ca/formulaires/">Formulaires</a></li>
+					<li><a href="https://acpt-www.banq.qc.ca/mobile/">Site mobile</a></li>
+					<li><a href="https://acpt-www.banq.qc.ca/outils/plan_site/index.html">Plan du site</a></li>
+					<li><a href="https://acpt-www.banq.qc.ca/aide/">Aide</a></li>
+				</ul>
+			</div>
+			<div class="col-xs-12 col-sm-6 col-md-3 col-lg-4 padTop">
+		        <button id="footerInfolettre" onclick="window.location.href = '/formulaires/infolettre/';">
+					<i class="fa fa-paper-plane" aria-hidden="true"></i>
+					Abonnez-vous à l'infolettre
+				</button>
+			</div>
+			<div class="col-xs-12 col-sm-6 col-md-6 col-lg-5 pdpInfolettre">
+				<h2>Suivez-nous!</h2>
+				<p class="footerIcones">
+				    <a href="https://www.facebook.com/banqweb20"><img src="https://acpt-www.banq.qc.ca/images/footer/Facebook.png" alt="Facebook" /></a>
+				    <a href="https://twitter.com/_BAnQ"><img src="https://acpt-www.banq.qc.ca/images/footer/Twitter.png" alt="Twitter" /></a>
+				    <a href="https://www.instagram.com/banq_officiel/"><img src="https://acpt-www.banq.qc.ca/images/footer/Instagram.png" alt="Instagram" /></a>
+				    <a href="https://www.youtube.com/user/BAnQweb20"><img src="https://acpt-www.banq.qc.ca/images/footer/YouTube.png" alt="YouTube" /></a>
+				    <a href="https://www.flickr.com/photos/banq/albums"><img src="https://acpt-www.banq.qc.ca/images/footer/flickr.png" alt="Flickr" /></a>
+				    <a href="https://www.linkedin.com/authwall?trk=ripf&trkInfo=AQEuAA2Mj-cfEwAAAW6ypHKA2BTD7e4JwLN9sltmMnbJFqtOw8FsgMWMHiMarwsJ_RooAqgCCd-cE8eDOGc96EkAgTJlZPsXJAKHyL5C3q3kb_Ge3DloBUsPeDFE2iLjEWwLD6k=&originalReferer=http://www.banq.qc.ca/accueil/&sessionRedirect=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fbiblioth-que-et-archives-nationales-du-qu-bec"><img src="https://acpt-www.banq.qc.ca/images/footer/Linkedin.png" alt="LinkedIn" /></a>
+				    <a href="https://www.pinterest.fr/grandebiblio/"><img src="https://acpt-www.banq.qc.ca/images/footer/Pinterest.png" alt="Pinterest" /></a>
+				    <a href="https://www.historypin.org/fr/person/41410"><img src="https://acpt-www.banq.qc.ca/images/footer/historyPin.png" alt="HistoryPin" /></a>
+				</p>
+			</div>
+			<div class="col-xs-12 col-sm-6 col-md-3 col-lg-3 padTop">
+				<button id="footerQuestion" onclick="window.location.href = '/formulaires/formulaire_reference/';">
+					<i class="fa fa-question-circle" aria-hidden="true"></i>
+					Poser une question
+				</button>
+			</div>
+		</div>
+	</div>
+	<div id="footer2">
+		<div class="container">
+			<div class="col-xs-12 col-sm-6 col-md-3 col-lg-4">
+				<h2>Éducateurs et enseignants</h2>
+				<ul>
+					<li><a href="https://acpt-www.banq.qc.ca/activites/visites/grande_bibliotheque/groupes/">Accueil de groupes</a></li>
+					<li><a href="https://education.banq.qc.ca/">Offre éducative sur place et en classe</a></li>
+				</ul>
+			</div>
+			<div class="col-xs-12 col-sm-6 col-md-6 col-lg-5">
+				<h2>Professionnels</h2>
+				<ul>
+					<li><a href="https://acpt-www.banq.qc.ca/archives/archivistique_gestion/">Archivistique et gestion documentaire</a></li>
+					<li><a href="https://acpt-www.banq.qc.ca/archives/archivistique_gestion/services_partenaires/organismes_publics/versement_archives.html">Versement d'archives publiques</a></li>
+					<li><a href="http://blogues.banq.qc.ca/blog/2016/06/12/288/">Blogue Interactions – Actualités de la gestion intégrée des documents et des archives</a></li>
+					<li><a href="https://acpt-www.banq.qc.ca/services/services_professionnels/milieux_doc/">Milieux documentaires</a></li>
+					<li><a href="https://acpt-www.banq.qc.ca/services/services_professionnels/fournisseurs/">Fournisseurs</a></li>
+					<li><a href="https://acpt-www.banq.qc.ca/services/services_specialises/cqrlj/">Centre québécois de ressources en littérature pour la jeunesse</a></li>
+					<li><a href="https://acpt-www.banq.qc.ca/services/expositions_itinerantes/">Expositions itinérantes</a></li>
+					<li><a href="https://acpt-www.banq.qc.ca/services/services_specialises/service_pret_exposition/">Service de prêt aux fins d'exposition</a></li>
+				    <li><a href="https://acpt-www.banq.qc.ca/services/service_location_salles/">Location de salles</a></li>
+				</ul>
+			</div>
+			<div class="col-xs-12 col-sm-6 col-md-3 col-lg-3">
+				<h2>Éditeurs</h2>
+				<ul>
+					<li><a href="https://acpt-www.banq.qc.ca/idel/extranet/ExtranetAuthentiRedirect.seam">Accès à l'extranet</a></li>
+					<li><a href="https://acpt-www.banq.qc.ca/services/bibliotheque_nationale/depot_legal/">Dépôt légal</a></li>
+					<li><a href="https://acpt-www.banq.qc.ca/services/bibliotheque_nationale/attribution_isbn/">Agence ISBN</a></li>
+					<li><a href="https://acpt-www.banq.qc.ca/services/bibliotheque_nationale/agence-isni/">Agence ISNI</a></li>
+					<li><a href="https://acpt-www.banq.qc.ca/services/services_professionnels/editeurs/programme_cip/">Catalogage avant publication (CIP)</a></li>
+					<li><a href="https://acpt-www.banq.qc.ca/ressources_en_ligne/bottin_des_editeurs/recherche.html">Bottin des éditeurs francophones canadiens</a></li>
+					<li><a href="https://acpt-www.banq.qc.ca/documents/services/espace_professionnel/editeurs/Guide_autoedition_Qc_2019-08.pdf" target="_blank">Petit guide de l&rsquo;autoédition au Québec (PDF - 364 Ko)</a></li>
+				    <li><a href="https://acpt-www.banq.qc.ca/ressources_en_ligne/livres_quebecois_paraitre.html">Livres québécois à paraître</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div id="footer3">
+		<div class="container">
+			<div class="col-xs-12 footerPartenaire">
+				<h2>Nos partenaires</h2>
+				<p>
+				    <span>
+				        <a href="http://ville.montreal.qc.ca/portal/page?_pageid=5798,85041649&_dad=portal&_schema=PORTAL"><img src="https://acpt-www.banq.qc.ca/images/footer/VilleMontreal.jpg" alt="logo de la ville de Montréal" /></a>
+				        <a href="http://cbq.banq.qc.ca/cbq/f?p=404:30"><img src="https://acpt-www.banq.qc.ca/images/footer/CatalogueQc.jpg" alt="logo du Catalogue des bibliothèques du Québec" /></a>
+				        <a href="http://www.rfnum.org/pages/"><img src="https://acpt-www.banq.qc.ca/images/footer/RNF.jpg" alt="logo du RFN" /></a>
+				        <a href="http://rdaq.banq.qc.ca/accueil/"><img src="https://acpt-www.banq.qc.ca/images/footer/RDAQ.jpg" alt="logo du RDQA" /></a>
+				        <a href="https://amis.banq.qc.ca/"><img src="https://acpt-www.banq.qc.ca/images/footer/AmisBAnQ.jpg" alt="logo des amis de BAnQ" /></a>
+				        <a href="https://fondation.banq.qc.ca/"><img src="https://acpt-www.banq.qc.ca/images/footer/FondationBAnQ.jpg" alt="logo de la fondation de BAnQ" /></a>
+				    </span>
+				</p>
+			</div>
+			<div class="col-xs-12 footerLiens">
+				<p>
+					<a href="https://acpt-www.banq.qc.ca/outils/conditions_generales_dutilisation/">Conditions d'utilisation</a> |
+					<a href="https://acpt-www.banq.qc.ca/a_propos_banq/mission_lois_reglements/declaration_services/">Déclaration de services aux citoyens</a> |
+					<a href="https://acpt-www.banq.qc.ca/a_propos_banq/mission_lois_reglements/lois_reglements_politiques/politiques_procedures/politique_confidentialite/">Confidentialité</a> | 
+					<a href="https://acpt-www.banq.qc.ca/a_propos_banq/acces_a_linfo/">Accès à l'information</a> | 
+					<a href="https://acpt-www.banq.qc.ca/a_propos_banq/acces_a_linfo/donnees_ouvertes/">Données ouvertes</a> | 
+					<a href="https://acpt-www.banq.qc.ca/offres_emploi/">Emplois</a>
+				</p>
+				<p class="footerPIV"><img src="https://acpt-www.banq.qc.ca/images/footer/PIV.jpg" alt="Bibliothèque et Archives nationales du Québec" /></p>
+			</div>
+		</div>
+	</div>
+</footer>
+
+</div>
+</body>
+</html>

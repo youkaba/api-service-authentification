@@ -5,6 +5,8 @@ package ca.qc.banq.gia.authentication.models;
 
 import java.io.Serializable;
 
+import javax.validation.constraints.NotNull;
+
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,7 +23,8 @@ import lombok.NoArgsConstructor;
 @SuppressWarnings("serial")
 public class CreateUserRequestPayload implements Serializable {
 
-	@ApiModelProperty(value = "accountEnabled", example = "true")
+	@NotNull(message = "CreateUserRequestPayload.accountEnabled.NotNull")
+	@ApiModelProperty(required = true, value = "accountEnabled", example = "true")
 	private boolean accountEnabled = true;
 	
 	@ApiModelProperty(value = "city", example = "Seattle")    
@@ -33,7 +36,8 @@ public class CreateUserRequestPayload implements Serializable {
     @ApiModelProperty(value = "department", example = "Sales & Marketing")
     private String department;
     
-    @ApiModelProperty(value = "displayName", example = "Melissa Darrow")
+    @NotNull(message = "CreateUserRequestPayload.displayName.NotNull")
+    @ApiModelProperty(required = true, value = "displayName", example = "Melissa Darrow")
     private String displayName;
     
     @ApiModelProperty(value = "givenName", example = "Melissa")
@@ -42,9 +46,11 @@ public class CreateUserRequestPayload implements Serializable {
     @ApiModelProperty(value = "jobTitle", example = "Marketing Director")
     private String jobTitle;
     
+    @NotNull(message = "CreateUserRequestPayload.mailNickname.NotNull")
     @ApiModelProperty(value = "mailNickname", example = "MelissaD")
     private String mailNickname;
     
+    @NotNull(message = "CreateUserRequestPayload.passwordPolicies.NotNull")
     @ApiModelProperty(value = "passwordPolicies", example = "\"passwordProfile\": {\"password\": \"87f312a1-38ec-1179-c230-bbd2ab1d0d9c\",\"forceChangePasswordNextSignIn\": false}")
     private PasswordPolicy passwordPolicies;
     
@@ -72,7 +78,8 @@ public class CreateUserRequestPayload implements Serializable {
     @ApiModelProperty(value = "usageLocation", example = "US")
     private String usageLocation;
     
-    @ApiModelProperty(value = "userPrincipalName", example = "MelissaD@banq.qc.ca")
+    @NotNull(message = "CreateUserRequestPayload.userPrincipalName.NotNull")
+    @ApiModelProperty(required = true, value = "userPrincipalName", example = "MelissaD@banq.qc.ca")
     private String userPrincipalName;
 	
 }
@@ -82,6 +89,10 @@ public class CreateUserRequestPayload implements Serializable {
 @NoArgsConstructor
 @SuppressWarnings("serial")
 class PasswordPolicy implements Serializable {
+	
+	@ApiModelProperty(required = true, value = "password", example = "UEA1NXcwckQ=")
 	private String password;
+	
+	@ApiModelProperty(required = true, value = "forceChangePasswordNextSignIn", example = "false")
 	private Boolean forceChangePasswordNextSignIn = false;
 }

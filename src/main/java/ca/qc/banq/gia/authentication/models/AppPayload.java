@@ -44,4 +44,10 @@ public class AppPayload implements Serializable {
 	public boolean isNouveau() {
 		return this.clientId == null || this.clientId.isEmpty();
 	}
+	
+	public String getHiddenCert() {
+		String s = "";
+		for( int i=0; i < certSecretValue.length(); i++ ) s += "*";
+		return s;
+	}
 }

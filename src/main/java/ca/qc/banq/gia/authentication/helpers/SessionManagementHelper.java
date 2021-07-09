@@ -3,6 +3,7 @@
 
 package ca.qc.banq.gia.authentication.helpers;
 
+import java.net.URLEncoder;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -16,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.microsoft.aad.msal4j.IAuthenticationResult;
 
+import ca.qc.banq.gia.authentication.models.AppPayload;
 import ca.qc.banq.gia.authentication.models.StateData;
 
 /**
@@ -99,5 +101,24 @@ public class SessionManagementHelper {
         } else {
             throw new IllegalStateException("Session does not contain principal session name");
         }
+    }
+    
+
+    public static String buildRedirectAppHomeUrl(IAuthenticationResult auth, String uid, AppPayload app) throws Exception {
+    	
+    	/** Ajout des parametres de requete dans l'url de redirection vers la page d'accueil de l'application */
+    	String query = (StringUtils.contains(app.getHomeUrl(), "?") ? "&" : "?") + // Si l'url de la page d'accueil contient deja des parametres on rajoute juste un & 
+    			HttpClientHelper.ACCESS_TOKEN + "=" + auth.accessToken() + "&" +   // Token d'acces  
+    			HttpClientHelper.EXPDATE_SESSION_NAME + "=" + String.valueOf(auth.expiresOnDate().getTime()) + "&" + // Date d'expiration de la session 
+    			HttpClientHelper.UID_SESSION_NAME + "=" + uid + "&" + // Identifiant de l'utilisateur connecte
+    			HttpClientHelper.CLIENTID_PARAM  + "=" + app.getClientId() + "&" +   // Identifiant de l'application
+    			HttpClientHelper.SIGNIN_URL + "=" +  URLEncoder.encode(app.getLoginURL(), "UTF-8") + "&" +  // Url de connexion
+    			HttpClientHelper.SIGNOUT_URL + "=" +  URLEncoder.encode(app.getLogoutURL(), "UTF-8") + "&" +      // Url de signout
+    			HttpClientHelper.GIA_URLPATH_PARAM + "=" +  URLEncoder.encode(app.getLogoutURL(), "UTF-8") + "&" +      // Url de base du service GIA
+    			HttpClientHelper.GIA_CREATEUSER_ENDPOINT_PARAM + "=" + HttpClientHelper.CREATEUSER_ENDPOINT + "&" +      // Endpoint de creation d'un utilisateur
+    			HttpClientHelper.GIA_RESETPWD_ENDPOINT_PARAM + "=" + URLEncoder.encode(HttpClientHelper.RESETPWD_ENDPOINT + "?" + HttpClientHelper.CLIENTID_PARAM + "=" + app.getClientId(), "UTF-8")      // Endpoint de reinitialisation de mot de passe
+    			;
+    	// Retourne l'url de redirection de l'application app
+    	return app.getHomeUrl().concat(query);
     }
 }

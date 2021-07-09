@@ -34,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 public class HttpClientHelper {
 	
 	public final static String ACCESS_TOKEN = "Authorization";
+	public final static String AUTH_CODE = "authorization_code";
 	public static final String EXPDATE_SESSION_NAME = "expdate";
 	//public static final String IDTOKEN_SESSION_NAME = "idtoken";
 	public static final String PRINCIPAL_SESSION_NAME = "principal";
@@ -42,7 +43,20 @@ public class HttpClientHelper {
 	public final static String SIGNIN_URL = "signin_url";
 	public final static String SIGNOUT_URL = "signout_url";
 	public final static String BAnQ_CUSTOM_USERID = "extension_BAnQclientID";
+	public final static String GRANT_TYPE_CREDENTIAL = "client_credentials";
+	public final static String CLIENTID_PARAM = "appid";
+	
+	public final static String GIA_URLPATH_PARAM = "gia_url";
+	public final static String GIA_CREATEUSER_ENDPOINT_PARAM = "createuser_endpoint";
+	public final static String GIA_RESETPWD_ENDPOINT_PARAM = "useractivation_endpoint";
 
+	public final static String SIGNIN_ENDPOINT = "/sign_in";
+	public final static String SIGNOUT_ENDPOINT = "/sign_out";
+	public final static String CREATEUSER_ENDPOINT = "/createUser";
+	public final static String RESETPWD_ENDPOINT = "/resetPassword";
+	public final static String REDIRECTB2C_ENDPOINT = "/redirect2_b2c";
+	public final static String REDIRECTAAD_ENDPOINT = "/redirect2_aad";
+	
 	public  HttpClientHelper() {}
 
     public static String getResponseStringFromConn(HttpURLConnection conn) throws IOException {

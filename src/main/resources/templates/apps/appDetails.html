@@ -19,7 +19,7 @@
       </tr>
       <tr>
         <th>Certificat secret:</th>
-        <td th:text="*{certSecretValue}"></td>
+        <td th:text="*{hiddenCert}"></td>
       </tr>
       <tr>
         <th>Type d'authentification:</th>
@@ -28,6 +28,10 @@
       <tr>
         <th>Flux de connexion:</th>
         <td th:text="*{policySignUpSignIn}"></td>
+      </tr>
+      <tr>
+        <th>Flux d'activation:</th>
+        <td th:text="*{policyResetPassword}"></td>
       </tr>
       <tr>
         <th>Url de redirection:</th>

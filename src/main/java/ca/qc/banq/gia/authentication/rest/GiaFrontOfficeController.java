@@ -4,8 +4,8 @@
 package ca.qc.banq.gia.authentication.rest;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
+import ca.qc.banq.gia.authentication.models.CreateUserRequestPayload;
 import ca.qc.banq.gia.authentication.models.UserInfo;
 
 
@@ -16,5 +16,13 @@ import ca.qc.banq.gia.authentication.models.UserInfo;
  */
 public interface GiaFrontOfficeController {
 
-	public UserInfo getConnectedUser(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable;
+	/**
+	 * Creation d'un utilisateur dans Azure B2C
+	 * @param httpRequest
+	 * @param request
+	 * @return
+	 * @throws Throwable
+	 */
+	public UserInfo createUserIntoAzureB2C(HttpServletRequest httpRequest, CreateUserRequestPayload request) throws Throwable;
+	
 }
