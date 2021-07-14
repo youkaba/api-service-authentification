@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -38,16 +39,20 @@ import ca.qc.banq.gia.authentication.helpers.AuthHelperB2C;
 import ca.qc.banq.gia.authentication.helpers.CookieHelper;
 import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
 import ca.qc.banq.gia.authentication.helpers.SessionManagementHelper;
+import ca.qc.banq.gia.authentication.models.AppPayload;
+import ca.qc.banq.gia.authentication.models.GetIdentitiesResponse;
+import ca.qc.banq.gia.authentication.models.IdentityPayload;
+import ca.qc.banq.gia.authentication.models.SignInType;
+import ca.qc.banq.gia.authentication.models.TokenResponse;
+import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
 //import ca.qc.banq.gia.authentication.helpers.CookieHelper;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Filtre de requetes pour l'authentification B2C
  * @author <a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a>
  * @since 2021-05-12
  */
-@Slf4j
 @Getter
 @Component
 public class AuthFilterB2C {
@@ -61,6 +66,9 @@ public class AuthFilterB2C {
     @Autowired
     AuthHelperAAD authHelperAAD;
 
+	@Autowired
+	GiaBackOfficeService business;
+	
     public void doFilter(ServletRequest request, ServletResponse response) throws Throwable {
         if (request instanceof HttpServletRequest) {
             HttpServletRequest httpRequest = (HttpServletRequest) request;
@@ -88,14 +96,37 @@ public class AuthFilterB2C {
                 if (authHelper.isAuthenticated(httpRequest) && !isAccessTokenExpired(httpRequest)) {
                 	IAuthenticationResult auth = authHelper.getAuthSessionObject(httpRequest);
                 	Map<String, Object> claims = JWTParser.parse(auth.idToken()).getJWTClaimsSet().getClaims();
-                	if(claims.get(HttpClientHelper.BAnQ_CUSTOM_USERID) == null) {
+                	String uid = claims.get(HttpClientHelper.CLAIM_USERID).toString();
+                	String appid = StringUtils.remove( StringUtils.remove(claims.get("aud").toString(), '['), ']') ;
+                	AppPayload app = business.findByClientId(appid);
+                	
+                	// Si le claim ne contient pas les attributs requis on leve une exception
+                	if(uid == null || app == null) {
                 		httpResponse.setStatus(500);
-            			httpRequest.setAttribute("error", "unable to find " + HttpClientHelper.BAnQ_CUSTOM_USERID + " property within the claim");
+            			httpRequest.setAttribute("error", "unable to find " + HttpClientHelper.CLAIM_USERID + " or 'aud' property within the claim");
             			httpRequest.getRequestDispatcher("/error").forward(httpRequest, httpResponse);
             			return;
                 	}
-                	String uid = claims.get(HttpClientHelper.BAnQ_CUSTOM_USERID).toString();
-                	httpResponse.sendRedirect(SessionManagementHelper.buildRedirectAppHomeUrl(auth, uid, authHelper.getApp()));
+
+            	  	// Obtention du Token d'acces a GraphAPI
+            	  	TokenResponse token = authHelperAAD.getAccessToken(app);
+                	
+            	  	// Recuperation des identities de l'usager 
+            	  	GetIdentitiesResponse identities = authHelperAAD.getUserIdentities(token, uid);
+            	  	
+            	  	// Recherche de l'identite de type "userName"
+            	  	List<IdentityPayload> idsUserName = identities.getValue().stream().filter(ip -> ip.getSignInType().equals(SignInType.USERNAME.getValue())).collect(Collectors.toList());
+            	  	if( !idsUserName.isEmpty() ) {
+            	  		// Si on a trouve une identite de type "userName", c'est elle qu'on recupere comme identifiant de l'usager
+            	  		uid = idsUserName.stream().findFirst().orElse(null).getIssuerAssignedId();
+            	  	} else {
+            	  		// Si on n'a pas trouve une identite de type "userName", on recupere celle de type "emailAddress" comme identifiant 
+            	  		idsUserName = identities.getValue().stream().filter(ip -> ip.getSignInType().equals(SignInType.EMAIL.getValue())).collect(Collectors.toList());
+            	  		if( !idsUserName.isEmpty() ) uid = idsUserName.stream().findFirst().orElse(null).getIssuerAssignedId();
+            	  	}
+                	
+            	  	// Redirection vers la page d'accueil de l'application
+                	httpResponse.sendRedirect(SessionManagementHelper.buildRedirectAppHomeUrl(auth, uid, app, authHelperAAD.getGIAUrlPath()));
                     return;
                 }
             } catch (MsalException authException) {

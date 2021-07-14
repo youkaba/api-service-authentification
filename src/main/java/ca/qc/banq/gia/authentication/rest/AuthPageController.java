@@ -22,7 +22,6 @@ import ca.qc.banq.gia.authentication.helpers.AuthHelperB2C;
 import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
 import ca.qc.banq.gia.authentication.models.AppPayload;
 import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
-import lombok.extern.slf4j.Slf4j;
 
 
 /**
@@ -30,7 +29,6 @@ import lombok.extern.slf4j.Slf4j;
  * @author <a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a>
  * @since 2021-05-12
  */
-@Slf4j
 @Controller
 public class AuthPageController {
 

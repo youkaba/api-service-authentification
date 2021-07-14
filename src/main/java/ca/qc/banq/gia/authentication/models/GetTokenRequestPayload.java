@@ -26,10 +26,10 @@ import lombok.ToString;
 public class GetTokenRequestPayload implements Serializable {
 
 	@JsonProperty("grant_type")
-	String grantType; 
+	String grant_type; 
 	@JsonProperty("client_secret")
-	String clientSecret;
+	String client_secret;
 	@JsonProperty("client_id")
-	String clientId;
+	String client_id;
 	String scope;
 }

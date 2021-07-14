@@ -43,6 +43,7 @@ public class HttpClientHelper {
 	public final static String SIGNIN_URL = "signin_url";
 	public final static String SIGNOUT_URL = "signout_url";
 	public final static String BAnQ_CUSTOM_USERID = "extension_BAnQclientID";
+	public final static String CLAIM_USERID = "oid";
 	public final static String GRANT_TYPE_CREDENTIAL = "client_credentials";
 	public final static String CLIENTID_PARAM = "appid";
 	
@@ -50,6 +51,7 @@ public class HttpClientHelper {
 	public final static String GIA_CREATEUSER_ENDPOINT_PARAM = "createuser_endpoint";
 	public final static String GIA_RESETPWD_ENDPOINT_PARAM = "useractivation_endpoint";
 
+	public final static String FRONTOFFICE_APIURL = "/api/fo";
 	public final static String SIGNIN_ENDPOINT = "/sign_in";
 	public final static String SIGNOUT_ENDPOINT = "/sign_out";
 	public final static String CREATEUSER_ENDPOINT = "/createUser";
@@ -117,7 +119,6 @@ public class HttpClientHelper {
 		// Initialisation de l'objet RestTemplate
 		RestTemplate restTemplate = new RestTemplate();
 		if(requestHeaders == null) requestHeaders = getDefaultRequestHeaders();
-		//if(AUTH_TOKEN != null) requestHeaders.add("Authorization", AUTH_TOKEN);
 		
 	  	// objet contenant le corps et les param�tres entete
 	  	HttpEntity<?> request = new HttpEntity(body, requestHeaders);

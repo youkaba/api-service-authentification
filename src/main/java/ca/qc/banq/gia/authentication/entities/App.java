@@ -79,6 +79,10 @@ public class App implements Serializable {
 	/** Flux utilisateur pour la modification de profil utilisateur */
 	@Column(name = "flux_edit_profile")
 	private String policyEditProfile;
+
+	/** Groupe des utilisateurs de l'application */
+	@Column(name = "users_group_id")
+	private String usersGroupId;
 	
 	/** MAJ de l'application */
 	@JsonIgnore
@@ -91,10 +95,11 @@ public class App implements Serializable {
 		this.policySignUpSignIn = app.getPolicySignUpSignIn();
 		this.policyResetPassword = app.getPolicyResetPassword();
 		this.policyEditProfile = app.getPolicyEditProfile();
+		this.usersGroupId = app.getUsersGroupId();
 	}
 	
 	public AppPayload toDTO(String loginUrl, String redirectApp, String loginOut) {
-		return new AppPayload(this.clientId, this.title, this.typeAuth, this.homeUrl, this.certSecretValue, this.typeAuth.equals(TypeAuth.B2C) ? this.clientId : "", loginUrl, loginOut, this.policySignUpSignIn, this.policyResetPassword, this.policyEditProfile, redirectApp);
+		return new AppPayload(this.clientId, this.title, this.typeAuth, this.homeUrl, this.certSecretValue, this.typeAuth.equals(TypeAuth.B2C) ? this.clientId : "", loginUrl, loginOut, this.policySignUpSignIn, this.policyResetPassword, this.policyEditProfile, this.usersGroupId, redirectApp);
 	}
 	
 	@Transient

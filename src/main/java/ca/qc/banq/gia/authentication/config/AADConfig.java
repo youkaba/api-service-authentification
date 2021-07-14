@@ -25,4 +25,5 @@ public class AADConfig {
 	private String msGraphScope;
 	private String accessGraphTokenUri;
 	private String msGraphUsersEndpoint;
+	private String msGraphAddUserToGroupEndpoint;
 }

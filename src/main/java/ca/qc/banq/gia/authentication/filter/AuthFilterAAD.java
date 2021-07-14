@@ -11,6 +11,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,14 +22,12 @@ import ca.qc.banq.gia.authentication.helpers.AuthHelperAAD;
 import ca.qc.banq.gia.authentication.helpers.SessionManagementHelper;
 import ca.qc.banq.gia.authentication.models.UserInfo;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Filtre de requetes pour l'authentification AAD
  * @author <a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a>
  * @since 2021-05-12
  */
-@Slf4j
 @Getter
 @Component
 public class AuthFilterAAD {
@@ -92,8 +91,9 @@ public class AuthFilterAAD {
     
     private void redirectToAppHomePage(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
     	IAuthenticationResult auth = authHelper.getAuthResultBySilentFlow(httpRequest, httpResponse);
-    	UserInfo user = authHelper.getUserInfos(auth.accessToken());
-    	httpResponse.sendRedirect(SessionManagementHelper.buildRedirectAppHomeUrl(auth, user.getUserPrincipalName(), authHelper.getApp()));
+    	UserInfo user = authHelper.getADUserInfos(auth.accessToken());
+    	String uid = user.getUserPrincipalName().substring(0, StringUtils.indexOf(user.getUserPrincipalName(), "@"));
+    	httpResponse.sendRedirect(SessionManagementHelper.buildRedirectAppHomeUrl(auth, uid, authHelper.getApp(), authHelper.getGIAUrlPath()));
     }
 
     private boolean containsAuthenticationCode(HttpServletRequest httpRequest) {
@@ -118,5 +118,5 @@ public class AuthFilterAAD {
         IAuthenticationResult authResult = authHelper.getAuthResultBySilentFlow(httpRequest, httpResponse);
         SessionManagementHelper.setSessionPrincipal(httpRequest, authResult);
     }
-
+    
 }

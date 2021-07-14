@@ -8,14 +8,12 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import ca.qc.banq.gia.authentication.config.TranslatorConfig;
 import ca.qc.banq.gia.authentication.entities.App;
 import ca.qc.banq.gia.authentication.entities.TypeAuth;
 import ca.qc.banq.gia.authentication.exceptions.GIAException;
-import ca.qc.banq.gia.authentication.filter.AuthFilter;
 import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
 import ca.qc.banq.gia.authentication.models.AppPayload;
 import ca.qc.banq.gia.authentication.repositories.AppRepository;

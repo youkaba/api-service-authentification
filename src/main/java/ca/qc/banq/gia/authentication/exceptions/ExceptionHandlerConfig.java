@@ -3,16 +3,15 @@
  */
 package ca.qc.banq.gia.authentication.exceptions;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolationException;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.tomcat.util.buf.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -45,7 +44,7 @@ public class ExceptionHandlerConfig extends ResponseEntityExceptionHandler  {
 	 * @param request
 	 * @return
 	 */
-	@ExceptionHandler(value = { Throwable.class, GIAException.class, ConstraintViolationException.class })
+	@ExceptionHandler(value = { Throwable.class, Exception.class, GIAException.class, ConstraintViolationException.class })
 	protected ResponseEntity<List<String>> handleConflict(Exception ex, WebRequest request) {
 		
 		// Calcul du statut et du message d'erreur a retourner
@@ -69,11 +68,13 @@ public class ExceptionHandlerConfig extends ResponseEntityExceptionHandler  {
 		
 		// Log
         log.error(ex.getMessage(), ex);
-        HttpServletRequest req = ((HttpServletRequest)request);
-        req.setAttribute("error", erreurs);
+        request.setAttribute("error", StringUtils.join(erreurs, '\n'), 0);
+        
         try {
+            HttpServletRequest req = ((HttpServletRequest)request);
+            req.setAttribute("error", StringUtils.join(erreurs, '\n') );
 			req.getRequestDispatcher("/error").forward(req, null);
-		} catch (ServletException | IOException e) {}
+		} catch (Exception e) {e.printStackTrace();}
         
         // Return Response
         return new ResponseEntity<List<String>>(erreurs, status);

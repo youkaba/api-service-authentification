@@ -14,6 +14,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import com.microsoft.aad.msal4j.IAuthenticationResult;
 
@@ -104,7 +106,7 @@ public class SessionManagementHelper {
     }
     
 
-    public static String buildRedirectAppHomeUrl(IAuthenticationResult auth, String uid, AppPayload app) throws Exception {
+    public static String buildRedirectAppHomeUrl(IAuthenticationResult auth, String uid, AppPayload app, String giaUrlPath) throws Exception {
     	
     	/** Ajout des parametres de requete dans l'url de redirection vers la page d'accueil de l'application */
     	String query = (StringUtils.contains(app.getHomeUrl(), "?") ? "&" : "?") + // Si l'url de la page d'accueil contient deja des parametres on rajoute juste un & 
@@ -114,8 +116,8 @@ public class SessionManagementHelper {
     			HttpClientHelper.CLIENTID_PARAM  + "=" + app.getClientId() + "&" +   // Identifiant de l'application
     			HttpClientHelper.SIGNIN_URL + "=" +  URLEncoder.encode(app.getLoginURL(), "UTF-8") + "&" +  // Url de connexion
     			HttpClientHelper.SIGNOUT_URL + "=" +  URLEncoder.encode(app.getLogoutURL(), "UTF-8") + "&" +      // Url de signout
-    			HttpClientHelper.GIA_URLPATH_PARAM + "=" +  URLEncoder.encode(app.getLogoutURL(), "UTF-8") + "&" +      // Url de base du service GIA
-    			HttpClientHelper.GIA_CREATEUSER_ENDPOINT_PARAM + "=" + HttpClientHelper.CREATEUSER_ENDPOINT + "&" +      // Endpoint de creation d'un utilisateur
+    			HttpClientHelper.GIA_URLPATH_PARAM + "=" +  URLEncoder.encode(giaUrlPath, "UTF-8") + "&" +      // Url de base du service GIA
+    			HttpClientHelper.GIA_CREATEUSER_ENDPOINT_PARAM + "=" + HttpClientHelper.FRONTOFFICE_APIURL + HttpClientHelper.CREATEUSER_ENDPOINT + "&" +      // Endpoint de creation d'un utilisateur
     			HttpClientHelper.GIA_RESETPWD_ENDPOINT_PARAM + "=" + URLEncoder.encode(HttpClientHelper.RESETPWD_ENDPOINT + "?" + HttpClientHelper.CLIENTID_PARAM + "=" + app.getClientId(), "UTF-8")      // Endpoint de reinitialisation de mot de passe
     			;
     	// Retourne l'url de redirection de l'application app

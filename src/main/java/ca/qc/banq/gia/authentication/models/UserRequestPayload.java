@@ -4,8 +4,12 @@
 package ca.qc.banq.gia.authentication.models;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
+
+import org.apache.commons.lang3.StringUtils;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -21,7 +25,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuppressWarnings("serial")
-public class CreateUserRequestPayload implements Serializable {
+public class UserRequestPayload implements Serializable {
 
 	@NotNull(message = "CreateUserRequestPayload.accountEnabled.NotNull")
 	@ApiModelProperty(required = true, value = "accountEnabled", example = "true")
@@ -45,8 +49,12 @@ public class CreateUserRequestPayload implements Serializable {
     
     @ApiModelProperty(value = "jobTitle", example = "Marketing Director")
     private String jobTitle;
+
+    @NotNull(message = "CreateUserRequestPayload.mail.NotNull")
+    @ApiModelProperty(value = "mail", example = "MelissaD@yahoo.com")
+    private String mail;
     
-    @NotNull(message = "CreateUserRequestPayload.mailNickname.NotNull")
+    //@NotNull(message = "CreateUserRequestPayload.mailNickname.NotNull")
     @ApiModelProperty(value = "mailNickname", example = "MelissaD")
     private String mailNickname;
     
@@ -81,7 +89,39 @@ public class CreateUserRequestPayload implements Serializable {
     @NotNull(message = "CreateUserRequestPayload.userPrincipalName.NotNull")
     @ApiModelProperty(required = true, value = "userPrincipalName", example = "MelissaD@banq.qc.ca")
     private String userPrincipalName;
+    
+    @ApiModelProperty(value = "identities", example = "[]")
+    private List<IdentityPayload> identities;
 	
+    /**
+     * Construction des identities de l'utilisateur
+     * @param tenant
+     */
+    public void buildIdentities(String tenant) {
+    	
+    	// Initialisation
+    	this.identities = new ArrayList<IdentityPayload>();
+    	
+    	// Ajout de l'adresse mail comme identifiant de connexion
+    	if(this.mail != null && !this.mail.isEmpty()) {
+    		identities.add(new IdentityPayload( SignInType.EMAIL.getValue(), tenant, this.mail ));
+    		if(this.userPrincipalName == null || this.userPrincipalName.isEmpty()) this.userPrincipalName = this.mail.substring(0, StringUtils.indexOf(this.mail, "@"));
+    	}
+    	
+    	// Nettoyage du userPrincipalName (si necessaire)
+    	if(this.userPrincipalName != null && !this.userPrincipalName.isEmpty()) {
+    		if(StringUtils.contains(this.userPrincipalName, "@")) this.userPrincipalName = this.userPrincipalName.substring(0, StringUtils.indexOf(this.userPrincipalName, "@"));
+    	} else {
+    		if(this.mailNickname != null && !this.mailNickname.isEmpty()) this.userPrincipalName = this.mailNickname;
+    	}
+    	
+    	// Ajout du userPrincipalName comme identifiant de connexion
+    	if(this.userPrincipalName != null && !this.userPrincipalName.isEmpty()) {
+			identities.add(new IdentityPayload( SignInType.PRINCIPALNAME.getValue(), tenant, this.userPrincipalName.concat("@").concat(tenant) ));
+			identities.add(new IdentityPayload( SignInType.FEDERATED.getValue(), tenant, this.userPrincipalName ));
+			if(!StringUtils.contains(this.mail, this.userPrincipalName)) identities.add(new IdentityPayload( SignInType.USERNAME.getValue(), tenant, this.userPrincipalName ));
+    	}
+    }
 }
 
 @Data

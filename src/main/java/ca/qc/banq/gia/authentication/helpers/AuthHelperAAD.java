@@ -8,7 +8,6 @@ import static ca.qc.banq.gia.authentication.helpers.SessionManagementHelper.FAIL
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,10 +24,16 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import com.microsoft.aad.msal4j.AuthorizationCodeParameters;
 import com.microsoft.aad.msal4j.AuthorizationRequestUrlParameters;
@@ -48,11 +53,14 @@ import com.nimbusds.openid.connect.sdk.AuthenticationResponseParser;
 import com.nimbusds.openid.connect.sdk.AuthenticationSuccessResponse;
 
 import ca.qc.banq.gia.authentication.config.AADConfig;
+import ca.qc.banq.gia.authentication.models.AddUserToGroupRequestPayload;
 import ca.qc.banq.gia.authentication.models.AppPayload;
+import ca.qc.banq.gia.authentication.models.GetIdentitiesResponse;
 import ca.qc.banq.gia.authentication.models.GetTokenRequestPayload;
 import ca.qc.banq.gia.authentication.models.StateData;
 import ca.qc.banq.gia.authentication.models.TokenResponse;
 import ca.qc.banq.gia.authentication.models.UserInfo;
+import ca.qc.banq.gia.authentication.models.UserRequestPayload;
 import lombok.Getter;
 
 /**
@@ -67,6 +75,12 @@ public class AuthHelperAAD {
     public static final String PRINCIPAL_SESSION_NAME = "principal";
     public static final String TOKEN_CACHE_SESSION_ATTRIBUTE = "token_cache";
 
+	@Value("${server.host}")
+	String serverHost;
+	
+	@Value("${server.servlet.context-path}")
+	String servletPath;
+	
     @Autowired
     AADConfig configuration;
     
@@ -199,39 +213,97 @@ public class AuthHelperAAD {
 	 * @param token
 	 * @return
 	 */
-	public UserInfo getUserInfos(String token) {
-    	HttpHeaders requestHeaders = new HttpHeaders();
-	  	requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-	  	requestHeaders.setBearerAuth(token);
-    	UserInfo infos = HttpClientHelper.callRestAPI(configuration.getMsGraphEndpointHost() + "v1.0/me", HttpMethod.GET, null, UserInfo.class, null, requestHeaders);
-    	return infos;
+	public UserInfo getADUserInfos(String token) {
+    	return HttpClientHelper.callRestAPI(configuration.getMsGraphEndpointHost() + "v1.0/me", HttpMethod.GET, null, UserInfo.class, null, buildHeaders(token));
 	}
     
-	public TokenResponse getToken(HttpServletRequest request, AppPayload app) throws Exception {
-		String code = request.getParameter("code") ;
-        String url = configuration.getAuthority() + "/oauth2/v2.0/token?" +
-                "grant_type=client_credentials" +
-                //"code="+ code +"&" +
-                //"redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), "UTF-8") +
-                "&client_id=" + app.getClientId() +
-                "&client_secret=" + app.getCertSecretValue() +
-                "&scope=" + URLEncoder.encode("https://graph.microsoft.com/.default" , "UTF-8") ;
-        
-    	HttpHeaders requestHeaders = new HttpHeaders();
-	  	requestHeaders.setContentType(MediaType.APPLICATION_JSON); // MediaType.APPLICATION_FORM_URLENCODED); //
+	/**
+	 * Recupere le token d'acces a GraphAPI
+	 * @param app
+	 * @return
+	 */
+    public TokenResponse getAccessToken(AppPayload app) {
+    	// Requete
+	  	GetTokenRequestPayload req = new GetTokenRequestPayload(HttpClientHelper.GRANT_TYPE_CREDENTIAL, app.getCertSecretValue(), app.getClientId(), configuration.getMsGraphScope());
+	  	RestTemplate restTemplate = new RestTemplate();
 	  	
-	  	TokenResponse token = HttpClientHelper.callRestAPI(configuration.getAccessGraphTokenUri(), HttpMethod.POST, null, TokenResponse.class, new GetTokenRequestPayload(HttpClientHelper.GRANT_TYPE_CREDENTIAL, app.getCertSecretValue(), app.getClientId(), configuration.getMsGraphScope()), requestHeaders);
-	  	return token;
-	}
-	
+	  	// Initialisation du header
+	  	HttpHeaders headers = new HttpHeaders();
+	  	headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+	  	
+	  	// Construction du body de la requete
+	  	MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+	  	map.add("grant_type",req.getGrant_type());
+	  	map.add("client_secret",req.getClient_secret());
+	  	map.add("client_id",req.getClient_id());
+	  	map.add("scope",req.getScope());
+	  	HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(map, headers);
+	  	
+	  	// Execution du service rest de recuperation d'un token d'acces a GraphAPI
+	  	ResponseEntity<TokenResponse> response = restTemplate.exchange(configuration.getAccessGraphTokenUri(), HttpMethod.POST, entity, TokenResponse.class);
+	  	
+	  	// Retourne le token
+	  	return response.getBody();
+    }
 
-	public List<UserInfo> getAllUsers(String token) throws Exception {
-    	HttpHeaders requestHeaders = new HttpHeaders();
+    /**
+     * Cree un nouvel utilisateur dans Azure AD/B2C
+     * @param token
+     * @param request
+     * @return
+     */
+    public UserInfo createUser(TokenResponse token, UserRequestPayload request) {
+	  	return HttpClientHelper.callRestAPI(configuration.getMsGraphUsersEndpoint(), HttpMethod.POST, null, UserInfo.class, request, buildHeaders(token.getAccess_token()) );
+    }
+
+    /**
+     * Ajoute un utilisateur a un groupe dans Azure AD
+     * @param token
+     * @param uid id utilisateur ou userPrincipalName dans AD/B2C
+     * @param groupId
+     */
+    public void addUserTGroup(TokenResponse token, String uid, String groupId) {
+    	HttpClientHelper.callRestAPI(StringUtils.replace(configuration.getMsGraphAddUserToGroupEndpoint(), "$groupid", groupId) , HttpMethod.POST, null, Void.class, new AddUserToGroupRequestPayload(uid), buildHeaders(token.getAccess_token()) );
+    }
+
+    /**
+     * Recupere les infos d'un utilisateur Azure AD/B2C
+     * @param token
+     * @param uid id utilisateur ou userPrincipalName dans AD/B2C
+     * @return
+     */
+    public UserInfo getB2CUserInfos(TokenResponse token, String uid) {
+	  	return HttpClientHelper.callRestAPI(configuration.getMsGraphUsersEndpoint() + "/" + uid, HttpMethod.GET, null, UserInfo.class, null, buildHeaders(token.getAccess_token()) );
+    }
+	
+    /**
+     * Recupere les identities d'un utilisateur
+     * @param token
+     * @param uid id utilisateur Azure B2C ou userPrincipalName
+     * @return
+     */
+    public GetIdentitiesResponse getUserIdentities(TokenResponse token, String uid) {
+	  	return HttpClientHelper.callRestAPI(configuration.getMsGraphUsersEndpoint() + "/" + uid + "/identities", HttpMethod.GET, null, GetIdentitiesResponse.class, null, buildHeaders(token.getAccess_token()) );
+    }
+    
+    /**
+     * Genere un entete http avec token d'authentification
+     * @param token
+     * @return
+     */
+    private HttpHeaders buildHeaders(String token) {
+
+	  	// Initialisation du Header
+	  	HttpHeaders requestHeaders = new HttpHeaders();
 	  	requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-	  	requestHeaders.setBearerAuth(token);
-	  	return HttpClientHelper.callRestAPI("https://graph.microsoft.com/v1.0/users/", HttpMethod.GET, null, List.class, null, requestHeaders);
-	}
-	
-	
+	  	
+	  	// Ajout du token d'acces
+	  	if(token != null && !token.isEmpty()) requestHeaders.setBearerAuth(token);
+	  	return requestHeaders;
+    }
+    
+    public String getGIAUrlPath() {
+    	return serverHost.concat(servletPath);
+    }
 	
 }
