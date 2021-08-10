@@ -41,10 +41,9 @@ import ca.qc.banq.gia.authentication.repositories.AppRepository;
 import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
 
 /**
- * @author Juergen Hoeller
- * @author Ken Krebs
- * @author Arjen Poutsma
- * @author Michael Isvy
+ * Controlleur de gestion des applications dans la console d'administration du service d'authentification
+ * @author francis.djiomou
+ * @since 2021-06-25
  */
 @Controller
 class AppController {

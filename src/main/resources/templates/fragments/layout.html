@@ -64,14 +64,26 @@
           </li>
 
           <li th:replace="::menuItem ('/env','envs','environment','th-list','Environnement')">
-            <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span>
+            <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
             <span>Environnement</span>
+          </li>
+
+          <li
+            th:replace="::menuItem ('/doc','doc','documentation','book','Documentation')">
+            <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
+            <span>Documentation</span>
           </li>
 
           <li
             th:replace="::menuItem ('/oups','error','trigger a RuntimeException to see how it is handled','warning-sign','Error')">
             <span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>
             <span>Errors</span>
+          </li>
+
+          <li
+            th:replace="::menuItem ('/logout','logout','Logout','off','Logout')">
+            <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
+            <span>Logout</span>
           </li>
 
         </ul>

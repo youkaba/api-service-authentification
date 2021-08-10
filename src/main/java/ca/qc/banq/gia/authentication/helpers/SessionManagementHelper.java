@@ -34,6 +34,7 @@ public class SessionManagementHelper {
     private static final Integer STATE_TTL = 3600;
 
     public static final String FAILED_TO_VALIDATE_MESSAGE = "Failed to validate data received from Authorization service - ";
+    public static final String[] SECURED_PATH = new String [] {"/", "/apps", "/env", "/doc", "/oups", "/apidoc", "/h2-console", "", "", "", };
 
     public static StateData validateState(HttpSession session, String state) throws Exception {
         if (StringUtils.isNotEmpty(state)) {
@@ -118,7 +119,7 @@ public class SessionManagementHelper {
     			HttpClientHelper.SIGNOUT_URL + "=" +  URLEncoder.encode(app.getLogoutURL(), "UTF-8") + "&" +      // Url de signout
     			HttpClientHelper.GIA_URLPATH_PARAM + "=" +  URLEncoder.encode(giaUrlPath, "UTF-8") + "&" +      // Url de base du service GIA
     			HttpClientHelper.GIA_CREATEUSER_ENDPOINT_PARAM + "=" + HttpClientHelper.FRONTOFFICE_APIURL + HttpClientHelper.CREATEUSER_ENDPOINT + "&" +      // Endpoint de creation d'un utilisateur
-    			HttpClientHelper.GIA_RESETPWD_ENDPOINT_PARAM + "=" + URLEncoder.encode(HttpClientHelper.RESETPWD_ENDPOINT + "?" + HttpClientHelper.CLIENTID_PARAM + "=" + app.getClientId(), "UTF-8")      // Endpoint de reinitialisation de mot de passe
+    			HttpClientHelper.GIA_RESETPWD_ENDPOINT_PARAM + "=" + URLEncoder.encode(HttpClientHelper.RESETPWD_ENDPOINT, "UTF-8")      // Endpoint de reinitialisation de mot de passe
     			;
     	// Retourne l'url de redirection de l'application app
     	return app.getHomeUrl().concat(query);

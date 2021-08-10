@@ -59,8 +59,8 @@ public class UserRequestPayload implements Serializable {
     private String mailNickname;
     
     @NotNull(message = "CreateUserRequestPayload.passwordPolicies.NotNull")
-    @ApiModelProperty(value = "passwordPolicies", example = "\"passwordProfile\": {\"password\": \"87f312a1-38ec-1179-c230-bbd2ab1d0d9c\",\"forceChangePasswordNextSignIn\": false}")
-    private PasswordPolicy passwordPolicies;
+    @ApiModelProperty(value = "passwordProfile", example = "\"passwordProfile\": {\"password\": \"87f312a1-38ec-1179-c230-bbd2ab1d0d9c\",\"forceChangePasswordNextSignIn\": false}")
+    private PasswordPolicy passwordProfile;
     
     @ApiModelProperty(value = "officeLocation", example = "131/1105")
     private String officeLocation;
@@ -101,18 +101,20 @@ public class UserRequestPayload implements Serializable {
     	
     	// Initialisation
     	this.identities = new ArrayList<IdentityPayload>();
+    	if(this.state != null && (this.state.isEmpty() || this.state.isBlank())) this.state = null;
+    	if(this.usageLocation != null && (this.usageLocation.isEmpty() || this.usageLocation.isBlank())) this.usageLocation = null;
+    	if(this.streetAddress != null && (this.streetAddress.isEmpty() || this.streetAddress.isBlank())) this.streetAddress = null;
     	
     	// Ajout de l'adresse mail comme identifiant de connexion
     	if(this.mail != null && !this.mail.isEmpty()) {
     		identities.add(new IdentityPayload( SignInType.EMAIL.getValue(), tenant, this.mail ));
     		if(this.userPrincipalName == null || this.userPrincipalName.isEmpty()) this.userPrincipalName = this.mail.substring(0, StringUtils.indexOf(this.mail, "@"));
+    		this.mailNickname = this.mail.substring(0, StringUtils.indexOf(this.mail, "@"));;
     	}
     	
     	// Nettoyage du userPrincipalName (si necessaire)
     	if(this.userPrincipalName != null && !this.userPrincipalName.isEmpty()) {
     		if(StringUtils.contains(this.userPrincipalName, "@")) this.userPrincipalName = this.userPrincipalName.substring(0, StringUtils.indexOf(this.userPrincipalName, "@"));
-    	} else {
-    		if(this.mailNickname != null && !this.mailNickname.isEmpty()) this.userPrincipalName = this.mailNickname;
     	}
     	
     	// Ajout du userPrincipalName comme identifiant de connexion

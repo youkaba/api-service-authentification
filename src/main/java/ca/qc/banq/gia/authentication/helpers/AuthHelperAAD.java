@@ -263,7 +263,7 @@ public class AuthHelperAAD {
      * @param groupId
      */
     public void addUserTGroup(TokenResponse token, String uid, String groupId) {
-    	HttpClientHelper.callRestAPI(StringUtils.replace(configuration.getMsGraphAddUserToGroupEndpoint(), "$groupid", groupId) , HttpMethod.POST, null, Void.class, new AddUserToGroupRequestPayload(uid), buildHeaders(token.getAccess_token()) );
+    	HttpClientHelper.callRestAPI(StringUtils.replace(configuration.getMsGraphAddUserToGroupEndpoint(), "$groupid", groupId) , HttpMethod.POST, null, Void.class, new AddUserToGroupRequestPayload(uid).getJsonData(), buildHeaders(token.getAccess_token()) );
     }
 
     /**

@@ -25,6 +25,11 @@ import org.springframework.web.servlet.ModelAndView;
 import ca.qc.banq.gia.authentication.helpers.AuthHelperAAD;
 import ca.qc.banq.gia.authentication.helpers.AuthHelperB2C;
 
+/**
+ * Pages de la console d'administration du service d'authentification
+ * @author francis.djiomou
+ * @since 2021-08-03
+ */
 @Controller
 class WelcomeController {
 
@@ -43,11 +48,19 @@ class WelcomeController {
 	@Value("${spring.profiles.active}")
 	String profile;
 
+	/**
+	 * Page d'accueil de la console d'administration du service d'authentification
+	 * @return
+	 */
 	@GetMapping("/")
 	public String welcome() {
 		return "welcome";
 	}
 
+	/**
+	 * Page d'affichage de l'environnement d'execution du service d'authentification
+	 * @return
+	 */
 	@GetMapping("/env")
 	public ModelAndView env() {
 		ModelAndView mav = new ModelAndView("env");
@@ -57,5 +70,14 @@ class WelcomeController {
 		mav.addObject("servletPath", servletPath);
 		mav.addObject("profile", profile);
 		return mav;
+	}
+
+	/**
+	 * Page documentation de la console d'administration du service d'authentification
+	 * @return
+	 */
+	@GetMapping("/doc")
+	public ModelAndView doc() {
+		return new ModelAndView("doc");
 	}
 }

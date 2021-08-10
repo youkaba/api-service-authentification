@@ -4,10 +4,13 @@
 package ca.qc.banq.gia.authentication.rest;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -47,10 +50,14 @@ public class GiaFrontOfficeControllerImpl implements GiaFrontOfficeController {
 	@Autowired
 	GiaBackOfficeService business;
 	
+	/*
+	 * (non-javadoc)
+	 * @see ca.qc.banq.gia.authentication.rest.GiaFrontOfficeController#createUserIntoAzureB2C(javax.servlet.http.HttpServletRequest, ca.qc.banq.gia.authentication.models.UserRequestPayload)
+	 */
 	@Override
     @PostMapping(HttpClientHelper.CREATEUSER_ENDPOINT)
     @ApiOperation("Cree un nouvel utilisateur dans Azure B2C")
-	public UserInfo createUserIntoAzureB2C(HttpServletRequest httpRequest, UserRequestPayload request) throws Throwable {
+	public UserInfo createUserIntoAzureB2C(HttpServletRequest httpRequest, @RequestBody @Valid @NotNull(message = "invalid.createuser.request") UserRequestPayload request) throws Throwable {
 		
 		// Recuperation des parametres d'entete de la requete
 		String appId = httpRequest.getParameter(HttpClientHelper.CLIENTID_PARAM) ;

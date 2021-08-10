@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package ca.qc.banq.gia.authentication.rest;
+package ca.qc.banq.gia.authentication.controller;
 
 import java.net.URLEncoder;
 
@@ -22,13 +22,16 @@ import ca.qc.banq.gia.authentication.helpers.AuthHelperB2C;
 import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
 import ca.qc.banq.gia.authentication.models.AppPayload;
 import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
+import lombok.extern.slf4j.Slf4j;
 
 
 /**
  * Controller exposing application endpoints
+ * Exposition des services web de type Request pour les application interfacant avec GIA
  * @author <a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a>
  * @since 2021-05-12
  */
+@Slf4j
 @Controller
 public class AuthPageController {
 
@@ -119,16 +122,27 @@ public class AuthPageController {
      */
     @RequestMapping(HttpClientHelper.RESETPWD_ENDPOINT)
 	public void resetUserPassword(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
+    	
+    	// Recuperation de l'id de l'application dans la requete
     	String clientId = httpRequest.getParameter(HttpClientHelper.CLIENTID_PARAM);
     	AppPayload app = clientId != null ? appService.findByClientId(clientId) : null;
     	if(app == null) throw new GIAException("unable to find appid") ;
-    	String url = authHelperB2C.getConfiguration().getAuthorityBase() + 
+    	
+    	// Initialisation de l'application dans le helper
+    	if(app.getTypeAuth().equals(TypeAuth.B2C)) filterB2C.getAuthHelper().init(app);
+    	else filterAAD.getAuthHelper().init(app);
+    	
+    	// Construction du lien de redirection vers le flux de reinitialisation Azure AD de l'application
+    	String url = authHelperB2C.getConfiguration().getAuthorityBase().replace("/tfp", "") + 
     			"oauth2/v2.0/authorize?p=" + app.getPolicyResetPassword() + "&" + 
     			"client_id=" + app.getClientId() + "&" + 
     			"nonce=defaultNonce" + "&" + 
-    			"redirect_uri=" + URLEncoder.encode(app.getLoginURL(), "UTF-8") + "&" +
+    			"redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), "UTF-8") + "&" +
     			"scope=openid&response_type=id_token&prompt=login"
     			;
+    	log.info("reset-password url = " + url);
+    	
+    	// Ouverture du flux de reinitialisation du mot de passe
     	httpResponse.sendRedirect(url);
 	}
 

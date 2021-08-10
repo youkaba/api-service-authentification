@@ -23,4 +23,10 @@ public class AddUserToGroupRequestPayload implements Serializable {
 		this.id = "https://graph.microsoft.com/v1.0/directoryObjects/" +  userId;
 	}
 	
+	public String getJsonData() {
+		String json = String.format( "{\r\n"
+				+ "    \"@odata.id\": \"%s\"\r\n"
+				+ "}", this.id);
+		return json;
+	} 
 }

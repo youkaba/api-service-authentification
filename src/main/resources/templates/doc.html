@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+
+<html xmlns:th="https://www.thymeleaf.org"
+  th:replace="~{fragments/layout :: layout (~{::body},'doc')}">
+
+<body>
+
+  <h2>Documentation</h2> <br /><br />
+
+  <table class="table table-striped">
+    <tbody>
+      <tr>
+        <th>Introduction</th>
+        <td>
+        	Le service <b><i>BAnQ Authentification</i></b> est un composant (propriétaire) qui permet aux applications de la BAnQ
+        	d'implémenter les services de sécurité disponibles sur le portail Microsoft Azure Actice Directory/Business to Client  (B2C).
+        	En d'autres termes, il s'agit de dédier l'implémentation de la plupart des flux utilisateurs (non métier) communs aux applications de BAnQ
+        	à une plateforme dédiée qui devra s'en charger à notre place et la faire de la meilleure des facons en fonction des exigences
+        	et des évolutions technologiques en cours dans le domaine.<br />
+        	Ces flux non fonctionnels sont :<br />
+        	<ul>
+        		<li>L'inscription d'un nouvel utilisateur dans une application</li>
+        		<li>L'authentification d'un utilisateur (connexion à une application)</li>
+        		<li>L'activation d'un utilisateur</li>
+        		<li>La réinitialisation de mot de passe</li>
+        		<li>Le changement de mot de passe</li>
+        	</ul>
+        </td>
+      </tr>
+      <tr>
+        <th>Contexte</th>
+        <td>
+        	Dans l'environnement actuel des applications de la BAnQ, chacune des applications utilise le mécanisme de fédération
+        	des identités <b><i>Shibboleth</i></b> pour gérer l'authentification, qui communiquera avec un ou plusieurs fournisseurs d'identités.
+        	dont le principal utilisé pour la gestion des accès est le CRM <b><i>Pivotal</i></b>.<br />
+        	Pivotal expose alors des services web (SOAP) pour permettre l'ajout et la mise à jour dans l'annuaire des identités. 
+        	Chacune des applications possède son implémentation de chacun des flux décrit plus haut dépendemment de l'architecture en place. 
+        </td>
+      </tr>
+      <tr>
+        <th>Architecture</th>
+        <td>
+        	L'un des principaux objectifs du projet GIA eut été de décommissionner les services Shibboleth et Pivotal et de faire communiquer les applications
+        	de BAnQ avec la plateforme Azure afin de leur permettre de bénéficier de toutes les meilleures pratiques en terme de sécurité des applications,
+        	des mécanismes de gestion des identités et des accès, de surveillance et d'autorisations qui y sont développés.<br />
+        	<br />
+        	<img src="../static/resources/images/banq_gia_base_work_v3.jpg" th:src="@{/resources/images/banq_gia_base_work_v3.jpg}" alt="Nouvelle Architecture GIA" /></div>
+        	
+        </td>
+      </tr>
+      
+      <tr>
+        <th>Fonctionnement</th>
+        <td>
+        	Le service BAnQ Authentification interface directement avec le <b><i>portail Azure AD/B2C</i></b> afin de déclencher automatiquement les flux d'utilisation
+        	(décrits précédemment) sur la base des informations sur les applications inscrites dans le portail.<br />
+        	En effet, pour pouvoir implémenter ces services, chacune des applications devra tout dabord être inscrite dans le portail Azure.<br />
+        	Dans un deuxième temps, les mêmes applications doivent également être enregistrées auprès du service d'authentification.
+        	Dès ce moment, le service d'authentification fourni les <b><i>API</i></b> suivantes (qui pourront être consommées par les applications clientes) :<br />
+        	<table cellpadding="3">
+	        	<tr>
+	        		<th></th>
+	        		<th>API</th>
+	        		<th>Endpoint</th>
+	        		<th>Methode</th>
+	        	</tr>
+        		<tr>
+        			<th>1.</th> <td>Connexion</td> <td th:text="${'/sign_in?appid=#client_id'}"></td> <td>Request</td>
+        		</tr>
+        		<tr>
+        			<th>2.</th> <td>Déconnexion</td> <td th:text="${'/sign_out?appid=#client_id'}"></td> <td>Request</td>
+        		</tr>
+        		<tr>
+        			<th>3.</th> <td>Création d'un utilisateur</td> <td th:text="${'/createUser?appid=#client_id'}"></td> <td>Post</td>
+        		</tr>
+        		<tr>
+        			<th>4.</th> <td>Activation d'un utilisateur</td> <td th:text="${'/resetPassword?appid=#client_id'}"></td> <td>Request</td>
+        		</tr>
+        		<tr>
+        			<th>5.</th> <td>Changement du mot de passe</td> <td th:text="${'/resetPassword?appid=#client_id'}"></td> <td>Request</td>
+        		</tr>
+        	</table><br />
+        	Le flux de réinitialisation de mot de passe se trouvera directement sur la page de connexion et permettra à l'utilisateur de 
+        	restaurer son mot de passe en cas de perte.<br />
+        	Le service d'authentification fourni à ses applications clientes une poignée de <b><i>services web</i></b> de type <b><i>REST</i></b> qui pourront alors être 
+        	consommés pour implémenter les différents flux au besoin. 
+        </td>
+      </tr>
+      <tr>
+        <th></th>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <br />
+  
+</body>
+</html>
