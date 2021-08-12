@@ -55,6 +55,9 @@ import com.nimbusds.openid.connect.sdk.AuthenticationSuccessResponse;
 import ca.qc.banq.gia.authentication.config.AADConfig;
 import ca.qc.banq.gia.authentication.models.AddUserToGroupRequestPayload;
 import ca.qc.banq.gia.authentication.models.AppPayload;
+import ca.qc.banq.gia.authentication.models.AssignAppToUserRequestPayload;
+import ca.qc.banq.gia.authentication.models.AssignAppToUserResponsePayload;
+import ca.qc.banq.gia.authentication.models.FindAppByNameResponsePayload;
 import ca.qc.banq.gia.authentication.models.GetIdentitiesResponse;
 import ca.qc.banq.gia.authentication.models.GetTokenRequestPayload;
 import ca.qc.banq.gia.authentication.models.StateData;
@@ -264,6 +267,24 @@ public class AuthHelperAAD {
      */
     public void addUserTGroup(TokenResponse token, String uid, String groupId) {
     	HttpClientHelper.callRestAPI(StringUtils.replace(configuration.getMsGraphAddUserToGroupEndpoint(), "$groupid", groupId) , HttpMethod.POST, null, Void.class, new AddUserToGroupRequestPayload(uid).getJsonData(), buildHeaders(token.getAccess_token()) );
+    }
+
+    /**
+     * Assigne un utilisateur a une application
+     * @param token
+     * @param uid
+     * @param appId
+     */
+    public void assignUserToApp(TokenResponse token, String uid, String appId) {
+    	// Recherche de l'application dans azureAD a partir de son ClientIdl
+    	FindAppByNameResponsePayload resp = HttpClientHelper.callRestAPI(StringUtils.replace(HttpClientHelper.FIND_APP_BYID_REQUEST_URL, "$appId", appId) , HttpMethod.GET, null, FindAppByNameResponsePayload.class, null, buildHeaders(token.getAccess_token()) );
+    	if(resp == null || resp.getValue() == null || resp.getValue().isEmpty()) return;
+    	
+    	// Recuperation de l'id de l'application
+    	String id = resp.getValue().get(0).getId();
+    	
+    	// Affectation de l'utilisateur a l'application
+    	HttpClientHelper.callRestAPI(StringUtils.replace(HttpClientHelper.ASSIGN_USERTOAPP_REQUEST_URL, "$id", id ) , HttpMethod.POST, null, AssignAppToUserResponsePayload.class, new AssignAppToUserRequestPayload(uid, id), buildHeaders(token.getAccess_token()) );
     }
 
     /**

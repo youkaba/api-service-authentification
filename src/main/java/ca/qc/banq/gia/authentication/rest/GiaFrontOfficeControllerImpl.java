@@ -78,8 +78,11 @@ public class GiaFrontOfficeControllerImpl implements GiaFrontOfficeController {
   		UserInfo user = authHelperAAD.createUser(token, request);
 
 	  	// Ajout de l'utilisateur dans le groupe defini
-	  	if(app.getUsersGroupId() != null && !app.getUsersGroupId().isEmpty()) authHelperAAD.addUserTGroup(token, user.getId(), app.getUsersGroupId());
+	  	//if(app.getUsersGroupId() != null && !app.getUsersGroupId().isEmpty()) authHelperAAD.addUserTGroup(token, user.getId(), app.getUsersGroupId());
 	  	
+  		// Affectation de l'utilisateur a l'application
+  		authHelperAAD.assignUserToApp(token, user.getId(), appId);
+  		
 	  	// Retourne l'utilisateur cree
 	  	return user;
 	}

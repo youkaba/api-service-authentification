@@ -59,6 +59,9 @@ public class HttpClientHelper {
 	public final static String REDIRECTB2C_ENDPOINT = "/redirect2_b2c";
 	public final static String REDIRECTAAD_ENDPOINT = "/redirect2_aad";
 	
+	public static final String FIND_APP_BYID_REQUEST_URL = "https://graph.microsoft.com/v1.0/servicePrincipals?$count=true&$filter=appId eq '$appId'&$select=id,displayName"; 
+	public final static String ASSIGN_USERTOAPP_REQUEST_URL = "https://graph.microsoft.com/v1.0/servicePrincipals/$id/appRoleAssignments";
+	
 	public  HttpClientHelper() {}
 
     public static String getResponseStringFromConn(HttpURLConnection conn) throws IOException {
