@@ -57,7 +57,7 @@
         	En effet, pour pouvoir implémenter ces services, chacune des applications devra tout dabord être inscrite dans le portail Azure.<br />
         	Dans un deuxième temps, les mêmes applications doivent également être enregistrées auprès du service d'authentification.
         	Dès ce moment, le service d'authentification fourni les <b><i>API</i></b> suivantes (qui pourront être consommées par les applications clientes) :<br />
-        	<table cellpadding="3">
+        	<table class="table">
 	        	<tr>
 	        		<th></th>
 	        		<th>API</th>
@@ -71,7 +71,7 @@
         			<th>2.</th> <td>Déconnexion</td> <td th:text="${'/sign_out?appid=#client_id'}"></td> <td>Request</td>
         		</tr>
         		<tr>
-        			<th>3.</th> <td>Création d'un utilisateur</td> <td th:text="${'/createUser?appid=#client_id'}"></td> <td>Post</td>
+        			<th>3.</th> <td>Création d'un utilisateur</td> <td th:text="${'/api/fo/createUser?appid=#client_id'}"></td> <td>Post</td>
         		</tr>
         		<tr>
         			<th>4.</th> <td>Activation d'un utilisateur</td> <td th:text="${'/resetPassword?appid=#client_id'}"></td> <td>Request</td>
