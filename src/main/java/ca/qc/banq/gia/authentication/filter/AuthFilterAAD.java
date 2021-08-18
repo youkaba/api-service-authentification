@@ -81,6 +81,7 @@ public class AuthFilterAAD {
             } catch (MsalException authException) {
                 // something went wrong (like expiration or revocation of token)
                 // we should invalidate AuthData stored in session and redirect to Authorization server
+            	authException.printStackTrace();
                 SessionManagementHelper.removePrincipalFromSession(httpRequest);
                 authHelper.sendAuthRedirect( httpRequest, httpResponse, null, authHelper.getRedirectUriSignIn());
                 return;
