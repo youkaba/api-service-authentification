@@ -58,7 +58,7 @@ public class ListenerConfig extends ContextLoaderListener {
 	 */
 	@Transactional
 	private void initApp() {
-		try {
+		/*try {
 			
 			for(App app : initApps) {
 				if(!appRepo.existsById(app.getClientId())) appRepo.save(app);
@@ -66,7 +66,7 @@ public class ListenerConfig extends ContextLoaderListener {
 			
 		} catch(Exception e) {
 			log.error(" initialization has failed because of " + e.getMessage());
-		}
+		}*/
 	}
 	
 }
