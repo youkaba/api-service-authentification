@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.microsoft.aad.msal4j.IAuthenticationResult;
@@ -35,6 +36,9 @@ public class AuthFilterAAD {
     @Autowired
     AuthHelperAAD authHelper;
 
+	@Value("${server.host}")
+	String serverHost;
+
 	/*
 	 * (non-javadoc)
 	 * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
@@ -45,7 +49,7 @@ public class AuthFilterAAD {
             HttpServletRequest httpRequest = (HttpServletRequest) request;
             HttpServletResponse httpResponse = (HttpServletResponse) response;
             try {
-                String currentUri = httpRequest.getRequestURL().toString();
+                String currentUri = serverHost.concat(httpRequest.getContextPath());  // httpRequest.getRequestURL().toString();
                 //String path = httpRequest.getServletPath();
                 String queryStr = httpRequest.getQueryString();
                 String fullUrl = currentUri + (queryStr != null ? "?" + queryStr : "");
