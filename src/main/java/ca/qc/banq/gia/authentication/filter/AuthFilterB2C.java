@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.microsoft.aad.msal4j.IAuthenticationResult;
@@ -68,13 +69,16 @@ public class AuthFilterB2C {
 
 	@Autowired
 	GiaBackOfficeService business;
-	
+
+	@Value("${server.host}")
+	String serverHost;
+
     public void doFilter(ServletRequest request, ServletResponse response) throws Throwable {
         if (request instanceof HttpServletRequest) {
             HttpServletRequest httpRequest = (HttpServletRequest) request;
             HttpServletResponse httpResponse = (HttpServletResponse) response;
             try {
-                String currentUri = httpRequest.getRequestURL().toString();
+                String currentUri = serverHost.concat(httpRequest.getContextPath());  // httpRequest.getRequestURL().toString();
                 String queryStr = httpRequest.getQueryString();
                 String fullUrl = currentUri + (queryStr != null ? "?" + queryStr : "");
 
