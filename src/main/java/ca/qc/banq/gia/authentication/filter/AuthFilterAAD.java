@@ -49,7 +49,7 @@ public class AuthFilterAAD {
             HttpServletRequest httpRequest = (HttpServletRequest) request;
             HttpServletResponse httpResponse = (HttpServletResponse) response;
             try {
-                String currentUri = serverHost.concat(httpRequest.getContextPath());  // httpRequest.getRequestURL().toString();
+                String currentUri = serverHost.concat(httpRequest.getRequestURI());  // httpRequest.getRequestURL().toString();
                 //String path = httpRequest.getServletPath();
                 String queryStr = httpRequest.getQueryString();
                 String fullUrl = currentUri + (queryStr != null ? "?" + queryStr : "");

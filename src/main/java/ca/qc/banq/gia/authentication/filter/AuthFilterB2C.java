@@ -48,12 +48,14 @@ import ca.qc.banq.gia.authentication.models.TokenResponse;
 import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
 //import ca.qc.banq.gia.authentication.helpers.CookieHelper;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Filtre de requetes pour l'authentification B2C
  * @author <a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a>
  * @since 2021-05-12
  */
+@Slf4j
 @Getter
 @Component
 public class AuthFilterB2C {
@@ -78,7 +80,7 @@ public class AuthFilterB2C {
             HttpServletRequest httpRequest = (HttpServletRequest) request;
             HttpServletResponse httpResponse = (HttpServletResponse) response;
             try {
-                String currentUri = serverHost.concat(httpRequest.getContextPath());  // httpRequest.getRequestURL().toString();
+                String currentUri = serverHost.concat(httpRequest.getRequestURI());  // httpRequest.getRequestURL().toString();
                 String queryStr = httpRequest.getQueryString();
                 String fullUrl = currentUri + (queryStr != null ? "?" + queryStr : "");
 
