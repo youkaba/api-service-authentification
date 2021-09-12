@@ -96,7 +96,8 @@ class AppController {
 		List<AppPayload> results = this.business.findLikeTitle(app.getTitle());
 		if (results.isEmpty()) {
 			// no apps found
-			result.rejectValue("title", "notFound", "Aucune application trouvee");
+			//result.rejectValue("title", "notFound", "Aucune application trouvee");
+			model.put("app", new App());
 			return "apps/findApps";
 		}
 		else if (results.size() == 1) {
