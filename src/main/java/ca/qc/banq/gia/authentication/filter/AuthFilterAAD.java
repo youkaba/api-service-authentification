@@ -70,7 +70,7 @@ public class AuthFilterAAD {
                 // check if user has a AuthData in the session
                 if (!isAuthenticated(httpRequest)) {
                     // not authenticated, redirecting to login.microsoft.com so user can authenticate
-                    authHelper.sendAuthRedirect(httpRequest,httpResponse,null,authHelper.getRedirectUriSignIn());
+                    authHelper.sendAuthRedirect(httpRequest, httpResponse, authHelper.getConfiguration().getScope(), authHelper.getRedirectUriSignIn());
                     return;
                 }
 
@@ -87,7 +87,7 @@ public class AuthFilterAAD {
                 // we should invalidate AuthData stored in session and redirect to Authorization server
             	authException.printStackTrace();
                 SessionManagementHelper.removePrincipalFromSession(httpRequest);
-                authHelper.sendAuthRedirect( httpRequest, httpResponse, null, authHelper.getRedirectUriSignIn());
+                authHelper.sendAuthRedirect( httpRequest, httpResponse, authHelper.getConfiguration().getScope(), authHelper.getRedirectUriSignIn());
                 return;
             }
         }
