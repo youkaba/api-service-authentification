@@ -70,14 +70,9 @@ public class ExceptionHandlerConfig extends ResponseEntityExceptionHandler  {
         log.error(ex.getMessage(), ex);
         request.setAttribute("error", StringUtils.join(erreurs, '\n'), 0);
         
-        try {
-            HttpServletRequest req = ((HttpServletRequest)request);
-            req.setAttribute("error", StringUtils.join(erreurs, '\n') );
-			req.getRequestDispatcher("/error").forward(req, null);
-		} catch (Exception e) {e.printStackTrace();}
-        
         // Return Response
-        return new ResponseEntity<List<String>>(erreurs, status);
+        //return new ResponseEntity<List<String>>(erreurs, status);
+        return ResponseEntity.status(status).body(erreurs);
 	}
 	
 	/**

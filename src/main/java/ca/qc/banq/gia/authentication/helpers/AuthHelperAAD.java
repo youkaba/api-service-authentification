@@ -127,7 +127,7 @@ public class AuthHelperAAD {
         IConfidentialClientApplication app = createClientApplication();
         Object tokenCache = httpRequest.getSession().getAttribute("token_cache");
         if (tokenCache != null) app.tokenCache().deserialize(tokenCache.toString());
-        SilentParameters parameters = SilentParameters.builder(Collections.singleton("User.Read"), result.account()).build();
+        SilentParameters parameters = SilentParameters.builder(Collections.singleton(configuration.getScope()), result.account()).build();
         CompletableFuture<IAuthenticationResult> future = app.acquireTokenSilently(parameters);
         IAuthenticationResult updatedResult = future.get();
         SessionManagementHelper.storeTokenCacheInSession(httpRequest, app.tokenCache().serialize());
