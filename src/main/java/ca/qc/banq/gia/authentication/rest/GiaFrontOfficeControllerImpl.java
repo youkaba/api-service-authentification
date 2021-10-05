@@ -3,25 +3,36 @@
  */
 package ca.qc.banq.gia.authentication.rest;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPatch;
+import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+//import org.springframework.http.HttpEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ca.qc.banq.gia.authentication.exceptions.GIAException;
 import ca.qc.banq.gia.authentication.helpers.AuthHelperAAD;
 import ca.qc.banq.gia.authentication.helpers.AuthHelperB2C;
 import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
 import ca.qc.banq.gia.authentication.models.AppPayload;
+import ca.qc.banq.gia.authentication.models.CreateB2CUserRequestPayload;
+import ca.qc.banq.gia.authentication.models.EditB2CUserRequestPayload;
 import ca.qc.banq.gia.authentication.models.TokenResponse;
 import ca.qc.banq.gia.authentication.models.UserInfo;
-import ca.qc.banq.gia.authentication.models.UserRequestPayload;
 import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -57,10 +68,7 @@ public class GiaFrontOfficeControllerImpl implements GiaFrontOfficeController {
 	@Override
     @PostMapping(HttpClientHelper.CREATEUSER_ENDPOINT)
     @ApiOperation("Cree un nouvel utilisateur dans Azure B2C")
-	public UserInfo createUserIntoAzureB2C(HttpServletRequest httpRequest, @RequestBody @Valid @NotNull(message = "invalid.createuser.request") UserRequestPayload request) throws Throwable {
-		
-		// Recuperation des parametres d'entete de la requete
-		String appId = httpRequest.getParameter(HttpClientHelper.CLIENTID_PARAM) ;
+	public UserInfo createUserIntoAzureB2C(@NotNull @RequestParam(HttpClientHelper.CLIENTID_PARAM) String appId, @RequestBody @Valid @NotNull(message = "invalid.createuser.request") CreateB2CUserRequestPayload request) throws Throwable {
 		
 		// Check params
 		if(appId == null) throw new GIAException("invalid client_id");
@@ -71,11 +79,8 @@ public class GiaFrontOfficeControllerImpl implements GiaFrontOfficeController {
 	  	// Obtention du Token d'acces a GraphAPI
 	  	TokenResponse token = authHelperAAD.getAccessToken(app);
 		
-  		// Construction des identities de l'utilisateur
-  		request.buildIdentities(authHelperB2C.getConfiguration().getTenant());
-  		
   		// Creation de l'utilisateur
-  		UserInfo user = authHelperAAD.createUser(token, request);
+  		UserInfo user = authHelperAAD.createUser(token, request.toUserRequestPayload(authHelperB2C.getConfiguration().getTenant()));
 
 	  	// Ajout de l'utilisateur dans le groupe defini
 	  	//if(app.getUsersGroupId() != null && !app.getUsersGroupId().isEmpty()) authHelperAAD.addUserTGroup(token, user.getId(), app.getUsersGroupId());
@@ -85,6 +90,27 @@ public class GiaFrontOfficeControllerImpl implements GiaFrontOfficeController {
   		
 	  	// Retourne l'utilisateur cree
 	  	return user;
+	}
+
+	/*
+	 * (non-javadoc)
+	 * @see ca.qc.banq.gia.authentication.rest.GiaFrontOfficeController#editUserIntoAzureB2C(java.lang.String, ca.qc.banq.gia.authentication.models.EditB2CUserRequestPayload)
+	 */
+	@Override
+    @PutMapping(HttpClientHelper.EDITUSER_ENDPOINT)
+    @ApiOperation("Modifie un utilisateur dans Azure B2C")
+	public void editUserIntoAzureB2C(@NotNull @RequestParam(HttpClientHelper.CLIENTID_PARAM) String appId, @RequestBody @Valid @NotNull(message = "invalid.createuser.request") EditB2CUserRequestPayload request) throws Throwable {
+
+		AppPayload app = business.findByClientId(appId);
+		if(app == null) throw new GIAException("invalid client_id");
+	  	
+	  	// Obtention du Token d'acces a GraphAPI
+	  	TokenResponse token = authHelperAAD.getAccessToken(app);
+		
+  		// Modification de l'utilisateur
+  		authHelperAAD.editUserIdentities(token, request.getId(), request.getPatchIdentitiesRequest(authHelperB2C.getConfiguration().getTenant()));
+	  	request.setUserPrincipalName(request.getUserPrincipalName().concat("@").concat(authHelperB2C.getConfiguration().getTenant()));
+	  	authHelperAAD.editUser(token, request);
 	}
 
 }

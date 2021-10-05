@@ -23,6 +23,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPatch;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -35,6 +40,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.aad.msal4j.AuthorizationCodeParameters;
 import com.microsoft.aad.msal4j.AuthorizationRequestUrlParameters;
 import com.microsoft.aad.msal4j.ClientCredentialFactory;
@@ -57,9 +63,11 @@ import ca.qc.banq.gia.authentication.models.AddUserToGroupRequestPayload;
 import ca.qc.banq.gia.authentication.models.AppPayload;
 import ca.qc.banq.gia.authentication.models.AssignAppToUserRequestPayload;
 import ca.qc.banq.gia.authentication.models.AssignAppToUserResponsePayload;
+import ca.qc.banq.gia.authentication.models.EditB2CUserRequestPayload;
 import ca.qc.banq.gia.authentication.models.FindAppByNameResponsePayload;
 import ca.qc.banq.gia.authentication.models.GetIdentitiesResponse;
 import ca.qc.banq.gia.authentication.models.GetTokenRequestPayload;
+import ca.qc.banq.gia.authentication.models.PatchIdentitiesRequestPayload;
 import ca.qc.banq.gia.authentication.models.StateData;
 import ca.qc.banq.gia.authentication.models.TokenResponse;
 import ca.qc.banq.gia.authentication.models.UserInfo;
@@ -258,6 +266,20 @@ public class AuthHelperAAD {
     public UserInfo createUser(TokenResponse token, UserRequestPayload request) {
 	  	return HttpClientHelper.callRestAPI(configuration.getMsGraphUsersEndpoint(), HttpMethod.POST, null, UserInfo.class, request, buildHeaders(token.getAccess_token()) );
     }
+    
+    public void editUser(TokenResponse token, EditB2CUserRequestPayload request) throws Exception {
+    	org.apache.http.client.HttpClient httpClient =  new org.apache.http.impl.client.DefaultHttpClient();
+	    HttpPatch httpPatch = new HttpPatch(configuration.getMsGraphUsersEndpoint().concat("/" + request.getId()) );
+	    org.apache.http.HttpEntity httpEntity = new StringEntity(new ObjectMapper().writeValueAsString(request));
+	    httpPatch.setHeader("Content-Type", "application/json");
+	    httpPatch.setHeader("Authorization", "Bearer " + token.getAccess_token());
+	    httpPatch.setEntity(httpEntity);
+	    HttpResponse resp = httpClient.execute(httpPatch);
+	    //System.err.println(new ObjectMapper().writeValueAsString(request));
+	    System.err.println("User updated. StatusLine = " + resp.getStatusLine().getStatusCode() + " - " + resp.getStatusLine().getReasonPhrase());
+
+	  	//HttpClientHelper.callRestAPI(configuration.getMsGraphUsersEndpoint().concat("/" + id), HttpMethod.PATCH, null, void.class, request, buildHeaders(token.getAccess_token()) );
+    }
 
     /**
      * Ajoute un utilisateur a un groupe dans Azure AD
@@ -305,6 +327,16 @@ public class AuthHelperAAD {
      */
     public GetIdentitiesResponse getUserIdentities(TokenResponse token, String uid) {
 	  	return HttpClientHelper.callRestAPI(configuration.getMsGraphUsersEndpoint() + "/" + uid + "/identities", HttpMethod.GET, null, GetIdentitiesResponse.class, null, buildHeaders(token.getAccess_token()) );
+    }
+    
+    /**
+     * Modifie les identifiants de connexion d'un utilisateur dans Azure B2C
+     * @param token
+     * @param uid
+     * @param request
+     */
+    public void editUserIdentities(TokenResponse token, String uid, PatchIdentitiesRequestPayload request) {
+	  	HttpClientHelper.callRestAPI(configuration.getMsGraphUsersEndpoint() + "/" + uid + "/identities", HttpMethod.PUT, null, void.class, request, buildHeaders(token.getAccess_token()) );
     }
     
     /**
