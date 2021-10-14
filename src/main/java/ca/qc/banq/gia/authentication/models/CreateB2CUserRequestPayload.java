@@ -65,7 +65,7 @@ public class CreateB2CUserRequestPayload implements Serializable {
     	} else {
     		identities.add(new IdentityPayload( SignInType.USERNAME.getValue(), tenant, this.userPrincipalName ));
     	}
-		identities.add(new IdentityPayload( SignInType.PRINCIPALNAME.getValue(), tenant, this.userPrincipalName.concat("@").concat(tenant) ));
+		identities.add(new IdentityPayload( SignInType.PRINCIPALNAME.getValue(), tenant, request.getUserPrincipalName().concat("@").concat(tenant) ));
     	identities.add(new IdentityPayload( SignInType.EMAIL.getValue(), tenant, this.mail ));
     	request.setIdentities(identities);
     	return request;

@@ -6,23 +6,15 @@ package ca.qc.banq.gia.authentication.rest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPatch;
-import org.apache.http.entity.ContentType;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-//import org.springframework.http.HttpEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ca.qc.banq.gia.authentication.exceptions.GIAException;
 import ca.qc.banq.gia.authentication.helpers.AuthHelperAAD;
@@ -31,6 +23,7 @@ import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
 import ca.qc.banq.gia.authentication.models.AppPayload;
 import ca.qc.banq.gia.authentication.models.CreateB2CUserRequestPayload;
 import ca.qc.banq.gia.authentication.models.EditB2CUserRequestPayload;
+import ca.qc.banq.gia.authentication.models.GetIdentitiesResponse;
 import ca.qc.banq.gia.authentication.models.TokenResponse;
 import ca.qc.banq.gia.authentication.models.UserInfo;
 import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
@@ -107,9 +100,14 @@ public class GiaFrontOfficeControllerImpl implements GiaFrontOfficeController {
 	  	// Obtention du Token d'acces a GraphAPI
 	  	TokenResponse token = authHelperAAD.getAccessToken(app);
 		
-  		// Modification de l'utilisateur
-  		authHelperAAD.editUserIdentities(token, request.getId(), request.getPatchIdentitiesRequest(authHelperB2C.getConfiguration().getTenant()));
-	  	request.setUserPrincipalName(request.getUserPrincipalName().concat("@").concat(authHelperB2C.getConfiguration().getTenant()));
+  		// Recuperations des identities de l'utilisateur
+	  	GetIdentitiesResponse identities = authHelperAAD.getUserIdentities(token, request.getId());
+	  	
+	  	// MAJ des identities de l'utilisateur
+  		authHelperAAD.editUserIdentities(token, request.getId(), request.getPatchIdentitiesRequest(identities, authHelperB2C.getConfiguration().getTenant()));
+	  	
+  		// MAJ des infos de l'utilisateur
+  		request.setUserPrincipalName((request.getUserPrincipalName().matches(HttpClientHelper.EMAIL_REGEX) ? StringUtils.replace(request.getUserPrincipalName(), "@", ".") : request.getUserPrincipalName()) .concat("@").concat(authHelperB2C.getConfiguration().getTenant()));
 	  	authHelperAAD.editUser(token, request);
 	}
 

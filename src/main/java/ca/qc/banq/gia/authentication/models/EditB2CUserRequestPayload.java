@@ -4,8 +4,7 @@
 package ca.qc.banq.gia.authentication.models;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -47,20 +46,29 @@ public class EditB2CUserRequestPayload implements Serializable {
     private String mobilePhone;
 
 
-    public PatchIdentitiesRequestPayload getPatchIdentitiesRequest(String tenant) {
-    	List<IdentityPayload> identities = new ArrayList<IdentityPayload>();
-    	boolean principalIsMail = this.userPrincipalName.equalsIgnoreCase(this.mail);
+    public GetIdentitiesResponse getPatchIdentitiesRequest(GetIdentitiesResponse identities, String tenant) {
+    	//boolean principalIsMail = this.userPrincipalName.equalsIgnoreCase(this.mail);
     	boolean principalIsAnEmail = this.userPrincipalName.matches(HttpClientHelper.EMAIL_REGEX);
-    	if(principalIsAnEmail) {
-    		if(!principalIsMail) {
-    			identities.add(new IdentityPayload( SignInType.FEDERATED.getValue(), tenant, this.userPrincipalName ));
+    	
+    	// Parcours des identites de l'utilisateur
+    	identities.getValue().forEach(id -> {
+    		// Si l'identite courante est un userName, on met a jour son id
+    		if(id.getSignInType().equals(SignInType.USERNAME.getValue()) && !principalIsAnEmail) id.setIssuerAssignedId(this.userPrincipalName);
+    		if(id.getSignInType().equals(SignInType.EMAIL.getValue())) id.setIssuerAssignedId(this.mail);
+    		if(id.getSignInType().equals(SignInType.FEDERATED.getValue()) && mobilePhone != null && !mobilePhone.isEmpty()) id.setIssuerAssignedId(this.mobilePhone);
+    		if(id.getSignInType().equals(SignInType.PRINCIPALNAME.getValue())) {
+    			id.setIssuerAssignedId((principalIsAnEmail ? StringUtils.replace(this.userPrincipalName, "@", ".") : this.userPrincipalName) + ("@" + tenant));
     		}
-    		this.userPrincipalName = StringUtils.replace(this.userPrincipalName, "@", ".");
-    	} else {
-    		identities.add(new IdentityPayload( SignInType.USERNAME.getValue(), tenant, this.userPrincipalName ));
-    	}
-		identities.add(new IdentityPayload( SignInType.PRINCIPALNAME.getValue(), tenant, this.userPrincipalName.concat("@").concat(tenant) ));
-    	identities.add(new IdentityPayload( SignInType.EMAIL.getValue(), tenant, this.mail ));
-    	return new PatchIdentitiesRequestPayload( identities) ;
+    	});
+
+    	// Si les identities ne contiennent pas de username, on ajoute un username
+    	if(identities.getValue().stream().filter(id -> id.getSignInType().equals(SignInType.USERNAME.getValue())).collect(Collectors.toList()).isEmpty() && !principalIsAnEmail ) identities.getValue().add(new IdentityPayload( SignInType.USERNAME.getValue(), tenant, this.userPrincipalName ));
+    	// Si les identities ne contiennent pas de mail, on ajoute un mail
+    	if(identities.getValue().stream().filter(id -> id.getSignInType().equals(SignInType.EMAIL.getValue())).collect(Collectors.toList()).isEmpty() ) identities.getValue().add(new IdentityPayload( SignInType.EMAIL.getValue(), tenant, this.mail ));
+    	// Si les identities ne contiennent pas de federated, on ajoute un telephone
+    	if(mobilePhone != null && !mobilePhone.isEmpty() && identities.getValue().stream().filter(id -> id.getSignInType().equals(SignInType.FEDERATED.getValue())).collect(Collectors.toList()).isEmpty() ) identities.getValue().add(new IdentityPayload( SignInType.FEDERATED.getValue(), tenant, this.mobilePhone ));
+    	
+    	return identities;
     }
+    
 }

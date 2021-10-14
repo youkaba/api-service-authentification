@@ -24,10 +24,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -67,7 +65,6 @@ import ca.qc.banq.gia.authentication.models.EditB2CUserRequestPayload;
 import ca.qc.banq.gia.authentication.models.FindAppByNameResponsePayload;
 import ca.qc.banq.gia.authentication.models.GetIdentitiesResponse;
 import ca.qc.banq.gia.authentication.models.GetTokenRequestPayload;
-import ca.qc.banq.gia.authentication.models.PatchIdentitiesRequestPayload;
 import ca.qc.banq.gia.authentication.models.StateData;
 import ca.qc.banq.gia.authentication.models.TokenResponse;
 import ca.qc.banq.gia.authentication.models.UserInfo;
@@ -335,7 +332,7 @@ public class AuthHelperAAD {
      * @param uid
      * @param request
      */
-    public void editUserIdentities(TokenResponse token, String uid, PatchIdentitiesRequestPayload request) {
+    public void editUserIdentities(TokenResponse token, String uid, GetIdentitiesResponse request) {
 	  	HttpClientHelper.callRestAPI(configuration.getMsGraphUsersEndpoint() + "/" + uid + "/identities", HttpMethod.PUT, null, void.class, request, buildHeaders(token.getAccess_token()) );
     }
     
