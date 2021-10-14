@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import ca.qc.banq.gia.authentication.exceptions.GIAException;
 import ca.qc.banq.gia.authentication.helpers.AuthHelperAAD;
 import ca.qc.banq.gia.authentication.helpers.AuthHelperB2C;
@@ -29,11 +31,13 @@ import ca.qc.banq.gia.authentication.models.UserInfo;
 import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author <a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a>
  * @since 2021-05-17
  */
+@Slf4j
 @RestController
 @RequestMapping(HttpClientHelper.FRONTOFFICE_APIURL)
 @Api(description = "Services web front-office")
@@ -108,6 +112,7 @@ public class GiaFrontOfficeControllerImpl implements GiaFrontOfficeController {
 	  	
   		// MAJ des infos de l'utilisateur
   		request.setUserPrincipalName((request.getUserPrincipalName().matches(HttpClientHelper.EMAIL_REGEX) ? StringUtils.replace(request.getUserPrincipalName(), "@", ".") : request.getUserPrincipalName()) .concat("@").concat(authHelperB2C.getConfiguration().getTenant()));
+  		log.error("Request edit User = " + new ObjectMapper().writeValueAsString(request));
 	  	authHelperAAD.editUser(token, request);
 	}
 

@@ -59,7 +59,7 @@ public class CreateB2CUserRequestPayload implements Serializable {
     	boolean principalIsAnEmail = this.userPrincipalName.matches(HttpClientHelper.EMAIL_REGEX);
     	if(principalIsAnEmail) {
     		if(!principalIsMail) {
-    			identities.add(new IdentityPayload( SignInType.FEDERATED.getValue(), tenant, this.userPrincipalName ));
+    			//identities.add(new IdentityPayload( SignInType.FEDERATED.getValue(), tenant, this.userPrincipalName ));
     		}
     		request.setUserPrincipalName(StringUtils.replace(this.userPrincipalName, "@", "."));
     	} else {

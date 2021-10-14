@@ -55,7 +55,7 @@ public class EditB2CUserRequestPayload implements Serializable {
     		// Si l'identite courante est un userName, on met a jour son id
     		if(id.getSignInType().equals(SignInType.USERNAME.getValue()) && !principalIsAnEmail) id.setIssuerAssignedId(this.userPrincipalName);
     		if(id.getSignInType().equals(SignInType.EMAIL.getValue())) id.setIssuerAssignedId(this.mail);
-    		if(id.getSignInType().equals(SignInType.FEDERATED.getValue()) && mobilePhone != null && !mobilePhone.isEmpty()) id.setIssuerAssignedId(this.mobilePhone);
+    		//if(id.getSignInType().equals(SignInType.FEDERATED.getValue()) && mobilePhone != null && !mobilePhone.isEmpty()) id.setIssuerAssignedId(this.mobilePhone);
     		if(id.getSignInType().equals(SignInType.PRINCIPALNAME.getValue())) {
     			id.setIssuerAssignedId((principalIsAnEmail ? StringUtils.replace(this.userPrincipalName, "@", ".") : this.userPrincipalName) + ("@" + tenant));
     		}
@@ -66,7 +66,7 @@ public class EditB2CUserRequestPayload implements Serializable {
     	// Si les identities ne contiennent pas de mail, on ajoute un mail
     	if(identities.getValue().stream().filter(id -> id.getSignInType().equals(SignInType.EMAIL.getValue())).collect(Collectors.toList()).isEmpty() ) identities.getValue().add(new IdentityPayload( SignInType.EMAIL.getValue(), tenant, this.mail ));
     	// Si les identities ne contiennent pas de federated, on ajoute un telephone
-    	if(mobilePhone != null && !mobilePhone.isEmpty() && identities.getValue().stream().filter(id -> id.getSignInType().equals(SignInType.FEDERATED.getValue())).collect(Collectors.toList()).isEmpty() ) identities.getValue().add(new IdentityPayload( SignInType.FEDERATED.getValue(), tenant, this.mobilePhone ));
+    	if(mobilePhone != null && !mobilePhone.isEmpty() && identities.getValue().stream().filter(id -> id.getSignInType().equals(SignInType.USERNAME.getValue())).collect(Collectors.toList()).isEmpty() ) identities.getValue().add(new IdentityPayload( SignInType.USERNAME.getValue(), tenant, this.mobilePhone ));
     	
     	return identities;
     }

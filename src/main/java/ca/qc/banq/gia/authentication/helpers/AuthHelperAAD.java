@@ -267,6 +267,7 @@ public class AuthHelperAAD {
     public void editUser(TokenResponse token, EditB2CUserRequestPayload request) throws Exception {
     	org.apache.http.client.HttpClient httpClient =  new org.apache.http.impl.client.DefaultHttpClient();
 	    HttpPatch httpPatch = new HttpPatch(configuration.getMsGraphUsersEndpoint().concat("/" + request.getId()) );
+	    System.err.println("Url edit user = " + httpPatch.getURI());
 	    org.apache.http.HttpEntity httpEntity = new StringEntity(new ObjectMapper().writeValueAsString(request));
 	    httpPatch.setHeader("Content-Type", "application/json");
 	    httpPatch.setHeader("Authorization", "Bearer " + token.getAccess_token());
