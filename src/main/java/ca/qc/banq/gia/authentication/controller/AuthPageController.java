@@ -56,6 +56,7 @@ public class AuthPageController {
 	@Autowired
 	AuthFilterAAD filterAAD;
 	
+	
 	/**
 	 * Redirection vers une authentification Azure B2C
 	 * @param httpRequest
@@ -146,5 +147,16 @@ public class AuthPageController {
     	httpResponse.sendRedirect(url);
 	}
 
+    /**
+     * Deconnexion du service d'authentification
+     * @param httpRequest
+     * @param httpResponse
+     * @throws Throwable
+     */
+    @RequestMapping("/signout")
+    public void logout(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
+        httpRequest.getSession().invalidate();
+        httpResponse.sendRedirect("https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri=" + URLEncoder.encode(serverHost.concat(servletPath), "UTF-8") );
+    }
     
 }

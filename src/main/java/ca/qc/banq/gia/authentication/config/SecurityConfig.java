@@ -1,17 +1,10 @@
 package ca.qc.banq.gia.authentication.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+
+import com.azure.spring.aad.webapp.AADWebSecurityConfigurerAdapter;
 
 import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
 
@@ -22,10 +15,7 @@ import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
  */
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
-
-	@Value("${spring.datasource.password}")
-	String password;
+public class SecurityConfig extends AADWebSecurityConfigurerAdapter { // WebSecurityConfigurerAdapter {
 	
 	/*
 	 * (non-javadoc)
@@ -33,14 +23,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	 */
     @Override
     protected void configure(HttpSecurity security) throws Exception {
-        //Disable Spring's basic security settings as they are not relevant for this sample
-        //security.httpBasic().disable();
-        /* security.cors().and().csrf().disable().httpBasic().disable()
-        .antMatcher("/**").authorizeRequests().antMatchers("/", "/h2-console**", "/error**", "/api/bo**").permitAll()
-    	.and().authorizeRequests().anyRequest().permitAll()
-    	.and().headers().frameOptions().sameOrigin()
-    	.and().csrf().disable().headers().xssProtection(); */
-        
         security
         .cors().and().csrf().disable()
 		.authorizeRequests()
@@ -48,26 +30,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			.permitAll()
 			.and()
 		.authorizeRequests()
-			.antMatchers("/", "/apps**", "/doc", "/oups", "/env").authenticated()
-			.and()
-		.formLogin()
-			//.loginPage("/login")
-			.permitAll()
-			.and()
-		.logout().permitAll();
+			.antMatchers( "/", "/apps**", "/doc", "/oups", "/env", "/signout").authenticated()
+			.and().oauth2Login()
+			;//.and().logout().permitAll();
+			
     }
-    
-    @Bean
-	@Override
-	public UserDetailsService userDetailsService() {
-		UserDetails user =
-			 User.withDefaultPasswordEncoder().username("admin").password(password)//.withDefaultPasswordEncoder()
-				/*.username("user")
-				.password("password") */
-				.roles("USER")
-				.build();
-
-		return new InMemoryUserDetailsManager(user);
-	}
     
 }

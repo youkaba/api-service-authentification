@@ -265,7 +265,7 @@ public class AuthHelperAAD {
     }
     
     public void editUser(TokenResponse token, EditB2CUserRequestPayload request) throws Exception {
-    	org.apache.http.client.HttpClient httpClient =  new org.apache.http.impl.client.DefaultHttpClient();
+		org.apache.http.client.HttpClient httpClient =  new org.apache.http.impl.client.DefaultHttpClient();
 	    HttpPatch httpPatch = new HttpPatch(configuration.getMsGraphUsersEndpoint().concat("/" + request.getId()) );
 	    System.err.println("Url edit user = " + httpPatch.getURI());
 	    org.apache.http.HttpEntity httpEntity = new StringEntity(new ObjectMapper().writeValueAsString(request));
@@ -273,10 +273,7 @@ public class AuthHelperAAD {
 	    httpPatch.setHeader("Authorization", "Bearer " + token.getAccess_token());
 	    httpPatch.setEntity(httpEntity);
 	    HttpResponse resp = httpClient.execute(httpPatch);
-	    //System.err.println(new ObjectMapper().writeValueAsString(request));
 	    System.err.println("User updated. StatusLine = " + resp.getStatusLine().getStatusCode() + " - " + resp.getStatusLine().getReasonPhrase());
-
-	  	//HttpClientHelper.callRestAPI(configuration.getMsGraphUsersEndpoint().concat("/" + id), HttpMethod.PATCH, null, void.class, request, buildHeaders(token.getAccess_token()) );
     }
 
     /**
