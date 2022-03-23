@@ -22,16 +22,13 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import ca.qc.banq.gia.authentication.entities.App;
@@ -42,115 +39,113 @@ import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
 
 /**
  * Controlleur de gestion des applications dans la console d'administration du service d'authentification
+ *
  * @author francis.djiomou
  * @since 2021-06-25
  */
-@Controller
+@RestController
+@RequiredArgsConstructor
 class AppController {
 
-	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "apps/createOrUpdateAppForm";
+    private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "apps/createOrUpdateAppForm";
 
-	@Autowired
-	AppRepository apps;
-	
-	@Autowired
-	GiaBackOfficeService business;
+    private final AppRepository apps;
 
-	@InitBinder
-	public void setAllowedFields(WebDataBinder dataBinder) {
-		dataBinder.setDisallowedFields("id");
-	}
+    private final GiaBackOfficeService business;
 
-	@GetMapping("/apps/new")
-	public String initCreationForm(Map<String, Object> model) {
-		App app = new App(); app.setNouveau(true);
-		model.put("app", app);
-		model.put("types", Arrays.asList(TypeAuth.values()));
-		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
-	}
+    @InitBinder
+    public void setAllowedFields(WebDataBinder dataBinder) {
+        dataBinder.setDisallowedFields("id");
+    }
 
-	@PostMapping("/apps/new")
-	public String processCreationForm(@Valid App app, BindingResult result) {
-		if (result.hasErrors()) {
-			return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
-		}
-		else {
-			this.business.saveApp(app);
-			return "redirect:/apps/" + app.getClientId();
-		}
-	}
+    @GetMapping("/apps/new")
+    public String initCreationForm(Map<String, Object> model) {
+        App app = new App();
+        app.setNouveau(true);
+        model.put("app", app);
+        model.put("types", Arrays.asList(TypeAuth.values()));
+        return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
+    }
 
-	@GetMapping("/apps/find")
-	public String initFindForm(Map<String, Object> model) {
-		model.put("app", new App());
-		return "apps/findApps";
-	}
+    @PostMapping("/apps/new")
+    public String processCreationForm(@Valid App app, BindingResult result) {
+        if (result.hasErrors()) {
+            return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
+        } else {
+            this.business.saveApp(app);
+            return "redirect:/apps/" + app.getClientId();
+        }
+    }
 
-	@GetMapping("/apps")
-	public String processFindForm(AppPayload app, BindingResult result, Map<String, Object> model) {
+    @GetMapping("/apps/find")
+    public String initFindForm(Map<String, Object> model) {
+        model.put("app", new App());
+        return "apps/findApps";
+    }
 
-		// allow parameterless GET request for /apps to return all records
-		if (app.getTitle() == null) app.setTitle("");
+    @GetMapping("/apps")
+    public String processFindForm(AppPayload app, BindingResult result, Map<String, Object> model) {
 
-		// find apps by last name
-		List<AppPayload> results = this.business.findLikeTitle(app.getTitle());
-		if (results.isEmpty()) {
-			// no apps found
-			//result.rejectValue("title", "notFound", "Aucune application trouvee");
-			model.put("app", new App());
-			return "apps/findApps";
-		}
-		else if (results.size() == 1) {
-			// 1 app found
-			app = results.stream().findFirst().orElse(new AppPayload());//.iterator().next();
-			return "redirect:/apps/" + app.getClientId();
-		}
-		else {
-			// multiple apps found
-			model.put("selections", results);
-			return "apps/appsList";
-		}
-	}
+        // allow parameterless GET request for /apps to return all records
+        if (app.getTitle() == null) app.setTitle("");
 
-	@GetMapping("/apps/{appId}/edit")
-	public String initUpdateAppForm(@PathVariable("appId") String appId, Model model) {
-		App app = this.apps.findById(appId).orElse(null);
-		model.addAttribute(app);
-		model.addAttribute("types", Arrays.asList(TypeAuth.values()));
-		//model.addAttribute("isnew", false);
-		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
-	}
+        // find apps by last name
+        List<AppPayload> results = this.business.findLikeTitle(app.getTitle());
+        if (results.isEmpty()) {
+            // no apps found
+            //result.rejectValue("title", "notFound", "Aucune application trouvee");
+            model.put("app", new App());
+            return "apps/findApps";
+        }
+        if (results.size() == 1) {
+            // 1 app found
+            app = results.stream().findFirst().orElse(new AppPayload());//.iterator().next();
+            return "redirect:/apps/" + app.getClientId();
+        }
+        // multiple apps found
+        model.put("selections", results);
+        return "apps/appsList";
+    }
 
-	@PostMapping("/apps/{appId}/edit")
-	public String processUpdateAppForm(@Valid App app, BindingResult result, @PathVariable("appId") String appId) {
-		if (result.hasErrors()) {
-			return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
-		}
-		else {
-			app.setClientId(appId);
-			this.business.saveApp(app);
-			return "redirect:/apps/{appId}";
-		}
-	}
+    @GetMapping("/apps/{appId}/edit")
+    public String initUpdateAppForm(@PathVariable("appId") String appId, Model model) {
+        App app = this.apps.findById(appId).orElse(null);
+        model.addAttribute(app);
+        model.addAttribute("types", Arrays.asList(TypeAuth.values()));
+        //model.addAttribute("isnew", false);
+        return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
+    }
 
-	/**
-	 * Custom handler for displaying an app.
-	 * @param appId the ID of the app to display
-	 * @return a ModelMap with the model attributes for the view
-	 */
-	@GetMapping("/apps/{appId}")
-	public ModelAndView showApp(@PathVariable("appId") String appId) {
-		ModelAndView mav = new ModelAndView("apps/appDetails");
-		AppPayload app = this.business.findByClientId(appId); //.apps.findById(appId).orElse(null);
-		mav.addObject("app", app);
-		return mav;
-	}
+    @PostMapping("/apps/{appId}/edit")
+    public String processUpdateAppForm(@Valid App app, BindingResult result, @PathVariable("appId") String appId) {
+        if (result.hasErrors()) {
+            return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
+        } else {
+            app.setClientId(appId);
+            this.business.saveApp(app);
+            return "redirect:/apps/{appId}";
+        }
+    }
 
-	@RequestMapping("/apps/remove")
-	public String processDeleteApp(HttpServletRequest request) {
-		String appId = request.getParameter("appid");
-		this.business.deleteApp(appId);
-		return "redirect:/apps";
-	}
+    /**
+     * Custom handler for displaying an app.
+     *
+     * @param appId the ID of the app to display
+     * @return a ModelMap with the model attributes for the view
+     */
+    @GetMapping("/apps/{appId}")
+    public ModelAndView showApp(@PathVariable("appId") String appId) {
+        ModelAndView mav = new ModelAndView("apps/appDetails");
+        AppPayload app = this.business.findByClientId(appId); //.apps.findById(appId).orElse(null);
+        mav.addObject("app", app);
+        return mav;
+    }
+
+    @RequestMapping("/apps/remove")
+    public String processDeleteApp(HttpServletRequest request) {
+        String appId = request.getParameter("appid");
+        this.business.deleteApp(appId);
+        return "redirect:/apps";
+    }
 
 }

@@ -3,29 +3,10 @@
 
 package ca.qc.banq.gia.authentication.filter;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.text.ParseException;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
+import ca.qc.banq.gia.authentication.exceptions.GIAException;
+import ca.qc.banq.gia.authentication.helpers.*;
+import ca.qc.banq.gia.authentication.models.*;
+import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
 import com.microsoft.aad.msal4j.MsalException;
 import com.nimbusds.jwt.JWTParser;
@@ -33,22 +14,26 @@ import com.nimbusds.openid.connect.sdk.AuthenticationErrorResponse;
 import com.nimbusds.openid.connect.sdk.AuthenticationResponse;
 import com.nimbusds.openid.connect.sdk.AuthenticationResponseParser;
 import com.nimbusds.openid.connect.sdk.AuthenticationSuccessResponse;
-
-import ca.qc.banq.gia.authentication.exceptions.GIAException;
-import ca.qc.banq.gia.authentication.helpers.AuthHelperAAD;
-import ca.qc.banq.gia.authentication.helpers.AuthHelperB2C;
-import ca.qc.banq.gia.authentication.helpers.CookieHelper;
-import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
-import ca.qc.banq.gia.authentication.helpers.SessionManagementHelper;
-import ca.qc.banq.gia.authentication.models.AppPayload;
-import ca.qc.banq.gia.authentication.models.GetIdentitiesResponse;
-import ca.qc.banq.gia.authentication.models.IdentityPayload;
-import ca.qc.banq.gia.authentication.models.SignInType;
-import ca.qc.banq.gia.authentication.models.TokenResponse;
-import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
-//import ca.qc.banq.gia.authentication.helpers.CookieHelper;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.text.ParseException;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Filtre de requetes pour l'authentification B2C
@@ -58,19 +43,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Getter
 @Component
+@RequiredArgsConstructor
 public class AuthFilterB2C {
 
     private static final String STATE = "state";
     private static final String FAILED_TO_VALIDATE_MESSAGE = "Failed to validate data received from Authorization service - ";
 
-    @Autowired
-    AuthHelperB2C authHelper;
+    private final AuthHelperB2C authHelper;
 
-    @Autowired
-    AuthHelperAAD authHelperAAD;
+    private final AuthHelperAAD authHelperAAD;
 
-	@Autowired
-	GiaBackOfficeService business;
+    private final GiaBackOfficeService business;
 
 	@Value("${server.host}")
 	String serverHost;
@@ -88,7 +71,7 @@ public class AuthFilterB2C {
                 if (!authHelper.isAuthenticated(httpRequest)) {
                     if(authHelper.containsAuthenticationCode(httpRequest)){
                         // response should have authentication code, which will be used to acquire access token
-                        processAuthenticationCodeRedirect(httpRequest, httpResponse, currentUri, fullUrl);
+                        processAuthenticationCodeRedirect(httpRequest, currentUri, fullUrl);
                         CookieHelper.removeStateNonceCookies(httpResponse);
                     } else {
                         // not authenticated, redirecting to login.microsoft.com so user can authenticate
@@ -133,7 +116,6 @@ public class AuthFilterB2C {
                 	
             	  	// Redirection vers la page d'accueil de l'application
                 	httpResponse.sendRedirect(SessionManagementHelper.buildRedirectAppHomeUrl(auth, uid, app, authHelperAAD.getGIAUrlPath()));
-                    return;
                 }
             } catch (MsalException authException) {
                 // something went wrong (like expiration or revocation of token)
@@ -141,7 +123,6 @@ public class AuthFilterB2C {
                 authHelper.removePrincipalFromSession(httpRequest);
                 sendAuthRedirect(authHelper.getConfiguration().getSignUpSignInAuthority(authHelper.getApp().getPolicySignUpSignIn()), httpRequest, httpResponse);
                 authException.printStackTrace();
-                return;
             }
         }
         //chain.doFilter(request, response);
@@ -152,7 +133,7 @@ public class AuthFilterB2C {
         return result.expiresOnDate().before(new Date());
     }
 
-    private void processAuthenticationCodeRedirect(HttpServletRequest httpRequest, HttpServletResponse httpResponse, String currentUri, String fullUrl) throws Throwable {
+    private void processAuthenticationCodeRedirect(HttpServletRequest httpRequest, String currentUri, String fullUrl) throws Throwable {
 
         Map<String, List<String>> params = new HashMap<>();
         for (String key : httpRequest.getParameterMap().keySet()) {
@@ -212,21 +193,19 @@ public class AuthFilterB2C {
         }
     }
 
-    private String getRedirectUrl(String authority, String claims, String state, String nonce) throws UnsupportedEncodingException {
+    private String getRedirectUrl(String authority, String claims, String state, String nonce) {
 
-        String redirectUrl = authority.replace("/tfp", "") + "oauth2/v2.0/authorize?" +
+        return authority.replace("/tfp", "") + "oauth2/v2.0/authorize?" +
                 "response_type=code&" +
                 "response_mode=query&" +
-                "redirect_uri=" + URLEncoder.encode(authHelper.getApp().getRedirectApp(), "UTF-8") +
+                "redirect_uri=" + URLEncoder.encode(authHelper.getApp().getRedirectApp(), UTF_8) +
                 "&client_id=" + authHelper.getApp().getClientId() +
                 "&scope=" + URLEncoder.encode("openid offline_access profile " +
-                authHelper.getApp().getApiScope(), "UTF-8") +
+                authHelper.getApp().getApiScope(), UTF_8) +
                 (StringUtils.isEmpty(claims) ? "" : "&claims=" + claims) +
                 "&prompt=select_account" +
                 "&state=" + state
                 + "&nonce=" + nonce;
-
-        return redirectUrl;
     }
 	
 }

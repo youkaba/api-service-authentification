@@ -3,18 +3,20 @@
  */
 package ca.qc.banq.gia.authentication.config;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.annotation.WebListener;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import ca.qc.banq.gia.authentication.entities.App;
+import ca.qc.banq.gia.authentication.entities.TypeAuth;
+import ca.qc.banq.gia.authentication.repositories.AppRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.ContextLoaderListener;
 
-import ca.qc.banq.gia.authentication.entities.App;
-import ca.qc.banq.gia.authentication.entities.TypeAuth;
-import ca.qc.banq.gia.authentication.repositories.AppRepository;
-import lombok.extern.slf4j.Slf4j;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.annotation.WebListener;
+import java.util.Arrays;
+
+import static java.util.function.Predicate.not;
 
 /**
  * Service d'initialisation de l'application
@@ -25,10 +27,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 @WebListener
+@RequiredArgsConstructor
 public class ListenerConfig extends ContextLoaderListener {
 
-	@Autowired
-	AppRepository appRepo;
+	private final AppRepository appRepo;
 	
 	/**
 	 * Initialisation d'une liste dapplications par defaut pour des tests
@@ -57,16 +59,15 @@ public class ListenerConfig extends ContextLoaderListener {
 	 * Initialisation des donnees
 	 */
 	@Transactional
-	private void initApp() {
-		/*try {
-			
-			for(App app : initApps) {
-				if(!appRepo.existsById(app.getClientId())) appRepo.save(app);
-			}
-			
-		} catch(Exception e) {
+	void initApp() {
+		try {
+
+			Arrays.stream(initApps)
+					.filter(not(app -> appRepo.existsById(app.getClientId())))
+					.forEach(appRepo::save);
+		} catch (Exception e) {
 			log.error(" initialization has failed because of " + e.getMessage());
-		}*/
+		}
 	}
 	
 }

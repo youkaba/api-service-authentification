@@ -3,13 +3,6 @@
  */
 package ca.qc.banq.gia.authentication.servicesmetier;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import ca.qc.banq.gia.authentication.config.TranslatorConfig;
 import ca.qc.banq.gia.authentication.entities.App;
 import ca.qc.banq.gia.authentication.entities.TypeAuth;
@@ -17,6 +10,12 @@ import ca.qc.banq.gia.authentication.exceptions.GIAException;
 import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
 import ca.qc.banq.gia.authentication.models.AppPayload;
 import ca.qc.banq.gia.authentication.repositories.AppRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -25,13 +24,12 @@ import ca.qc.banq.gia.authentication.repositories.AppRepository;
  * @since 2021-05-12
  */
 @Service
+@RequiredArgsConstructor
 public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
 
-	@Autowired
-	AppRepository appRepo;
+	private final AppRepository appRepo;
 	
-	@Autowired
-	TranslatorConfig translator;
+	private final TranslatorConfig translator;
 	
 	/*@Autowired
 	PasswordEncoder passwordEncoder; */
@@ -49,10 +47,12 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
 	@Override
 	public String saveApp(App app) {
 		App saved = appRepo.findById(app.getClientId()).orElse(null);
-		if(saved == null) app = appRepo.save(app);
-		else {
+		
+		if (saved != null) {
 			saved.update(app);
 			appRepo.save(saved);
+		} else {
+			appRepo.save(app);
 		}
 		return translator.translate("app.saved.successfull");
 	}
