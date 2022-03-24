@@ -15,15 +15,12 @@
  */
 package ca.qc.banq.gia.authentication.controller;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-
+import ca.qc.banq.gia.authentication.entities.App;
+import ca.qc.banq.gia.authentication.entities.TypeAuth;
+import ca.qc.banq.gia.authentication.models.AppPayload;
+import ca.qc.banq.gia.authentication.repositories.AppRepository;
+import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -31,11 +28,11 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
-import ca.qc.banq.gia.authentication.entities.App;
-import ca.qc.banq.gia.authentication.entities.TypeAuth;
-import ca.qc.banq.gia.authentication.models.AppPayload;
-import ca.qc.banq.gia.authentication.repositories.AppRepository;
-import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Controlleur de gestion des applications dans la console d'administration du service d'authentification
@@ -43,7 +40,7 @@ import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
  * @author francis.djiomou
  * @since 2021-06-25
  */
-@RestController
+@Controller
 @RequiredArgsConstructor
 class AppController {
 
