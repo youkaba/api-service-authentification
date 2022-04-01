@@ -18,7 +18,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -37,6 +36,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Filtre de requetes pour l'authentification B2C
+ *
  * @author <a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a>
  * @since 2021-05-12
  */
@@ -55,8 +55,8 @@ public class AuthFilterB2C {
 
     private final GiaBackOfficeService business;
 
-	@Value("${server.host}")
-	String serverHost;
+    @Value("${server.host}")
+    private String serverHost;
 
     public void doFilter(ServletRequest request, ServletResponse response) throws Throwable {
         if (request instanceof HttpServletRequest) {
@@ -69,7 +69,7 @@ public class AuthFilterB2C {
 
                 // check if user has a AuthData in the session
                 if (!authHelper.isAuthenticated(httpRequest)) {
-                    if(authHelper.containsAuthenticationCode(httpRequest)){
+                    if (authHelper.containsAuthenticationCode(httpRequest)) {
                         // response should have authentication code, which will be used to acquire access token
                         processAuthenticationCodeRedirect(httpRequest, currentUri, fullUrl);
                         CookieHelper.removeStateNonceCookies(httpResponse);
@@ -80,42 +80,43 @@ public class AuthFilterB2C {
                     }
                 }
                 if (isAccessTokenExpired(httpRequest)) {
-                	authHelper.updateAuthDataUsingSilentFlow(httpRequest);
+                    authHelper.updateAuthDataUsingSilentFlow(httpRequest);
                 }
                 if (authHelper.isAuthenticated(httpRequest) && !isAccessTokenExpired(httpRequest)) {
-                	IAuthenticationResult auth = authHelper.getAuthSessionObject(httpRequest);
-                	Map<String, Object> claims = JWTParser.parse(auth.idToken()).getJWTClaimsSet().getClaims();
-                	String uid = claims.get(HttpClientHelper.CLAIM_USERID).toString();
-                	String appid = StringUtils.remove( StringUtils.remove(claims.get("aud").toString(), '['), ']') ;
-                	AppPayload app = business.findByClientId(appid);
-                	
-                	// Si le claim ne contient pas les attributs requis on leve une exception
-                	if(uid == null || app == null) {
-                		httpResponse.setStatus(500);
-            			httpRequest.setAttribute("error", "unable to find " + HttpClientHelper.CLAIM_USERID + " or 'aud' property within the claim");
-            			httpRequest.getRequestDispatcher("/error").forward(httpRequest, httpResponse);
-            			return;
-                	}
+                    IAuthenticationResult auth = authHelper.getAuthSessionObject(httpRequest);
+                    Map<String, Object> claims = JWTParser.parse(auth.idToken()).getJWTClaimsSet().getClaims();
+                    String uid = claims.get(HttpClientHelper.CLAIM_USERID).toString();
+                    String appid = StringUtils.remove(StringUtils.remove(claims.get("aud").toString(), '['), ']');
+                    AppPayload app = business.findByClientId(appid);
 
-            	  	// Obtention du Token d'acces a GraphAPI
-            	  	TokenResponse token = authHelperAAD.getAccessToken(app);
-                	
-            	  	// Recuperation des identities de l'usager 
-            	  	GetIdentitiesResponse identities = authHelperAAD.getUserIdentities(token, uid);
-            	  	
-            	  	// Recherche de l'identite de type "userName"
-            	  	List<IdentityPayload> idsUserName = identities.getValue().stream().filter(ip -> ip.getSignInType().equals(SignInType.USERNAME.getValue())).collect(Collectors.toList());
-            	  	if( !idsUserName.isEmpty() ) {
-            	  		// Si on a trouve une identite de type "userName", c'est elle qu'on recupere comme identifiant de l'usager
-            	  		uid = idsUserName.stream().findFirst().orElse(null).getIssuerAssignedId();
-            	  	} else {
-            	  		// Si on n'a pas trouve une identite de type "userName", on recupere celle de type "emailAddress" comme identifiant 
-            	  		idsUserName = identities.getValue().stream().filter(ip -> ip.getSignInType().equals(SignInType.EMAIL.getValue())).collect(Collectors.toList());
-            	  		if( !idsUserName.isEmpty() ) uid = idsUserName.stream().findFirst().orElse(null).getIssuerAssignedId();
-            	  	}
-                	
-            	  	// Redirection vers la page d'accueil de l'application
-                	httpResponse.sendRedirect(SessionManagementHelper.buildRedirectAppHomeUrl(auth, uid, app, authHelperAAD.getGIAUrlPath()));
+                    // Si le claim ne contient pas les attributs requis on leve une exception
+                    if (uid == null || app == null) {
+                        httpResponse.setStatus(500);
+                        httpRequest.setAttribute("error", "unable to find " + HttpClientHelper.CLAIM_USERID + " or 'aud' property within the claim");
+                        httpRequest.getRequestDispatcher("/error").forward(httpRequest, httpResponse);
+                        return;
+                    }
+
+                    // Obtention du Token d'acces a GraphAPI
+                    TokenResponse token = authHelperAAD.getAccessToken(app);
+
+                    // Recuperation des identities de l'usager
+                    GetIdentitiesResponse identities = authHelperAAD.getUserIdentities(token, uid);
+
+                    // Recherche de l'identite de type "userName"
+                    List<IdentityPayload> idsUserName = identities.getValue().stream().filter(ip -> ip.getSignInType().equals(SignInType.USERNAME.getValue())).collect(Collectors.toList());
+                    if (!idsUserName.isEmpty()) {
+                        // Si on a trouve une identite de type "userName", c'est elle qu'on recupere comme identifiant de l'usager
+                        uid = idsUserName.stream().findFirst().orElse(null).getIssuerAssignedId();
+                    } else {
+                        // Si on n'a pas trouve une identite de type "userName", on recupere celle de type "emailAddress" comme identifiant
+                        idsUserName = identities.getValue().stream().filter(ip -> ip.getSignInType().equals(SignInType.EMAIL.getValue())).collect(Collectors.toList());
+                        if (!idsUserName.isEmpty())
+                            uid = idsUserName.stream().findFirst().orElse(null).getIssuerAssignedId();
+                    }
+
+                    // Redirection vers la page d'accueil de l'application
+                    httpResponse.sendRedirect(SessionManagementHelper.buildRedirectAppHomeUrl(auth, uid, app, authHelperAAD.getGIAUrlPath()));
                 }
             } catch (MsalException authException) {
                 // something went wrong (like expiration or revocation of token)
@@ -139,7 +140,7 @@ public class AuthFilterB2C {
         for (String key : httpRequest.getParameterMap().keySet()) {
             params.put(key, Collections.singletonList(httpRequest.getParameterMap().get(key)[0]));
         }
-        
+
         // validate that state in response equals to state in request
         validateState(CookieHelper.getCookie(httpRequest, CookieHelper.MSAL_WEB_APP_STATE_COOKIE), params.get(STATE).get(0));
 
@@ -207,5 +208,4 @@ public class AuthFilterB2C {
                 "&state=" + state
                 + "&nonce=" + nonce;
     }
-	
 }

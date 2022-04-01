@@ -1,13 +1,13 @@
 /**
- * 
+ *
  */
 package ca.qc.banq.gia.authentication.models;
-
-import java.io.Serializable;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
 
 /**
  * Payload de la requete de creation d'un nouvel utilisateur
@@ -17,7 +17,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@SuppressWarnings("serial")
 public class AssignAppToUserRequestPayload implements Serializable {
 
     String principalId;
@@ -25,6 +24,6 @@ public class AssignAppToUserRequestPayload implements Serializable {
     //String appRoleId = "00000000-0000-0000-0000-000000000000";
 
     public String getAppRoleId() {
-    	return "00000000-0000-0000-0000-000000000000";
+        return "00000000-0000-0000-0000-000000000000";
     }
 }

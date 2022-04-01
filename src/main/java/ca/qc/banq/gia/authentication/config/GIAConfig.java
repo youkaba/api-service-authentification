@@ -1,15 +1,15 @@
 /**
- * 
+ *
  */
 package ca.qc.banq.gia.authentication.config;
 
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-import lombok.Data;
-
 /**
  * Configuration AAD
+ *
  * @author <a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a>
  * @since 2021-05-10
  */
@@ -18,7 +18,7 @@ import lombok.Data;
 @ConfigurationProperties("gia")
 public class GIAConfig {
 
-	private String clientId;
-	private String clientSecret;
-	private String redirectUri;
+    private String clientId;
+    private String clientSecret;
+    private String redirectUri;
 }

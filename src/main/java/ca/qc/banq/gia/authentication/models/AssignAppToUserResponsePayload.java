@@ -1,14 +1,14 @@
 /**
- * 
+ *
  */
 package ca.qc.banq.gia.authentication.models;
-
-import java.io.Serializable;
-import java.util.Date;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author francis.djiomou
@@ -17,16 +17,15 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@SuppressWarnings("serial")
 public class AssignAppToUserResponsePayload implements Serializable {
 
-	String id;
-	Date deletedDateTime;
-	String appRoleId;
-	Date createdDateTime;
-	String principalDisplayName;
-	String principalId;
-	String principalType;
-	String resourceDisplayName;
-	String resourceId;
+    String id;
+    Date deletedDateTime;
+    String appRoleId;
+    Date createdDateTime;
+    String principalDisplayName;
+    String principalId;
+    String principalType;
+    String resourceDisplayName;
+    String resourceId;
 }

@@ -1,14 +1,11 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
-
 package ca.qc.banq.gia.authentication.models;
-
-import java.io.Serializable;
-import java.util.Date;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author <a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a>
@@ -17,7 +14,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@SuppressWarnings("serial")
 public class StateData implements Serializable {
     private String nonce;
     private Date expirationDate;

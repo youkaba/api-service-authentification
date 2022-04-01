@@ -1,13 +1,13 @@
 /**
- * 
+ *
  */
 package ca.qc.banq.gia.authentication.models;
-
-import java.io.Serializable;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
 
 /**
  * @author francis.djiomou
@@ -16,10 +16,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@SuppressWarnings("serial")
 public class IdentityPayload implements Serializable {
 
-	private String signInType;
-	private String issuer;
-	private String issuerAssignedId;
+    private String signInType;
+    private String issuer;
+    private String issuerAssignedId;
 }

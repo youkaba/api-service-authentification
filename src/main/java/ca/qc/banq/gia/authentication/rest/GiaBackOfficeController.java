@@ -1,12 +1,12 @@
 /**
- * 
+ *
  */
 package ca.qc.banq.gia.authentication.rest;
 
-import java.util.List;
-
 import ca.qc.banq.gia.authentication.entities.App;
 import ca.qc.banq.gia.authentication.models.AppPayload;
+
+import java.util.List;
 
 
 /**
@@ -16,30 +16,30 @@ import ca.qc.banq.gia.authentication.models.AppPayload;
  */
 public interface GiaBackOfficeController {
 
-	/**
-	 * Enregistre une App
-	 * @param app
-	 * @return
-	 */
-	public String saveApp(App app);
-	
-	/**
-	 * Supprime une App
-	 * @param id
-	 */
-	public String deleteApp(String id);
-	
-	/**
-	 * Recherche la liste de toutes les applications enregistrees
-	 * @return
-	 */
-	public List<AppPayload> findAll();
+    /**
+     * Enregistre une App
+     * @param app
+     * @return
+     */
+    String saveApp(App app);
 
-	/**
-	 * Recherche une application a partir de son Id
-	 * @param id
-	 * @return
-	 */
-	public AppPayload findById(String id);
-	
+    /**
+     * Supprime une App
+     * @param id
+     */
+    String deleteApp(String id);
+
+    /**
+     * Recherche la liste de toutes les applications enregistrees
+     * @return
+     */
+    List<AppPayload> findAll();
+
+    /**
+     * Recherche une application a partir de son Id
+     * @param id
+     * @return
+     */
+    AppPayload findById(String id);
+
 }

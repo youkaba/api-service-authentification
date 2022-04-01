@@ -1,14 +1,14 @@
 /**
- * 
+ *
  */
 package ca.qc.banq.gia.authentication.models;
-
-import java.io.Serializable;
-import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+import java.util.List;
 
 /**
  * Payload de la requete de creation d'un nouvel utilisateur
@@ -18,7 +18,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@SuppressWarnings("serial")
 public class FindAppByNameResponsePayload implements Serializable {
-	private List<AppData> value;
+    private List<AppData> value;
 }

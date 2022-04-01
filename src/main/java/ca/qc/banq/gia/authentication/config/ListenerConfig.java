@@ -5,7 +5,7 @@ package ca.qc.banq.gia.authentication.config;
 
 import ca.qc.banq.gia.authentication.entities.App;
 import ca.qc.banq.gia.authentication.entities.TypeAuth;
-import ca.qc.banq.gia.authentication.repositories.AppRepository;
+import ca.qc.banq.gia.authentication.repositories.GIARepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
@@ -32,7 +32,7 @@ import static java.util.function.Predicate.not;
 @Profile("local")
 public class ListenerConfig extends ContextLoaderListener {
 
-    private final AppRepository appRepo;
+    private final GIARepository appRepo;
 
     /**
      * Initialisation d'une liste dapplications par defaut pour des tests

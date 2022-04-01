@@ -3,6 +3,13 @@
 
 package ca.qc.banq.gia.authentication.helpers;
 
+import ca.qc.banq.gia.authentication.models.AppPayload;
+import ca.qc.banq.gia.authentication.models.StateData;
+import com.microsoft.aad.msal4j.IAuthenticationResult;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.net.URLEncoder;
 import java.util.Date;
 import java.util.HashMap;
@@ -10,31 +17,23 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
-import com.microsoft.aad.msal4j.IAuthenticationResult;
-
-import ca.qc.banq.gia.authentication.models.AppPayload;
-import ca.qc.banq.gia.authentication.models.StateData;
+import static ca.qc.banq.gia.authentication.helpers.HttpClientHelper.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Helpers for managing session
+ *
  * @author <a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a>
  * @since 2021-05-12
  */
 public class SessionManagementHelper {
 
-	public static final String STATE = "state";
+    public static final String STATE = "state";
     private static final String STATES = "states";
     private static final Integer STATE_TTL = 3600;
 
     public static final String FAILED_TO_VALIDATE_MESSAGE = "Failed to validate data received from Authorization service - ";
-    public static final String[] SECURED_PATH = new String [] {"/", "/apps", "/env", "/doc", "/oups", "/apidoc", "/h2-console", "", "", "", };
+    public static final String[] SECURED_PATH = new String[]{"/", "/apps", "/env", "/doc", "/oups", "/apidoc", "/h2-console", "", "", "",};
 
     public static StateData validateState(HttpSession session, String state) throws Exception {
         if (StringUtils.isNotEmpty(state)) {
@@ -47,7 +46,7 @@ public class SessionManagementHelper {
     }
 
     @SuppressWarnings("unchecked")
-	private static StateData removeStateFromSession(HttpSession session, String state) {
+    private static StateData removeStateFromSession(HttpSession session, String state) {
         Map<String, StateData> states = (Map<String, StateData>) session.getAttribute(STATES);
         if (states != null) {
             eliminateExpiredStates(states);
@@ -76,7 +75,7 @@ public class SessionManagementHelper {
     }
 
     @SuppressWarnings("unchecked")
-	public static void storeStateAndNonceInSession(HttpSession session, String state, String nonce) {
+    public static void storeStateAndNonceInSession(HttpSession session, String state, String nonce) {
 
         // state parameter to validate response from Authorization server and nonce parameter to validate idToken
         if (session.getAttribute(STATES) == null) {
@@ -85,7 +84,7 @@ public class SessionManagementHelper {
         ((Map<String, StateData>) session.getAttribute(STATES)).put(state, new StateData(nonce, new Date()));
     }
 
-    public static void storeTokenCacheInSession(HttpServletRequest httpServletRequest, String tokenCache){
+    public static void storeTokenCacheInSession(HttpServletRequest httpServletRequest, String tokenCache) {
         httpServletRequest.getSession().setAttribute(AuthHelperAAD.TOKEN_CACHE_SESSION_ATTRIBUTE, tokenCache);
     }
 
@@ -99,29 +98,29 @@ public class SessionManagementHelper {
 
     public static IAuthenticationResult getAuthSessionObject(HttpServletRequest request) {
         Object principalSession = request.getSession().getAttribute(AuthHelperAAD.PRINCIPAL_SESSION_NAME);
-        if(principalSession instanceof IAuthenticationResult){
+        if (principalSession instanceof IAuthenticationResult) {
             return (IAuthenticationResult) principalSession;
         } else {
             throw new IllegalStateException("Session does not contain principal session name");
         }
     }
-    
 
-    public static String buildRedirectAppHomeUrl(IAuthenticationResult auth, String uid, AppPayload app, String giaUrlPath) throws Exception {
-    	
-    	/** Ajout des parametres de requete dans l'url de redirection vers la page d'accueil de l'application */
-    	String query = (StringUtils.contains(app.getHomeUrl(), "?") ? "&" : "?") + // Si l'url de la page d'accueil contient deja des parametres on rajoute juste un & 
-    			HttpClientHelper.ACCESS_TOKEN + "=" + auth.accessToken() + "&" +   // Token d'acces  
-    			HttpClientHelper.EXPDATE_SESSION_NAME + "=" + String.valueOf(auth.expiresOnDate().getTime()) + "&" + // Date d'expiration de la session 
-    			HttpClientHelper.UID_SESSION_NAME + "=" + uid + "&" + // Identifiant de l'utilisateur connecte
-    			HttpClientHelper.CLIENTID_PARAM  + "=" + app.getClientId() + "&" +   // Identifiant de l'application
-    			HttpClientHelper.SIGNIN_URL + "=" +  URLEncoder.encode(app.getLoginURL(), "UTF-8") + "&" +  // Url de connexion
-    			HttpClientHelper.SIGNOUT_URL + "=" +  URLEncoder.encode(app.getLogoutURL(), "UTF-8") + "&" +      // Url de signout
-    			HttpClientHelper.GIA_URLPATH_PARAM + "=" +  URLEncoder.encode(giaUrlPath, "UTF-8") + "&" +      // Url de base du service GIA
-    			HttpClientHelper.GIA_CREATEUSER_ENDPOINT_PARAM + "=" + HttpClientHelper.FRONTOFFICE_APIURL + HttpClientHelper.CREATEUSER_ENDPOINT + "&" +      // Endpoint de creation d'un utilisateur
-    			HttpClientHelper.GIA_RESETPWD_ENDPOINT_PARAM + "=" + URLEncoder.encode(HttpClientHelper.RESETPWD_ENDPOINT, "UTF-8")      // Endpoint de reinitialisation de mot de passe
-    			;
-    	// Retourne l'url de redirection de l'application app
-    	return app.getHomeUrl().concat(query);
+
+    public static String buildRedirectAppHomeUrl(IAuthenticationResult auth, String uid, AppPayload app, String giaUrlPath) {
+
+        // Ajout des parametres de requete dans l'url de redirection vers la page d'accueil de l'application
+        String query = (StringUtils.contains(app.getHomeUrl(), "?") ? "&" : "?") + // Si l'url de la page d'accueil contient deja des parametres on rajoute juste un &
+                ACCESS_TOKEN + "=" + auth.accessToken() + "&" +   // Token d'acces
+                EXPDATE_SESSION_NAME + "=" + auth.expiresOnDate().getTime() + "&" + // Date d'expiration de la session
+                UID_SESSION_NAME + "=" + uid + "&" + // Identifiant de l'utilisateur connecte
+                CLIENTID_PARAM + "=" + app.getClientId() + "&" +   // Identifiant de l'application
+                SIGNIN_URL + "=" + URLEncoder.encode(app.getLoginURL(), UTF_8) + "&" +  // Url de connexion
+                SIGNOUT_URL + "=" + URLEncoder.encode(app.getLogoutURL(), UTF_8) + "&" +      // Url de signout
+                GIA_URLPATH_PARAM + "=" + URLEncoder.encode(giaUrlPath, UTF_8) + "&" +      // Url de base du service GIA
+                GIA_CREATEUSER_ENDPOINT_PARAM + "=" + FRONTOFFICE_APIURL + CREATEUSER_ENDPOINT + "&" +      // Endpoint de creation d'un utilisateur
+                GIA_RESETPWD_ENDPOINT_PARAM + "=" + URLEncoder.encode(RESETPWD_ENDPOINT, UTF_8)      // Endpoint de reinitialisation de mot de passe
+                ;
+        // Retourne l'url de redirection de l'application app
+        return app.getHomeUrl().concat(query);
     }
 }

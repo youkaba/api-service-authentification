@@ -3,6 +3,23 @@
 
 package ca.qc.banq.gia.authentication.helpers;
 
+import ca.qc.banq.gia.authentication.config.B2CConfig;
+import ca.qc.banq.gia.authentication.models.AppPayload;
+import ca.qc.banq.gia.authentication.models.TokenResponse;
+import com.microsoft.aad.msal4j.*;
+import com.nimbusds.oauth2.sdk.AuthorizationCode;
+import com.nimbusds.openid.connect.sdk.AuthenticationResponse;
+import com.nimbusds.openid.connect.sdk.AuthenticationSuccessResponse;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
+
+import javax.naming.ServiceUnavailableException;
+import javax.servlet.http.HttpServletRequest;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -13,68 +30,58 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import javax.naming.ServiceUnavailableException;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
-
-import com.microsoft.aad.msal4j.AuthorizationCodeParameters;
-import com.microsoft.aad.msal4j.ClientCredentialFactory;
-import com.microsoft.aad.msal4j.ConfidentialClientApplication;
-import com.microsoft.aad.msal4j.IAuthenticationResult;
-import com.microsoft.aad.msal4j.SilentParameters;
-import com.nimbusds.oauth2.sdk.AuthorizationCode;
-import com.nimbusds.openid.connect.sdk.AuthenticationResponse;
-import com.nimbusds.openid.connect.sdk.AuthenticationSuccessResponse;
-
-import ca.qc.banq.gia.authentication.config.B2CConfig;
-import ca.qc.banq.gia.authentication.models.AppPayload;
-import ca.qc.banq.gia.authentication.models.TokenResponse;
-import lombok.Getter;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Helpers for acquiring authorization codes and tokens from B2C
+ *
  * @author <a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a>
  * @since 2021-05-12
  */
 @Getter
 @Component
+@RequiredArgsConstructor
 public class AuthHelperB2C {
 
-	final String PRINCIPAL_SESSION_NAME = "principal";
+    final String PRINCIPAL_SESSION_NAME = "principal";
     final String TOKEN_CACHE_SESSION_ATTRIBUTE = "token_cache";
 
-    @Autowired
-    B2CConfig configuration;
+    private final B2CConfig configuration;
 
     AppPayload app;
-    
+
+    public static boolean checkAuthenticationCode(HttpServletRequest httpRequest) {
+        Map<String, String[]> httpParameters = httpRequest.getParameterMap();
+
+        boolean isPostRequest = httpRequest.getMethod().equalsIgnoreCase("POST");
+        boolean containsErrorData = httpParameters.containsKey("error");
+        boolean containIdToken = httpParameters.containsKey("id_token");
+        boolean containsCode = httpParameters.containsKey("code");
+
+        return isPostRequest && containsErrorData || containsCode || containIdToken;
+    }
+
     public void init(AppPayload app) {
-    	this.app = app;
+        this.app = app;
     }
 
     private ConfidentialClientApplication createClientApplication() throws MalformedURLException {
         return ConfidentialClientApplication.builder(app.getClientId(),
-                ClientCredentialFactory.createFromSecret(app.getCertSecretValue()))
+                        ClientCredentialFactory.createFromSecret(app.getCertSecretValue()))
                 .b2cAuthority(configuration.getSignUpSignInAuthority(app.getPolicySignUpSignIn()))
                 .build();
     }
 
     public IAuthenticationResult getAuthResultBySilentFlow(HttpServletRequest httpRequest, String scope) throws Throwable {
-        IAuthenticationResult result =  getAuthSessionObject(httpRequest);
+        IAuthenticationResult result = getAuthSessionObject(httpRequest);
 
         IAuthenticationResult updatedResult;
         ConfidentialClientApplication app;
         try {
             app = createClientApplication();
 
-            Object tokenCache =  httpRequest.getSession().getAttribute("token_cache");
-            if(tokenCache != null){
+            Object tokenCache = httpRequest.getSession().getAttribute("token_cache");
+            if (tokenCache != null) {
                 app.tokenCache().deserialize(tokenCache.toString());
             }
 
@@ -111,8 +118,8 @@ public class AuthHelperB2C {
 
             String authCode = authorizationCode.getValue();
             AuthorizationCodeParameters parameters = AuthorizationCodeParameters.builder(
-                    authCode,
-                    new URI(currentUri))
+                            authCode,
+                            new URI(currentUri))
                     .scopes(scopes)
                     .build();
 
@@ -120,7 +127,7 @@ public class AuthHelperB2C {
 
             result = future.get();
         } catch (ExecutionException e) {
-        	e.printStackTrace();
+            e.printStackTrace();
             throw e.getCause();
         }
 
@@ -131,10 +138,6 @@ public class AuthHelperB2C {
         storeTokenCacheInSession(httpServletRequest, app.tokenCache().serialize());
 
         return result;
-    }
-
-    private void storeTokenCacheInSession(HttpServletRequest httpServletRequest, String tokenCache){
-        httpServletRequest.getSession().setAttribute(TOKEN_CACHE_SESSION_ATTRIBUTE, tokenCache);
     }
 
     public void setSessionPrincipal(HttpServletRequest httpRequest, IAuthenticationResult result) {
@@ -150,83 +153,67 @@ public class AuthHelperB2C {
         setSessionPrincipal(httpRequest, authResult);
     }
 
-    public  boolean isAuthenticationSuccessful(AuthenticationResponse authResponse) {
+    private void storeTokenCacheInSession(HttpServletRequest httpServletRequest, String tokenCache) {
+        httpServletRequest.getSession().setAttribute(TOKEN_CACHE_SESSION_ATTRIBUTE, tokenCache);
+    }
+
+    public boolean isAuthenticationSuccessful(AuthenticationResponse authResponse) {
         return authResponse instanceof AuthenticationSuccessResponse;
     }
 
-    public  boolean isAuthenticated(HttpServletRequest request) {
+    public boolean isAuthenticated(HttpServletRequest request) {
         return request.getSession().getAttribute(PRINCIPAL_SESSION_NAME) != null;
     }
 
-    public  IAuthenticationResult getAuthSessionObject(HttpServletRequest request) {
+    public IAuthenticationResult getAuthSessionObject(HttpServletRequest request) {
         Object principalSession = request.getSession().getAttribute(PRINCIPAL_SESSION_NAME);
-        if(principalSession instanceof IAuthenticationResult){
+        if (principalSession instanceof IAuthenticationResult) {
             return (IAuthenticationResult) principalSession;
         } else {
             throw new IllegalStateException();
         }
     }
 
-    public  boolean containsAuthenticationCode(HttpServletRequest httpRequest) {
-        Map<String, String[]> httpParameters = httpRequest.getParameterMap();
-
-        boolean isPostRequest = httpRequest.getMethod().equalsIgnoreCase("POST");
-        boolean containsErrorData = httpParameters.containsKey("error");
-        boolean containIdToken = httpParameters.containsKey("id_token");
-        boolean containsCode = httpParameters.containsKey("code");
-
-        return isPostRequest && containsErrorData || containsCode || containIdToken;
+    public boolean containsAuthenticationCode(HttpServletRequest httpRequest) {
+        return checkAuthenticationCode(httpRequest);
     }
 
     /***
      * Obtien un token d'acces a partir d'une authorization
-     * @param code
-     * @param app
-     * @param request
-     * @return
-     * @throws Exception
      */
-	public TokenResponse getToken(HttpServletRequest request) throws Exception {
-		String code = request.getParameter("code") ;
+    public TokenResponse getToken(HttpServletRequest request) throws Exception {
+        String code = request.getParameter("code");
         String url = configuration.getSignUpSignInAuthority(app.getPolicySignUpSignIn()).replace("/tfp", "") + "oauth2/v2.0/token?" +
                 "grant_type=authorization_code&" +
-                "code="+ code +"&" +
-                "redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), "UTF-8") +
+                "code=" + code + "&" +
+                "redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), UTF_8) +
                 "&client_id=" + app.getClientId() +
                 "&client_secret=" + app.getCertSecretValue() +
-                "&scope=" + URLEncoder.encode("openid offline_access profile " + app.getApiScope(), "UTF-8") +
+                "&scope=" + URLEncoder.encode("openid offline_access profile " + app.getApiScope(), UTF_8) +
                 (StringUtils.isEmpty(request.getParameter("claims")) ? "" : "&claims=" + request.getParameter("claims"));
-        
-    	HttpHeaders requestHeaders = new HttpHeaders();
-	  	requestHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED); //MediaType.APPLICATION_JSON);
-	  	
-	  	TokenResponse token = HttpClientHelper.callRestAPI(url, HttpMethod.POST, null, TokenResponse.class, null, requestHeaders);
-	  	return token;
-	}
 
-	/**
-	 * Renouvelle un token d'acces (apres son expiration)
-	 * @param refresh_token
-	 * @param app
-	 * @param request
-	 * @return
-	 * @throws Exception
-	 */
-	public TokenResponse refreshToken(String refresh_token, HttpServletRequest request) throws Exception {
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED); //MediaType.APPLICATION_JSON);
+
+        return HttpClientHelper.callRestAPI(url, HttpMethod.POST, null, TokenResponse.class, null, requestHeaders);
+    }
+
+    /**
+     * Renouvelle un token d'acces (apres son expiration)
+     */
+    public TokenResponse refreshToken(String refresh_token, HttpServletRequest request) {
         String url = configuration.getSignUpSignInAuthority(app.getPolicySignUpSignIn()).replace("/tfp", "") + "oauth2/v2.0/token?" +
                 "grant_type=refresh_token&" +
-                "refresh_token="+ refresh_token +"&" +
-                "redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), "UTF-8") +
+                "refresh_token=" + refresh_token + "&" +
+                "redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), UTF_8) +
                 "&client_id=" + app.getClientId() +
                 "&client_secret=" + app.getCertSecretValue() +
-                "&scope=" + URLEncoder.encode("openid offline_access profile " + app.getApiScope(), "UTF-8") +
+                "&scope=" + URLEncoder.encode("openid offline_access profile " + app.getApiScope(), UTF_8) +
                 (StringUtils.isEmpty(request.getParameter("claims")) ? "" : "&claims=" + request.getParameter("claims"));
-        
-    	HttpHeaders requestHeaders = new HttpHeaders();
-	  	requestHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED); //MediaType.APPLICATION_JSON);
-	  	
-	  	TokenResponse token = HttpClientHelper.callRestAPI(url, HttpMethod.POST, null, TokenResponse.class, null, requestHeaders);
-	  	return token;
-	}
-	
+
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED); //MediaType.APPLICATION_JSON);
+
+        return HttpClientHelper.callRestAPI(url, HttpMethod.POST, null, TokenResponse.class, null, requestHeaders);
+    }
 }

@@ -18,7 +18,7 @@ package ca.qc.banq.gia.authentication.controller;
 import ca.qc.banq.gia.authentication.entities.App;
 import ca.qc.banq.gia.authentication.entities.TypeAuth;
 import ca.qc.banq.gia.authentication.models.AppPayload;
-import ca.qc.banq.gia.authentication.repositories.AppRepository;
+import ca.qc.banq.gia.authentication.repositories.GIARepository;
 import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -46,7 +46,7 @@ class AppController {
 
     private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "apps/createOrUpdateAppForm";
 
-    private final AppRepository apps;
+    private final GIARepository apps;
 
     private final GiaBackOfficeService business;
 
@@ -107,6 +107,7 @@ class AppController {
     @GetMapping("/apps/{appId}/edit")
     public String initUpdateAppForm(@PathVariable("appId") String appId, Model model) {
         App app = this.apps.findById(appId).orElse(null);
+        assert app != null;
         model.addAttribute(app);
         model.addAttribute("types", Arrays.asList(TypeAuth.values()));
         //model.addAttribute("isnew", false);

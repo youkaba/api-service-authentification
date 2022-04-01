@@ -1,18 +1,13 @@
 /**
- * 
+ *
  */
 package ca.qc.banq.gia.authentication.models;
 
-import java.io.Serializable;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import ca.qc.banq.gia.authentication.entities.TypeAuth;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
+
+import java.io.Serializable;
 
 /**
  * Payload d'une application
@@ -24,31 +19,30 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-@SuppressWarnings("serial")
 public class AppPayload implements Serializable {
 
-	String clientId;
-	String title;
-	TypeAuth typeAuth;
-	String homeUrl;
-	String certSecretValue;
-	String apiScope;
-	String loginURL;
-	String logoutURL;
-	String policySignUpSignIn;
-	String policyResetPassword;
-	String policyEditProfile;
-	String usersGroupId;
-	String redirectApp;
-	
-	@JsonIgnore
-	public boolean isNouveau() {
-		return this.clientId == null || this.clientId.isEmpty();
-	}
-	
-	public String getHiddenCert() {
-		String s = "";
-		for( int i=0; i < certSecretValue.length(); i++ ) s += "*";
-		return s;
-	}
+    private String clientId;
+    private String title;
+    private TypeAuth typeAuth;
+    private String homeUrl;
+    private String certSecretValue;
+    private String apiScope;
+    private String loginURL;
+    private String logoutURL;
+    private String policySignUpSignIn;
+    private String policyResetPassword;
+    private String policyEditProfile;
+    private String usersGroupId;
+    private String redirectApp;
+
+    @JsonIgnore
+    public boolean isNouveau() {
+        return this.clientId == null || this.clientId.isEmpty();
+    }
+
+    public String getHiddenCert() {
+        String s = "";
+        for (int i = 0; i < certSecretValue.length(); i++) s += "*";
+        return s;
+    }
 }

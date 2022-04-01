@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 
 /**
@@ -48,10 +49,6 @@ public class AuthPageController {
 
     /**
      * Redirection vers une authentification Azure B2C
-     *
-     * @param httpRequest
-     * @param httpResponse
-     * @throws Throwable
      */
     @RequestMapping(HttpClientHelper.REDIRECTB2C_ENDPOINT)
     public void redirectB2C(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
@@ -60,10 +57,6 @@ public class AuthPageController {
 
     /**
      * Redirection vers une authentification Azure AD
-     *
-     * @param httpRequest
-     * @param httpResponse
-     * @throws Throwable
      */
     @RequestMapping(HttpClientHelper.REDIRECTAAD_ENDPOINT)
     public void redirectAAD(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
@@ -72,10 +65,6 @@ public class AuthPageController {
 
     /**
      * Connexion a une application
-     *
-     * @param httpRequest
-     * @param httpResponse
-     * @throws Throwable
      */
     @RequestMapping(HttpClientHelper.SIGNIN_ENDPOINT)
     public void signIn(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
@@ -93,10 +82,6 @@ public class AuthPageController {
 
     /**
      * Deconnexion d'une application
-     *
-     * @param httpRequest
-     * @param httpResponse
-     * @throws Throwable
      */
     @RequestMapping(HttpClientHelper.SIGNOUT_ENDPOINT)
     public void signOut(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
@@ -106,15 +91,11 @@ public class AuthPageController {
         httpRequest.getSession().invalidate();
         if (app.getTypeAuth().equals(TypeAuth.B2C)) httpResponse.sendRedirect(app.getLoginURL());
         else
-            httpResponse.sendRedirect("https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), "UTF-8"));
+            httpResponse.sendRedirect("https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), StandardCharsets.UTF_8));
     }
 
     /**
      * Ouvre le flux de re-initialisation du mot de passe de l'usager qui cliquera sur ce lien
-     *
-     * @param httpRequest
-     * @param httpResponse
-     * @throws Throwable
      */
     @RequestMapping(HttpClientHelper.RESETPWD_ENDPOINT)
     public void resetUserPassword(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
@@ -133,7 +114,7 @@ public class AuthPageController {
                 "oauth2/v2.0/authorize?p=" + app.getPolicyResetPassword() + "&" +
                 "client_id=" + app.getClientId() + "&" +
                 "nonce=defaultNonce" + "&" +
-                "redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), "UTF-8") + "&" +
+                "redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), StandardCharsets.UTF_8) + "&" +
                 "scope=openid&response_type=id_token&prompt=login";
         log.info("reset-password url = " + url);
 
@@ -143,15 +124,10 @@ public class AuthPageController {
 
     /**
      * Deconnexion du service d'authentification
-     *
-     * @param httpRequest
-     * @param httpResponse
-     * @throws Throwable
      */
     @RequestMapping("/signout")
     public void logout(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
         httpRequest.getSession().invalidate();
-        httpResponse.sendRedirect("https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri=" + URLEncoder.encode(serverHost.concat(servletPath), "UTF-8"));
+        httpResponse.sendRedirect("https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri=" + URLEncoder.encode(serverHost.concat(servletPath), StandardCharsets.UTF_8));
     }
-
 }
