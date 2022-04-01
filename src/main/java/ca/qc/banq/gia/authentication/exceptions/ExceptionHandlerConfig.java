@@ -1,10 +1,10 @@
 package ca.qc.banq.gia.authentication.exceptions;
 
 import ca.qc.banq.gia.authentication.config.TranslatorConfig;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tomcat.util.buf.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,13 +27,13 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @ControllerAdvice
+@RequiredArgsConstructor
 public class ExceptionHandlerConfig extends ResponseEntityExceptionHandler {
 
     /**
      * Injection du composant multilingue
      */
-    @Autowired
-    TranslatorConfig translator;
+    private final TranslatorConfig translator;
 
     /**
      * interception de tout autre type d'exception

@@ -31,4 +31,8 @@ public class GIAException extends RuntimeException {
     public GIAException(String message, Throwable cause) {
         super(message, cause);
     }
+
+    public GIAException() {
+
+    }
 }

@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class CookieHelper {
@@ -44,7 +45,7 @@ public class CookieHelper {
     }
 
     public static List<String> getCookie(HttpServletRequest httpRequest, String cookieName) {
-        return Arrays.asList(httpRequest.getCookies()).stream().map(cookie -> cookie.getName().equals(cookieName) ? cookie.getValue() : null).filter(c -> c != null).collect(Collectors.toList());
+        return Arrays.stream(httpRequest.getCookies()).map(cookie -> cookie.getName().equals(cookieName) ? cookie.getValue() : null).filter(Objects::nonNull).collect(Collectors.toList());
         /*for(Cookie cookie : httpRequest.getCookies()){
             if(cookie.getName().equals(cookieName)){
                 return cookie.getValue();
@@ -59,7 +60,6 @@ public class CookieHelper {
      * The following code is for demonstration only: It should not be considered complete.
      * It is not maintained or supported.
      *
-     * @param userAgent
      * @return true if user agent supports "None" value of "SameSite" attribute of cookies,
      * false otherwise
      */

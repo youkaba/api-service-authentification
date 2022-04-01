@@ -37,16 +37,14 @@ class WelcomeController {
     private final AuthHelperB2C authHelperB2C;
     private final AuthHelperAAD authHelperAAD;
     @Value("${server.host}")
-    String serverHost;
+    private String serverHost;
     @Value("${server.servlet.context-path}")
-    String servletPath;
+    private String servletPath;
     @Value("${spring.profiles.active}")
-    String profile;
+    private String profile;
 
     /**
      * Page d'accueil de la console d'administration du service d'authentification
-     *
-     * @return
      */
     @GetMapping("/")
     public String welcome() {
@@ -55,8 +53,6 @@ class WelcomeController {
 
     /**
      * Page d'affichage de l'environnement d'execution du service d'authentification
-     *
-     * @return
      */
     @GetMapping("/env")
     public ModelAndView env() {
@@ -71,8 +67,6 @@ class WelcomeController {
 
     /**
      * Page documentation de la console d'administration du service d'authentification
-     *
-     * @return
      */
     @GetMapping("/doc")
     public ModelAndView doc() {

@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Locale;
 
+import static java.util.Objects.isNull;
+
 /**
  * Configuration du traducteur
  *
@@ -22,15 +24,10 @@ public class TranslatorConfig {
 
     /**
      * Translate a key message
-     *
-     * @param resolver
-     * @param language
-     * @param args
-     * @return
      */
     public String translate(String resolver, String language, Object... args) {
         try {
-            return this.messageSource.getMessage(resolver, args, Locale.forLanguageTag(language == null || language.isEmpty() ? "fr" : language));
+            return this.messageSource.getMessage(resolver, args, Locale.forLanguageTag(isNull(language) || language.isEmpty() ? "fr" : language));
         } catch (Exception e) {
             log.error("no entry found for key message: " + resolver);
             return resolver;
@@ -39,10 +36,6 @@ public class TranslatorConfig {
 
     /**
      * Translate a message key to default language
-     *
-     * @param resolver
-     * @param args
-     * @return
      */
     public String translate(String resolver, Object... args) {
         try {

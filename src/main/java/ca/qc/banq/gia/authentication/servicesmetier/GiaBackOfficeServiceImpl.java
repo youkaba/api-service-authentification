@@ -11,8 +11,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static ca.qc.banq.gia.authentication.helpers.HttpClientHelper.CLIENTID_PARAM;
 
 
 /**
@@ -33,10 +37,10 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
 	PasswordEncoder passwordEncoder; */
 
     @Value("${server.host}")
-    String serverHost;
+    private String serverHost;
 
     @Value("${server.servlet.context-path}")
-    String servletPath;
+    private String servletPath;
 
     /*
      * (non-javadoc)
@@ -87,8 +91,7 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
 
     @Override
     public AppPayload findByClientId(String clientId) {
-        App app = appRepo.findById(clientId).orElse(null);
-        if (app == null) throw new GIAException("app.notfound");
+        App app = appRepo.findById(clientId).orElseThrow(() -> new GIAException("app.notfound"));
         return app.toDTO(getLoginUrl(app.getClientId()), getRedirectApp(app.getTypeAuth()), getLogoutUrl(app.getClientId()));
     }
 
@@ -108,5 +111,13 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
     @Override
     public List<AppPayload> findLikeTitle(String title) {
         return appRepo.findLikeTitle(title).stream().map(app -> app.toDTO(getLoginUrl(app.getClientId()), getRedirectApp(app.getTypeAuth()), getLogoutUrl(app.getClientId()))).collect(Collectors.toList());
+    }
+
+    @Override
+    public AppPayload checkClientID(HttpServletRequest httpRequest) {
+        // Recuperation de l'id de l'application dans la requete
+        Optional<String> clientId = Optional.ofNullable(httpRequest.getParameter(CLIENTID_PARAM));
+        Optional<AppPayload> app = clientId.map(this::findByClientId);
+        return app.orElseThrow(() -> new GIAException("unable to find appid"));
     }
 }

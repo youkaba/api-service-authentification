@@ -23,9 +23,6 @@ public class AddUserToGroupRequestPayload implements Serializable {
     }
 
     public String getJsonData() {
-        String json = String.format("{\r\n"
-                + "    \"@odata.id\": \"%s\"\r\n"
-                + "}", this.id);
-        return json;
+        return String.format("{\r\n \"@odata.id\": \"%s\"\r\n}", this.id);
     }
 }

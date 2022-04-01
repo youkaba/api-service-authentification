@@ -20,7 +20,6 @@ public class WebMVCConfig implements WebMvcConfigurer {
     /**
      * Message bundle
      *
-     * @return
      */
     @Bean
     public static ReloadableResourceBundleMessageSource messageSource() {

@@ -34,6 +34,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Objects.isNull;
+
 /**
  * Controlleur de gestion des applications dans la console d'administration du service d'authentification
  *
@@ -84,7 +86,7 @@ class AppController {
     public String processFindForm(AppPayload app, BindingResult result, Map<String, Object> model) {
 
         // allow parameterless GET request for /apps to return all records
-        if (app.getTitle() == null) app.setTitle("");
+        if (isNull(app.getTitle())) app.setTitle("");
 
         // find apps by last name
         List<AppPayload> results = this.business.findLikeTitle(app.getTitle());

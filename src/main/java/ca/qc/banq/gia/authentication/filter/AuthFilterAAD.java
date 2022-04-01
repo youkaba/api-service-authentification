@@ -9,8 +9,8 @@ import ca.qc.banq.gia.authentication.models.UserInfo;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
 import com.microsoft.aad.msal4j.MsalException;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -30,13 +30,13 @@ import static ca.qc.banq.gia.authentication.helpers.AuthHelperB2C.checkAuthentic
  */
 @Getter
 @Component
+@RequiredArgsConstructor
 public class AuthFilterAAD {
 
-    @Autowired
-    AuthHelperAAD authHelper;
+    private final AuthHelperAAD authHelper;
 
     @Value("${server.host}")
-    String serverHost;
+    private String serverHost;
 
     /*
      * (non-javadoc)

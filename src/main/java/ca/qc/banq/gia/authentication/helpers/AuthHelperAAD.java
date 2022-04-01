@@ -21,6 +21,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -44,6 +45,7 @@ import java.util.concurrent.Future;
 
 import static ca.qc.banq.gia.authentication.helpers.SessionManagementHelper.FAILED_TO_VALIDATE_MESSAGE;
 import static ca.qc.banq.gia.authentication.helpers.SessionManagementHelper.validateState;
+import static java.util.Objects.nonNull;
 
 /**
  * Helpers for acquiring authorization codes and tokens from AAD
@@ -103,7 +105,7 @@ public class AuthHelperAAD {
         IAuthenticationResult result = SessionManagementHelper.getAuthSessionObject(httpRequest);
         IConfidentialClientApplication app = createClientApplication();
         Object tokenCache = httpRequest.getSession().getAttribute("token_cache");
-        if (tokenCache != null) app.tokenCache().deserialize(tokenCache.toString());
+        if (nonNull(tokenCache)) app.tokenCache().deserialize(tokenCache.toString());
         SilentParameters parameters = SilentParameters.builder(Collections.singleton(configuration.getScope()), result.account()).build();
         CompletableFuture<IAuthenticationResult> future = app.acquireTokenSilently(parameters);
         IAuthenticationResult updatedResult = future.get();
@@ -230,7 +232,7 @@ public class AuthHelperAAD {
     }
 
     public void editUser(TokenResponse token, EditB2CUserRequestPayload request) throws Exception {
-        HttpClient httpClient = new org.apache.http.impl.client.DefaultHttpClient();
+        HttpClient httpClient = HttpClientBuilder.create().build();
         HttpPatch httpPatch = new HttpPatch(configuration.getMsGraphUsersEndpoint().concat("/" + request.getId()));
         System.err.println("Url edit user = " + httpPatch.getURI());
         org.apache.http.HttpEntity httpEntity = new StringEntity(new ObjectMapper().writeValueAsString(request));

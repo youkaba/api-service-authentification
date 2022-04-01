@@ -41,8 +41,6 @@ public class AppPayload implements Serializable {
     }
 
     public String getHiddenCert() {
-        String s = "";
-        for (int i = 0; i < certSecretValue.length(); i++) s += "*";
-        return s;
+        return "*".repeat(certSecretValue.length());
     }
 }

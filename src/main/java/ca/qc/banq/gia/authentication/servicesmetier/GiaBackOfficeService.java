@@ -3,6 +3,7 @@ package ca.qc.banq.gia.authentication.servicesmetier;
 import ca.qc.banq.gia.authentication.entities.App;
 import ca.qc.banq.gia.authentication.models.AppPayload;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 
@@ -53,4 +54,6 @@ public interface GiaBackOfficeService {
      * @param title
      */
     List<AppPayload> findLikeTitle(String title);
+
+    AppPayload checkClientID(HttpServletRequest httpRequest);
 }

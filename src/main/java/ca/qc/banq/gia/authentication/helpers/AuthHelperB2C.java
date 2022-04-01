@@ -31,6 +31,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 /**
  * Helpers for acquiring authorization codes and tokens from B2C
@@ -81,7 +83,7 @@ public class AuthHelperB2C {
             app = createClientApplication();
 
             Object tokenCache = httpRequest.getSession().getAttribute("token_cache");
-            if (tokenCache != null) {
+            if (nonNull(tokenCache)) {
                 app.tokenCache().deserialize(tokenCache.toString());
             }
 
@@ -96,7 +98,7 @@ public class AuthHelperB2C {
             throw e.getCause();
         }
 
-        if (updatedResult == null) {
+        if (isNull(updatedResult)) {
             throw new ServiceUnavailableException("authentication result was null");
         }
 
@@ -115,26 +117,19 @@ public class AuthHelperB2C {
         ConfidentialClientApplication app;
         try {
             app = createClientApplication();
-
             String authCode = authorizationCode.getValue();
-            AuthorizationCodeParameters parameters = AuthorizationCodeParameters.builder(
-                            authCode,
-                            new URI(currentUri))
-                    .scopes(scopes)
-                    .build();
-
+            AuthorizationCodeParameters parameters = AuthorizationCodeParameters
+                    .builder(authCode, new URI(currentUri)).scopes(scopes).build();
             Future<IAuthenticationResult> future = app.acquireToken(parameters);
-
             result = future.get();
         } catch (ExecutionException e) {
             e.printStackTrace();
             throw e.getCause();
         }
 
-        if (result == null) {
+        if (isNull(result)) {
             throw new ServiceUnavailableException("authentication result was null");
         }
-
         storeTokenCacheInSession(httpServletRequest, app.tokenCache().serialize());
 
         return result;

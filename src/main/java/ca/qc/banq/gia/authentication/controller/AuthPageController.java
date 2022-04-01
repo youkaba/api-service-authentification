@@ -4,11 +4,9 @@
 package ca.qc.banq.gia.authentication.controller;
 
 import ca.qc.banq.gia.authentication.entities.TypeAuth;
-import ca.qc.banq.gia.authentication.exceptions.GIAException;
 import ca.qc.banq.gia.authentication.filter.AuthFilterAAD;
 import ca.qc.banq.gia.authentication.filter.AuthFilterB2C;
 import ca.qc.banq.gia.authentication.helpers.AuthHelperB2C;
-import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
 import ca.qc.banq.gia.authentication.models.AppPayload;
 import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +19,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+
+import static ca.qc.banq.gia.authentication.helpers.HttpClientHelper.*;
 
 
 /**
@@ -50,7 +50,7 @@ public class AuthPageController {
     /**
      * Redirection vers une authentification Azure B2C
      */
-    @RequestMapping(HttpClientHelper.REDIRECTB2C_ENDPOINT)
+    @RequestMapping(REDIRECTB2C_ENDPOINT)
     public void redirectB2C(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
         filterB2C.doFilter(httpRequest, httpResponse);
     }
@@ -58,7 +58,7 @@ public class AuthPageController {
     /**
      * Redirection vers une authentification Azure AD
      */
-    @RequestMapping(HttpClientHelper.REDIRECTAAD_ENDPOINT)
+    @RequestMapping(REDIRECTAAD_ENDPOINT)
     public void redirectAAD(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
         filterAAD.doFilter(httpRequest, httpResponse);
     }
@@ -66,11 +66,9 @@ public class AuthPageController {
     /**
      * Connexion a une application
      */
-    @RequestMapping(HttpClientHelper.SIGNIN_ENDPOINT)
+    @RequestMapping(SIGNIN_ENDPOINT)
     public void signIn(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
-        String clientId = httpRequest.getParameter(HttpClientHelper.CLIENTID_PARAM);
-        AppPayload app = clientId != null ? appService.findByClientId(clientId) : null;
-        if (app == null) throw new GIAException("unable to find appid");
+        AppPayload app = appService.checkClientID(httpRequest);
         if (app.getTypeAuth().equals(TypeAuth.B2C)) {
             filterB2C.getAuthHelper().init(app);
             filterB2C.doFilter(httpRequest, httpResponse);
@@ -83,11 +81,10 @@ public class AuthPageController {
     /**
      * Deconnexion d'une application
      */
-    @RequestMapping(HttpClientHelper.SIGNOUT_ENDPOINT)
+    @RequestMapping(SIGNOUT_ENDPOINT)
     public void signOut(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
-        String clientId = httpRequest.getParameter(HttpClientHelper.CLIENTID_PARAM);
-        AppPayload app = clientId != null ? appService.findByClientId(clientId) : null;
-        if (app == null) throw new GIAException("unable to find appid");
+        AppPayload app = appService.checkClientID(httpRequest);
+
         httpRequest.getSession().invalidate();
         if (app.getTypeAuth().equals(TypeAuth.B2C)) httpResponse.sendRedirect(app.getLoginURL());
         else
@@ -97,13 +94,9 @@ public class AuthPageController {
     /**
      * Ouvre le flux de re-initialisation du mot de passe de l'usager qui cliquera sur ce lien
      */
-    @RequestMapping(HttpClientHelper.RESETPWD_ENDPOINT)
+    @RequestMapping(RESETPWD_ENDPOINT)
     public void resetUserPassword(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
-
-        // Recuperation de l'id de l'application dans la requete
-        String clientId = httpRequest.getParameter(HttpClientHelper.CLIENTID_PARAM);
-        AppPayload app = clientId != null ? appService.findByClientId(clientId) : null;
-        if (app == null) throw new GIAException("unable to find appid");
+        AppPayload app = appService.checkClientID(httpRequest);
 
         // Initialisation de l'application dans le helper
         if (app.getTypeAuth().equals(TypeAuth.B2C)) filterB2C.getAuthHelper().init(app);
