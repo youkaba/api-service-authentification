@@ -66,7 +66,7 @@ public class SessionManagementHelper {
         while (it.hasNext()) {
             Map.Entry<String, StateData> entry = it.next();
             long diffInSeconds = TimeUnit.MILLISECONDS.
-                    toSeconds(currTime.getTime() - entry.getValue().getExpirationDate().getTime());
+                    toSeconds(currTime.getTime() - entry.getValue().expirationDate().getTime());
 
             if (diffInSeconds > STATE_TTL) {
                 it.remove();

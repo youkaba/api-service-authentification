@@ -50,7 +50,7 @@ public class CreateB2CUserRequestPayload implements Serializable {
         request.setMobilePhone(this.mobilePhone);
         request.setUserPrincipalName(this.userPrincipalName);
         request.setAccountEnabled(true);
-        request.setPasswordProfile(new PasswordPolicy(this.password, false));
+        request.setPasswordProfile(new PasswordPolicy(this.password));
         List<IdentityPayload> identities = new ArrayList<>();
         boolean principalIsMail = this.userPrincipalName.equalsIgnoreCase(this.mail);
         boolean principalIsAnEmail = this.userPrincipalName.matches(HttpClientHelper.EMAIL_REGEX);

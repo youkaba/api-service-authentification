@@ -3,7 +3,7 @@
 
 package ca.qc.banq.gia.authentication.helpers;
 
-import ca.qc.banq.gia.authentication.config.AADConfig;
+import ca.qc.banq.gia.authentication.config.AzureActiveDirectoryConfig;
 import ca.qc.banq.gia.authentication.models.TokenResponse;
 import ca.qc.banq.gia.authentication.models.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,9 +23,10 @@ import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.*;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -43,9 +44,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import static ca.qc.banq.gia.authentication.helpers.HttpClientHelper.*;
 import static ca.qc.banq.gia.authentication.helpers.SessionManagementHelper.FAILED_TO_VALIDATE_MESSAGE;
 import static ca.qc.banq.gia.authentication.helpers.SessionManagementHelper.validateState;
 import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.replace;
+import static org.springframework.http.HttpMethod.*;
+import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 
 /**
  * Helpers for acquiring authorization codes and tokens from AAD
@@ -61,11 +67,16 @@ public class AuthHelperAAD {
     public static final String PRINCIPAL_SESSION_NAME = "principal";
     public static final String TOKEN_CACHE_SESSION_ATTRIBUTE = "token_cache";
 
-    private final AADConfig configuration;
+    private final AzureActiveDirectoryConfig azureActiveDirectoryConfig;
+
+    private final RestTemplate restTemplate;
+
     @Value("${server.host}")
     private String serverHost;
+
     @Value("${server.servlet.context-path}")
     private String servletPath;
+
     private AppPayload app;
 
     //@PostConstruct
@@ -106,7 +117,7 @@ public class AuthHelperAAD {
         IConfidentialClientApplication app = createClientApplication();
         Object tokenCache = httpRequest.getSession().getAttribute("token_cache");
         if (nonNull(tokenCache)) app.tokenCache().deserialize(tokenCache.toString());
-        SilentParameters parameters = SilentParameters.builder(Collections.singleton(configuration.getScope()), result.account()).build();
+        SilentParameters parameters = SilentParameters.builder(Collections.singleton(azureActiveDirectoryConfig.getScope()), result.account()).build();
         CompletableFuture<IAuthenticationResult> future = app.acquireTokenSilently(parameters);
         IAuthenticationResult updatedResult = future.get();
         SessionManagementHelper.storeTokenCacheInSession(httpRequest, app.tokenCache().serialize());
@@ -114,7 +125,7 @@ public class AuthHelperAAD {
     }
 
     private void validateNonce(StateData stateData, String nonce) throws Exception {
-        if (StringUtils.isEmpty(nonce) || !nonce.equals(stateData.getNonce())) {
+        if (StringUtils.isEmpty(nonce) || !nonce.equals(stateData.nonce())) {
             throw new Exception(FAILED_TO_VALIDATE_MESSAGE + "could not validate nonce");
         }
     }
@@ -145,7 +156,7 @@ public class AuthHelperAAD {
     public String getAuthorizationCodeUrl(String claims, String scope, String registeredRedirectURL, String state, String nonce) throws MalformedURLException {
 
         String updatedScopes = scope == null ? "" : scope;
-        PublicClientApplication pca = PublicClientApplication.builder(app.getClientId()).authority(configuration.getAuthority()).build();
+        PublicClientApplication pca = PublicClientApplication.builder(app.getClientId()).authority(azureActiveDirectoryConfig.getAuthority()).build();
         AuthorizationRequestUrlParameters parameters = AuthorizationRequestUrlParameters.builder(registeredRedirectURL, Collections.singleton(updatedScopes))
                 .responseMode(ResponseMode.QUERY).prompt(Prompt.SELECT_ACCOUNT).state(state).nonce(nonce).claimsChallenge(claims).build();
         return pca.getAuthorizationRequestUrl(parameters).toString();
@@ -170,7 +181,7 @@ public class AuthHelperAAD {
 
     private ConfidentialClientApplication createClientApplication() throws MalformedURLException {
         return ConfidentialClientApplication.builder(app.getClientId(), ClientCredentialFactory.createFromSecret(app.getCertSecretValue())).
-                authority(configuration.getAuthority()).
+                authority(azureActiveDirectoryConfig.getAuthority()).
                 build();
     }
 
@@ -183,18 +194,18 @@ public class AuthHelperAAD {
     }
 
     public String getRedirectUriGraph() {
-        return configuration.getRedirectUriGraph();
+        return azureActiveDirectoryConfig.getRedirectUriGraph();
     }
 
     public String getMsGraphEndpointHost() {
-        return configuration.getMsGraphEndpointHost();
+        return azureActiveDirectoryConfig.getMsGraphEndpointHost();
     }
 
     /**
      * Recupere les infos de l'utilisateur connecte a partir de l'API Microsoft Graph
      */
     public UserInfo getADUserInfos(String token) {
-        return HttpClientHelper.callRestAPI(configuration.getMsGraphEndpointHost() + "v1.0/me", HttpMethod.GET, null, UserInfo.class, null, buildHeaders(token));
+        return callRestAPI(azureActiveDirectoryConfig.getMsGraphEndpointHost() + "v1.0/me", GET, null, UserInfo.class, null, buildHeaders(token));
     }
 
     /**
@@ -202,23 +213,25 @@ public class AuthHelperAAD {
      */
     public TokenResponse getAccessToken(AppPayload app) {
         // Requete
-        GetTokenRequestPayload req = new GetTokenRequestPayload(HttpClientHelper.GRANT_TYPE_CREDENTIAL, app.getCertSecretValue(), app.getClientId(), configuration.getMsGraphScope());
-        RestTemplate restTemplate = new RestTemplate();
+        GetTokenRequestPayload req = new GetTokenRequestPayload(GRANT_TYPE_CREDENTIAL,
+                app.getCertSecretValue(),
+                app.getClientId(), azureActiveDirectoryConfig.getMsGraphScope());
 
         // Initialisation du header
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setContentType(APPLICATION_FORM_URLENCODED);
 
         // Construction du body de la requete
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-        map.add("grant_type", req.getGrant_type());
-        map.add("client_secret", req.getClient_secret());
-        map.add("client_id", req.getClient_id());
-        map.add("scope", req.getScope());
+        map.add("grant_type", req.grant_type());
+        map.add("client_secret", req.client_secret());
+        map.add("client_id", req.client_id());
+        map.add("scope", req.scope());
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(map, headers);
 
         // Execution du service rest de recuperation d'un token d'acces a GraphAPI
-        ResponseEntity<TokenResponse> response = restTemplate.exchange(configuration.getAccessGraphTokenUri(), HttpMethod.POST, entity, TokenResponse.class);
+        ResponseEntity<TokenResponse> response = restTemplate.exchange(azureActiveDirectoryConfig.getAccessGraphTokenUri(),
+                POST, entity, TokenResponse.class);
 
         // Retourne le token
         return response.getBody();
@@ -228,16 +241,17 @@ public class AuthHelperAAD {
      * Cree un nouvel utilisateur dans Azure AD/B2C
      */
     public UserInfo createUser(TokenResponse token, UserRequestPayload request) {
-        return HttpClientHelper.callRestAPI(configuration.getMsGraphUsersEndpoint(), HttpMethod.POST, null, UserInfo.class, request, buildHeaders(token.getAccess_token()));
+        return callRestAPI(azureActiveDirectoryConfig.getMsGraphUsersEndpoint(),
+                POST, null, UserInfo.class, request, buildHeaders(token.access_token()));
     }
 
     public void editUser(TokenResponse token, EditB2CUserRequestPayload request) throws Exception {
         HttpClient httpClient = HttpClientBuilder.create().build();
-        HttpPatch httpPatch = new HttpPatch(configuration.getMsGraphUsersEndpoint().concat("/" + request.getId()));
+        HttpPatch httpPatch = new HttpPatch(azureActiveDirectoryConfig.getMsGraphUsersEndpoint().concat("/" + request.getId()));
         System.err.println("Url edit user = " + httpPatch.getURI());
         org.apache.http.HttpEntity httpEntity = new StringEntity(new ObjectMapper().writeValueAsString(request));
         httpPatch.setHeader("Content-Type", "application/json");
-        httpPatch.setHeader("Authorization", "Bearer " + token.getAccess_token());
+        httpPatch.setHeader("Authorization", "Bearer " + token.access_token());
         httpPatch.setEntity(httpEntity);
         HttpResponse resp = httpClient.execute(httpPatch);
         System.err.println("User updated. StatusLine = " + resp.getStatusLine().getStatusCode() + " - " + resp.getStatusLine().getReasonPhrase());
@@ -249,7 +263,12 @@ public class AuthHelperAAD {
      * @param uid id utilisateur ou userPrincipalName dans AD/B2C
      */
     public void addUserTGroup(TokenResponse token, String uid, String groupId) {
-        HttpClientHelper.callRestAPI(StringUtils.replace(configuration.getMsGraphAddUserToGroupEndpoint(), "$groupid", groupId), HttpMethod.POST, null, Void.class, new AddUserToGroupRequestPayload(uid).getJsonData(), buildHeaders(token.getAccess_token()));
+        callRestAPI(replace(azureActiveDirectoryConfig.getMsGraphAddUserToGroupEndpoint(), "$groupid", groupId),
+                POST,
+                null,
+                Void.class,
+                new AddUserToGroupRequestPayload("https://graph.microsoft.com/v1.0/directoryObjects/" + uid).getJsonData(),
+                buildHeaders(token.access_token()));
     }
 
     /**
@@ -257,14 +276,19 @@ public class AuthHelperAAD {
      */
     public void assignUserToApp(TokenResponse token, String uid, String appId) {
         // Recherche de l'application dans azureAD a partir de son ClientIdl
-        FindAppByNameResponsePayload resp = HttpClientHelper.callRestAPI(StringUtils.replace(HttpClientHelper.FIND_APP_BYID_REQUEST_URL, "$appId", appId), HttpMethod.GET, null, FindAppByNameResponsePayload.class, null, buildHeaders(token.getAccess_token()));
-        if (resp == null || resp.getValue() == null || resp.getValue().isEmpty()) return;
+        FindAppByNameResponsePayload resp = callRestAPI(replace(FIND_APP_BYID_REQUEST_URL, "$appId", appId), GET, null, FindAppByNameResponsePayload.class, null, buildHeaders(token.access_token()));
+        if (resp == null || resp.value() == null || resp.value().isEmpty()) return;
 
         // Recuperation de l'id de l'application
-        String id = resp.getValue().get(0).getId();
+        String id = resp.value().get(0).id();
 
         // Affectation de l'utilisateur a l'application
-        HttpClientHelper.callRestAPI(StringUtils.replace(HttpClientHelper.ASSIGN_USERTOAPP_REQUEST_URL, "$id", id), HttpMethod.POST, null, AssignAppToUserResponsePayload.class, new AssignAppToUserRequestPayload(uid, id), buildHeaders(token.getAccess_token()));
+        callRestAPI(replace(ASSIGN_USERTOAPP_REQUEST_URL, "$id", id),
+                POST,
+                null,
+                AssignAppToUserResponsePayload.class,
+                new AssignAppToUserRequestPayload(uid, id),
+                buildHeaders(token.access_token()));
     }
 
     /**
@@ -273,7 +297,12 @@ public class AuthHelperAAD {
      * @param uid id utilisateur ou userPrincipalName dans AD/B2C
      */
     public UserInfo getB2CUserInfos(TokenResponse token, String uid) {
-        return HttpClientHelper.callRestAPI(configuration.getMsGraphUsersEndpoint() + "/" + uid, HttpMethod.GET, null, UserInfo.class, null, buildHeaders(token.getAccess_token()));
+        return callRestAPI(azureActiveDirectoryConfig.getMsGraphUsersEndpoint() + "/" + uid,
+                GET,
+                null,
+                UserInfo.class,
+                null,
+                buildHeaders(token.access_token()));
     }
 
     /**
@@ -282,14 +311,24 @@ public class AuthHelperAAD {
      * @param uid id utilisateur Azure B2C ou userPrincipalName
      */
     public GetIdentitiesResponse getUserIdentities(TokenResponse token, String uid) {
-        return HttpClientHelper.callRestAPI(configuration.getMsGraphUsersEndpoint() + "/" + uid + "/identities", HttpMethod.GET, null, GetIdentitiesResponse.class, null, buildHeaders(token.getAccess_token()));
+        return callRestAPI(azureActiveDirectoryConfig.getMsGraphUsersEndpoint() + "/" + uid + "/identities",
+                GET,
+                null,
+                GetIdentitiesResponse.class,
+                null,
+                buildHeaders(token.access_token()));
     }
 
     /**
      * Modifie les identifiants de connexion d'un utilisateur dans Azure B2C
      */
     public void editUserIdentities(TokenResponse token, String uid, GetIdentitiesResponse request) {
-        HttpClientHelper.callRestAPI(configuration.getMsGraphUsersEndpoint() + "/" + uid + "/identities", HttpMethod.PUT, null, void.class, request, buildHeaders(token.getAccess_token()));
+        callRestAPI(azureActiveDirectoryConfig.getMsGraphUsersEndpoint() + "/" + uid + "/identities",
+                PUT,
+                null,
+                void.class,
+                request,
+                buildHeaders(token.access_token()));
     }
 
     /**
@@ -302,7 +341,7 @@ public class AuthHelperAAD {
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
 
         // Ajout du token d'acces
-        if (token != null && !token.isEmpty()) requestHeaders.setBearerAuth(token);
+        if (isNotEmpty(token)) requestHeaders.setBearerAuth(token);
         return requestHeaders;
     }
 

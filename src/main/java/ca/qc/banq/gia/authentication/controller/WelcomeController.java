@@ -36,10 +36,13 @@ class WelcomeController {
 
     private final AuthHelperB2C authHelperB2C;
     private final AuthHelperAAD authHelperAAD;
+
     @Value("${server.host}")
     private String serverHost;
+
     @Value("${server.servlet.context-path}")
     private String servletPath;
+
     @Value("${spring.profiles.active}")
     private String profile;
 
@@ -57,8 +60,8 @@ class WelcomeController {
     @GetMapping("/env")
     public ModelAndView env() {
         ModelAndView mav = new ModelAndView("env");
-        mav.addObject("b2c", authHelperB2C.getConfiguration());
-        mav.addObject("aad", authHelperAAD.getConfiguration());
+        mav.addObject("b2c", authHelperB2C.getAzureB2CConfig());
+        mav.addObject("aad", authHelperAAD.getAzureActiveDirectoryConfig());
         mav.addObject("serverHost", serverHost);
         mav.addObject("servletPath", servletPath);
         mav.addObject("profile", profile);

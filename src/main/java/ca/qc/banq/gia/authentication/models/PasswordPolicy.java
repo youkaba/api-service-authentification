@@ -4,25 +4,18 @@
 package ca.qc.banq.gia.authentication.models;
 
 import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.io.Serializable;
 
 /**
  * @author francis.djiomou
- *
  */
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@SuppressWarnings("serial")
-public class PasswordPolicy implements Serializable {
+public record PasswordPolicy(
+        @ApiModelProperty(required = true, value = "password", example = "UEA1NXcwckQ=")
+        String password,
 
-    @ApiModelProperty(required = true, value = "password", example = "UEA1NXcwckQ=")
-    private String password;
+        @ApiModelProperty(required = true, value = "forceChangePasswordNextSignIn", example = "false")
+        Boolean forceChangePasswordNextSignIn) {
 
-    @ApiModelProperty(required = true, value = "forceChangePasswordNextSignIn", example = "false")
-    private Boolean forceChangePasswordNextSignIn = false;
+    public PasswordPolicy(String password) {
+        this(password, false);
+    }
 }

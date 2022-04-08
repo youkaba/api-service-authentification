@@ -1,10 +1,12 @@
 package ca.qc.banq.gia.authentication.config;
 
-import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
 import com.azure.spring.aad.webapp.AADWebSecurityConfigurerAdapter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+
+import static ca.qc.banq.gia.authentication.helpers.HttpClientHelper.*;
+
 
 /**
  * Configuration de securite de l'application
@@ -16,24 +18,28 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 @EnableWebSecurity
 public class SecurityConfig extends AADWebSecurityConfigurerAdapter { // WebSecurityConfigurerAdapter {
 
+    private static final String[] AUTH_LIST = {
+            "/error", "/api**", "/h2-console/**", FRONTOFFICE_APIURL.concat("**"),
+            SIGNIN_ENDPOINT, SIGNOUT_ENDPOINT,
+            REDIRECTB2C_ENDPOINT, REDIRECTAAD_ENDPOINT,
+            CREATEUSER_ENDPOINT, RESETPWD_ENDPOINT
+    };
+
     @Override
     protected void configure(HttpSecurity security) throws Exception {
         security
                 .cors().and().csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/error", "/api**", HttpClientHelper.FRONTOFFICE_APIURL.concat("**"),
-                        HttpClientHelper.SIGNIN_ENDPOINT, HttpClientHelper.SIGNOUT_ENDPOINT,
-                        HttpClientHelper.REDIRECTB2C_ENDPOINT, HttpClientHelper.REDIRECTAAD_ENDPOINT,
-                        HttpClientHelper.CREATEUSER_ENDPOINT, HttpClientHelper.RESETPWD_ENDPOINT)
+                .antMatchers(AUTH_LIST)
                 .permitAll()
                 .and()
                 .authorizeRequests()
                 .antMatchers("/", "/apps**", "/doc", "/oups", "/env", "/signout").authenticated()
                 .and().oauth2Login()
                 .and()
-                .authorizeRequests()
-                .antMatchers("/h2-console/**")
-                .permitAll();
+                .headers().frameOptions().sameOrigin();
+
+//        security.headers().frameOptions().disable();
         //.and().logout().permitAll();
 
     }

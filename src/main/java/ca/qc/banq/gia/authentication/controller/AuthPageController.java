@@ -3,12 +3,11 @@
 
 package ca.qc.banq.gia.authentication.controller;
 
-import ca.qc.banq.gia.authentication.entities.TypeAuth;
 import ca.qc.banq.gia.authentication.filter.AuthFilterAAD;
 import ca.qc.banq.gia.authentication.filter.AuthFilterB2C;
 import ca.qc.banq.gia.authentication.helpers.AuthHelperB2C;
 import ca.qc.banq.gia.authentication.models.AppPayload;
-import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
+import ca.qc.banq.gia.authentication.services.GiaBackOfficeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,9 +17,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
+import static ca.qc.banq.gia.authentication.entities.AuthenticationType.B2C;
 import static ca.qc.banq.gia.authentication.helpers.HttpClientHelper.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 
 /**
@@ -35,24 +35,22 @@ import static ca.qc.banq.gia.authentication.helpers.HttpClientHelper.*;
 @RequiredArgsConstructor
 public class AuthPageController {
 
-    @Value("${server.host}")
-    String serverHost;
-
-    @Value("${server.servlet.context-path}")
-    String servletPath;
+    private final GiaBackOfficeService giaBackOfficeService;
+    private final AuthFilterB2C authFilterB2C;
 
     private final AuthHelperB2C authHelperB2C;
-    private final GiaBackOfficeService appService;
-    private final AuthFilterB2C filterB2C;
-    private final AuthFilterAAD filterAAD;
-
+    private final AuthFilterAAD authFilterAAD;
+    @Value("${server.host}")
+    private String serverHost;
+    @Value("${server.servlet.context-path}")
+    private String servletPath;
 
     /**
      * Redirection vers une authentification Azure B2C
      */
     @RequestMapping(REDIRECTB2C_ENDPOINT)
     public void redirectB2C(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
-        filterB2C.doFilter(httpRequest, httpResponse);
+        authFilterB2C.doFilter(httpRequest, httpResponse);
     }
 
     /**
@@ -60,7 +58,7 @@ public class AuthPageController {
      */
     @RequestMapping(REDIRECTAAD_ENDPOINT)
     public void redirectAAD(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
-        filterAAD.doFilter(httpRequest, httpResponse);
+        authFilterAAD.doFilter(httpRequest, httpResponse);
     }
 
     /**
@@ -68,13 +66,13 @@ public class AuthPageController {
      */
     @RequestMapping(SIGNIN_ENDPOINT)
     public void signIn(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
-        AppPayload app = appService.checkClientID(httpRequest);
-        if (app.getTypeAuth().equals(TypeAuth.B2C)) {
-            filterB2C.getAuthHelper().init(app);
-            filterB2C.doFilter(httpRequest, httpResponse);
+        AppPayload app = giaBackOfficeService.checkClientID(httpRequest);
+        if (app.getAuthenticationType().equals(B2C)) {
+            authFilterB2C.getAuthHelper().init(app);
+            authFilterB2C.doFilter(httpRequest, httpResponse);
         } else {
-            filterAAD.getAuthHelper().init(app);
-            filterAAD.doFilter(httpRequest, httpResponse);
+            authFilterAAD.getAuthHelper().init(app);
+            authFilterAAD.doFilter(httpRequest, httpResponse);
         }
     }
 
@@ -83,12 +81,14 @@ public class AuthPageController {
      */
     @RequestMapping(SIGNOUT_ENDPOINT)
     public void signOut(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
-        AppPayload app = appService.checkClientID(httpRequest);
+        AppPayload app = giaBackOfficeService.checkClientID(httpRequest);
 
         httpRequest.getSession().invalidate();
-        if (app.getTypeAuth().equals(TypeAuth.B2C)) httpResponse.sendRedirect(app.getLoginURL());
-        else
-            httpResponse.sendRedirect("https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), StandardCharsets.UTF_8));
+        if (app.getAuthenticationType().equals(B2C)) {
+            httpResponse.sendRedirect(app.getLoginURL());
+        } else {
+            httpResponse.sendRedirect("https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), UTF_8));
+        }
     }
 
     /**
@@ -96,18 +96,18 @@ public class AuthPageController {
      */
     @RequestMapping(RESETPWD_ENDPOINT)
     public void resetUserPassword(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
-        AppPayload app = appService.checkClientID(httpRequest);
+        AppPayload app = giaBackOfficeService.checkClientID(httpRequest);
 
         // Initialisation de l'application dans le helper
-        if (app.getTypeAuth().equals(TypeAuth.B2C)) filterB2C.getAuthHelper().init(app);
-        else filterAAD.getAuthHelper().init(app);
+        if (app.getAuthenticationType().equals(B2C)) authFilterB2C.getAuthHelper().init(app);
+        else authFilterAAD.getAuthHelper().init(app);
 
         // Construction du lien de redirection vers le flux de reinitialisation Azure AD de l'application
-        String url = authHelperB2C.getConfiguration().getAuthorityBase().replace("/tfp", "") +
+        String url = authHelperB2C.getAzureB2CConfig().getAuthorityBase().replace("/tfp", "") +
                 "oauth2/v2.0/authorize?p=" + app.getPolicyResetPassword() + "&" +
                 "client_id=" + app.getClientId() + "&" +
                 "nonce=defaultNonce" + "&" +
-                "redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), StandardCharsets.UTF_8) + "&" +
+                "redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), UTF_8) + "&" +
                 "scope=openid&response_type=id_token&prompt=login";
         log.info("reset-password url = " + url);
 
@@ -121,6 +121,7 @@ public class AuthPageController {
     @RequestMapping("/signout")
     public void logout(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
         httpRequest.getSession().invalidate();
-        httpResponse.sendRedirect("https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri=" + URLEncoder.encode(serverHost.concat(servletPath), StandardCharsets.UTF_8));
+        httpResponse.sendRedirect("https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri="
+                + URLEncoder.encode(serverHost.concat(servletPath), UTF_8));
     }
 }

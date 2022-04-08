@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 @Data
 @Component
 @ConfigurationProperties("b2c")
-public class B2CConfig {
+public class AzureB2CConfig {
 
     private String host;
     private String tenant;

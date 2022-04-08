@@ -3,7 +3,7 @@
 
 package ca.qc.banq.gia.authentication.helpers;
 
-import ca.qc.banq.gia.authentication.config.B2CConfig;
+import ca.qc.banq.gia.authentication.config.AzureB2CConfig;
 import ca.qc.banq.gia.authentication.models.AppPayload;
 import ca.qc.banq.gia.authentication.models.TokenResponse;
 import com.microsoft.aad.msal4j.*;
@@ -45,12 +45,12 @@ import static java.util.Objects.nonNull;
 @RequiredArgsConstructor
 public class AuthHelperB2C {
 
-    final String PRINCIPAL_SESSION_NAME = "principal";
-    final String TOKEN_CACHE_SESSION_ATTRIBUTE = "token_cache";
+    private static final String PRINCIPAL_SESSION_NAME = "principal";
+    private static final String TOKEN_CACHE_SESSION_ATTRIBUTE = "token_cache";
 
-    private final B2CConfig configuration;
+    private final AzureB2CConfig azureB2CConfig;
 
-    AppPayload app;
+    private AppPayload app;
 
     public static boolean checkAuthenticationCode(HttpServletRequest httpRequest) {
         Map<String, String[]> httpParameters = httpRequest.getParameterMap();
@@ -70,7 +70,7 @@ public class AuthHelperB2C {
     private ConfidentialClientApplication createClientApplication() throws MalformedURLException {
         return ConfidentialClientApplication.builder(app.getClientId(),
                         ClientCredentialFactory.createFromSecret(app.getCertSecretValue()))
-                .b2cAuthority(configuration.getSignUpSignInAuthority(app.getPolicySignUpSignIn()))
+                .b2cAuthority(azureB2CConfig.getSignUpSignInAuthority(app.getPolicySignUpSignIn()))
                 .build();
     }
 
@@ -178,7 +178,7 @@ public class AuthHelperB2C {
      */
     public TokenResponse getToken(HttpServletRequest request) throws Exception {
         String code = request.getParameter("code");
-        String url = configuration.getSignUpSignInAuthority(app.getPolicySignUpSignIn()).replace("/tfp", "") + "oauth2/v2.0/token?" +
+        String url = azureB2CConfig.getSignUpSignInAuthority(app.getPolicySignUpSignIn()).replace("/tfp", "") + "oauth2/v2.0/token?" +
                 "grant_type=authorization_code&" +
                 "code=" + code + "&" +
                 "redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), UTF_8) +
@@ -197,7 +197,7 @@ public class AuthHelperB2C {
      * Renouvelle un token d'acces (apres son expiration)
      */
     public TokenResponse refreshToken(String refresh_token, HttpServletRequest request) {
-        String url = configuration.getSignUpSignInAuthority(app.getPolicySignUpSignIn()).replace("/tfp", "") + "oauth2/v2.0/token?" +
+        String url = azureB2CConfig.getSignUpSignInAuthority(app.getPolicySignUpSignIn()).replace("/tfp", "") + "oauth2/v2.0/token?" +
                 "grant_type=refresh_token&" +
                 "refresh_token=" + refresh_token + "&" +
                 "redirect_uri=" + URLEncoder.encode(app.getRedirectApp(), UTF_8) +

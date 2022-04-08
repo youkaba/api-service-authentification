@@ -3,7 +3,7 @@
  */
 package ca.qc.banq.gia.authentication.models;
 
-import ca.qc.banq.gia.authentication.entities.TypeAuth;
+import ca.qc.banq.gia.authentication.entities.AuthenticationType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
@@ -14,16 +14,18 @@ import java.io.Serializable;
  * @author <a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a>
  * @since 2021-05-12
  */
-@Data
+@Getter
+@Setter
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @EqualsAndHashCode(callSuper = false)
 public class AppPayload implements Serializable {
 
     private String clientId;
     private String title;
-    private TypeAuth typeAuth;
+    private AuthenticationType authenticationType;
     private String homeUrl;
     private String certSecretValue;
     private String apiScope;

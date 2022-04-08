@@ -115,39 +115,43 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </header>
 <!-- ======== START OF CLASS DATA ======== -->
 <main role="main">
-<div class="header">
-<div class="subTitle"><span class="packageLabelInType">Package</span>&nbsp;<a href="package-summary.html">ca.qc.banq.gia.authentication.servicesmetier</a></div>
-<h2 title="Class GiaBackOfficeServiceImpl" class="title">Class GiaBackOfficeServiceImpl</h2>
-</div>
-<div class="contentContainer">
-<ul class="inheritance">
-<li>java.lang.Object</li>
-<li>
-<ul class="inheritance">
-<li>ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeServiceImpl</li>
-</ul>
-</li>
-</ul>
-<div class="description">
-<ul class="blockList">
-<li class="blockList">
-<dl>
-<dt>All Implemented Interfaces:</dt>
-<dd><code><a href="GiaBackOfficeService.html" title="interface in ca.qc.banq.gia.authentication.servicesmetier">GiaBackOfficeService</a></code></dd>
-</dl>
-<hr>
-<pre>@Service
+    <div class="header">
+        <div class="subTitle"><span class="packageLabelInType">Package</span>&nbsp;<a href="package-summary.html">ca.qc.banq.gia.authentication.services</a>
+        </div>
+        <h2 title="Class GiaBackOfficeServiceImpl" class="title">Class GiaBackOfficeServiceImpl</h2>
+    </div>
+    <div class="contentContainer">
+        <ul class="inheritance">
+            <li>java.lang.Object</li>
+            <li>
+                <ul class="inheritance">
+                    <li>ca.qc.banq.gia.authentication.services.GiaBackOfficeServiceImpl</li>
+                </ul>
+            </li>
+        </ul>
+        <div class="description">
+            <ul class="blockList">
+                <li class="blockList">
+                    <dl>
+                        <dt>All Implemented Interfaces:</dt>
+                        <dd><code><a href="GiaBackOfficeService.html"
+                                     title="interface in ca.qc.banq.gia.authentication.services">GiaBackOfficeService</a></code>
+                        </dd>
+                    </dl>
+                    <hr>
+                    <pre>@Service
 public class <span class="typeNameLabel">GiaBackOfficeServiceImpl</span>
 extends java.lang.Object
-implements <a href="GiaBackOfficeService.html" title="interface in ca.qc.banq.gia.authentication.servicesmetier">GiaBackOfficeService</a></pre>
-<div class="block">Implementation des Services metier backoffice de gestion des applications BAnQ</div>
-<dl>
-<dt><span class="simpleTagLabel">Since:</span></dt>
-<dd>2021-05-12</dd>
-<dt><span class="simpleTagLabel">Author:</span></dt>
-<dd><a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a></dd>
-</dl>
-</li>
+implements <a href="GiaBackOfficeService.html" title="interface in ca.qc.banq.gia.authentication.services">GiaBackOfficeService</a></pre>
+                    <div class="block">Implementation des Services metier backoffice de gestion des applications BAnQ
+                    </div>
+                    <dl>
+                        <dt><span class="simpleTagLabel">Since:</span></dt>
+                        <dd>2021-05-12</dd>
+                        <dt><span class="simpleTagLabel">Author:</span></dt>
+                        <dd><a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a></dd>
+                    </dl>
+                </li>
 </ul>
 </div>
 <div class="summary">
@@ -177,54 +181,72 @@ implements <a href="GiaBackOfficeService.html" title="interface in ca.qc.banq.gi
 <!-- ========== METHOD SUMMARY =========== -->
 <section role="region">
 <ul class="blockList">
-<li class="blockList"><a id="method.summary">
-<!--   -->
-</a>
-<h3>Method Summary</h3>
-<table class="memberSummary">
-<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
-<tr>
-<th class="colFirst" scope="col">Modifier and Type</th>
-<th class="colSecond" scope="col">Method</th>
-<th class="colLast" scope="col">Description</th>
-</tr>
-<tr id="i0" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#deleteApp(java.lang.Long)">deleteApp</a></span>&#8203;(java.lang.Long&nbsp;id)</code></th>
-<td class="colLast">
-<div class="block">Supprime une App</div>
-</td>
-</tr>
-<tr id="i1" class="rowColor">
-<td class="colFirst"><code>java.util.List&lt;<a href="../entities/App.html" title="class in ca.qc.banq.gia.authentication.entities">App</a>&gt;</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#findAll()">findAll</a></span>()</code></th>
-<td class="colLast">
-<div class="block">Recherche la liste de toutes les applications enregistrees</div>
-</td>
-</tr>
-<tr id="i2" class="altColor">
-<td class="colFirst"><code><a href="../entities/App.html" title="class in ca.qc.banq.gia.authentication.entities">App</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#findById(java.lang.Long)">findById</a></span>&#8203;(java.lang.Long&nbsp;id)</code></th>
-<td class="colLast">
-<div class="block">Recherche une application a partir de son Id</div>
-</td>
-</tr>
-<tr id="i3" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#saveApp(ca.qc.banq.gia.authentication.entities.App)">saveApp</a></span>&#8203;(<a href="../entities/App.html" title="class in ca.qc.banq.gia.authentication.entities">App</a>&nbsp;app)</code></th>
-<td class="colLast">
-<div class="block">Enregistre une App</div>
-</td>
-</tr>
-</table>
-<ul class="blockList">
-<li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">
-<!--   -->
-</a>
-<h3>Methods inherited from class&nbsp;java.lang.Object</h3>
-<code>equals, getClass, hashCode, notify, notifyAll, toString, wait, wait, wait</code></li>
-</ul>
-</li>
+    <li class="blockList"><a id="method.summary">
+        <!--   -->
+    </a>
+        <h3>Method Summary</h3>
+        <table class="memberSummary">
+            <caption><span class="activeTableTab" id="t0"><span>All Methods</span><span
+                    class="tabEnd">&nbsp;</span></span><span class="tableTab" id="t2"><span><a
+                    href="javascript:show(2);">Instance Methods</a></span><span
+                    class="tabEnd">&nbsp;</span></span><span class="tableTab" id="t4"><span><a
+                    href="javascript:show(8);">Concrete Methods</a></span><span
+                    class="tabEnd">&nbsp;</span></span></caption>
+            <tr>
+                <th class="colFirst" scope="col">Modifier and Type</th>
+                <th class="colSecond" scope="col">Method</th>
+                <th class="colLast" scope="col">Description</th>
+            </tr>
+            <tr class="altColor" id="i0">
+                <td class="colFirst"><code>java.lang.String</code></td>
+                <th class="colSecond" scope="row"><code><span class="memberNameLink"><a
+                        href="#deleteApp(java.lang.Long)">deleteApp</a></span>&#8203;(java.lang.Long&nbsp;id)</code>
+                </th>
+                <td class="colLast">
+                    <div class="block">Supprime une App</div>
+                </td>
+            </tr>
+            <tr class="rowColor" id="i1">
+                <td class="colFirst"><code>java.util.List&lt;<a href="../entities/App.html"
+                                                                title="class in ca.qc.banq.gia.authentication.entities">App</a>&gt;</code>
+                </td>
+                <th class="colSecond" scope="row"><code><span class="memberNameLink"><a
+                        href="#findAll()">findAll</a></span>()</code></th>
+                <td class="colLast">
+                    <div class="block">Recherche la liste de toutes les applications enregistrees</div>
+                </td>
+            </tr>
+            <tr class="altColor" id="i2">
+                <td class="colFirst"><code><a href="../entities/App.html"
+                                              title="class in ca.qc.banq.gia.authentication.entities">App</a></code>
+                </td>
+                <th class="colSecond" scope="row"><code><span class="memberNameLink"><a
+                        href="#findById(java.lang.Long)">findById</a></span>&#8203;(java.lang.Long&nbsp;id)</code>
+                </th>
+                <td class="colLast">
+                    <div class="block">Recherche une application a partir de son Id</div>
+                </td>
+            </tr>
+            <tr class="rowColor" id="i3">
+                <td class="colFirst"><code>java.lang.String</code></td>
+                <th class="colSecond" scope="row"><code><span class="memberNameLink"><a
+                        href="#saveApp(ca.qc.banq.gia.authentication.entities.App)">saveApp</a></span>&#8203;(<a
+                        href="../entities/App.html"
+                        title="class in ca.qc.banq.gia.authentication.entities">App</a>&nbsp;app)</code>
+                </th>
+                <td class="colLast">
+                    <div class="block">Enregistre une App</div>
+                </td>
+            </tr>
+        </table>
+        <ul class="blockList">
+            <li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">
+                <!--   -->
+            </a>
+                <h3>Methods inherited from class&nbsp;java.lang.Object</h3>
+                <code>equals, getClass, hashCode, notify, notifyAll, toString, wait, wait, wait</code></li>
+        </ul>
+    </li>
 </ul>
 </section>
 </li>
@@ -243,88 +265,114 @@ implements <a href="GiaBackOfficeService.html" title="interface in ca.qc.banq.gi
 <a id="&lt;init&gt;()">
 <!--   -->
 </a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>GiaBackOfficeServiceImpl</h4>
-<pre>public&nbsp;GiaBackOfficeServiceImpl()</pre>
-</li>
-</ul>
-</li>
-</ul>
-</section>
-<!-- ============ METHOD DETAIL ========== -->
-<section role="region">
-<ul class="blockList">
-<li class="blockList"><a id="method.detail">
-<!--   -->
-</a>
-<h3>Method Detail</h3>
-<a id="saveApp(ca.qc.banq.gia.authentication.entities.App)">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>saveApp</h4>
-<pre class="methodSignature">public&nbsp;java.lang.String&nbsp;saveApp&#8203;(<a href="../entities/App.html" title="class in ca.qc.banq.gia.authentication.entities">App</a>&nbsp;app)</pre>
-<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="GiaBackOfficeService.html#saveApp(ca.qc.banq.gia.authentication.entities.App)">GiaBackOfficeService</a></code></span></div>
-<div class="block">Enregistre une App</div>
-<dl>
-<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="GiaBackOfficeService.html#saveApp(ca.qc.banq.gia.authentication.entities.App)">saveApp</a></code>&nbsp;in interface&nbsp;<code><a href="GiaBackOfficeService.html" title="interface in ca.qc.banq.gia.authentication.servicesmetier">GiaBackOfficeService</a></code></dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-</dl>
-</li>
-</ul>
-<a id="deleteApp(java.lang.Long)">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>deleteApp</h4>
-<pre class="methodSignature">public&nbsp;java.lang.String&nbsp;deleteApp&#8203;(java.lang.Long&nbsp;id)</pre>
-<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="GiaBackOfficeService.html#deleteApp(java.lang.Long)">GiaBackOfficeService</a></code></span></div>
-<div class="block">Supprime une App</div>
-<dl>
-<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="GiaBackOfficeService.html#deleteApp(java.lang.Long)">deleteApp</a></code>&nbsp;in interface&nbsp;<code><a href="GiaBackOfficeService.html" title="interface in ca.qc.banq.gia.authentication.servicesmetier">GiaBackOfficeService</a></code></dd>
-</dl>
-</li>
-</ul>
-<a id="findAll()">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>findAll</h4>
-<pre class="methodSignature">public&nbsp;java.util.List&lt;<a href="../entities/App.html" title="class in ca.qc.banq.gia.authentication.entities">App</a>&gt;&nbsp;findAll()</pre>
-<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="GiaBackOfficeService.html#findAll()">GiaBackOfficeService</a></code></span></div>
-<div class="block">Recherche la liste de toutes les applications enregistrees</div>
-<dl>
-<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="GiaBackOfficeService.html#findAll()">findAll</a></code>&nbsp;in interface&nbsp;<code><a href="GiaBackOfficeService.html" title="interface in ca.qc.banq.gia.authentication.servicesmetier">GiaBackOfficeService</a></code></dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-</dl>
-</li>
-</ul>
-<a id="findById(java.lang.Long)">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>findById</h4>
-<pre class="methodSignature">public&nbsp;<a href="../entities/App.html" title="class in ca.qc.banq.gia.authentication.entities">App</a>&nbsp;findById&#8203;(java.lang.Long&nbsp;id)</pre>
-<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="GiaBackOfficeService.html#findById(java.lang.Long)">GiaBackOfficeService</a></code></span></div>
-<div class="block">Recherche une application a partir de son Id</div>
-<dl>
-<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="GiaBackOfficeService.html#findById(java.lang.Long)">findById</a></code>&nbsp;in interface&nbsp;<code><a href="GiaBackOfficeService.html" title="interface in ca.qc.banq.gia.authentication.servicesmetier">GiaBackOfficeService</a></code></dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-</dl>
-</li>
-</ul>
+    <ul class="blockListLast">
+        <li class="blockList">
+            <h4>GiaBackOfficeServiceImpl</h4>
+            <pre>public&nbsp;GiaBackOfficeServiceImpl()</pre>
+        </li>
+    </ul>
 </li>
 </ul>
 </section>
+    <!-- ============ METHOD DETAIL ========== -->
+    <section role="region">
+        <ul class="blockList">
+            <li class="blockList"><a id="method.detail">
+                <!--   -->
+            </a>
+                <h3>Method Detail</h3>
+                <a id="saveApp(ca.qc.banq.gia.authentication.entities.App)">
+                    <!--   -->
+                </a>
+                <ul class="blockList">
+                    <li class="blockList">
+                        <h4>saveApp</h4>
+                        <pre class="methodSignature">public&nbsp;java.lang.String&nbsp;saveApp&#8203;(<a
+                                href="../entities/App.html"
+                                title="class in ca.qc.banq.gia.authentication.entities">App</a>&nbsp;app)</pre>
+                        <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a
+                                href="GiaBackOfficeService.html#saveApp(ca.qc.banq.gia.authentication.entities.App)">GiaBackOfficeService</a></code></span>
+                        </div>
+                        <div class="block">Enregistre une App</div>
+                        <dl>
+                            <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+                            <dd><code><a
+                                    href="GiaBackOfficeService.html#saveApp(ca.qc.banq.gia.authentication.entities.App)">saveApp</a></code>&nbsp;in
+                                interface&nbsp;<code><a href="GiaBackOfficeService.html"
+                                                        title="interface in ca.qc.banq.gia.authentication.services">GiaBackOfficeService</a></code>
+                            </dd>
+                            <dt><span class="returnLabel">Returns:</span></dt>
+                        </dl>
+                    </li>
+                </ul>
+                <a id="deleteApp(java.lang.Long)">
+                    <!--   -->
+                </a>
+                <ul class="blockList">
+                    <li class="blockList">
+                        <h4>deleteApp</h4>
+                        <pre class="methodSignature">public&nbsp;java.lang.String&nbsp;deleteApp&#8203;(java.lang.Long&nbsp;id)</pre>
+                        <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a
+                                href="GiaBackOfficeService.html#deleteApp(java.lang.Long)">GiaBackOfficeService</a></code></span>
+                        </div>
+                        <div class="block">Supprime une App</div>
+                        <dl>
+                            <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+                            <dd><code><a href="GiaBackOfficeService.html#deleteApp(java.lang.Long)">deleteApp</a></code>&nbsp;in
+                                interface&nbsp;<code><a
+                                        href="GiaBackOfficeService.html"
+                                        title="interface in ca.qc.banq.gia.authentication.services">GiaBackOfficeService</a></code>
+                            </dd>
+                        </dl>
+                    </li>
+                </ul>
+                <a id="findAll()">
+                    <!--   -->
+                </a>
+                <ul class="blockList">
+                    <li class="blockList">
+                        <h4>findAll</h4>
+                        <pre class="methodSignature">public&nbsp;java.util.List&lt;<a href="../entities/App.html"
+                                                                                      title="class in ca.qc.banq.gia.authentication.entities">App</a>&gt;&nbsp;findAll()</pre>
+                        <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a
+                                href="GiaBackOfficeService.html#findAll()">GiaBackOfficeService</a></code></span></div>
+                        <div class="block">Recherche la liste de toutes les applications enregistrees</div>
+                        <dl>
+                            <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+                            <dd><code><a href="GiaBackOfficeService.html#findAll()">findAll</a></code>&nbsp;in
+                                interface&nbsp;<code><a
+                                        href="GiaBackOfficeService.html"
+                                        title="interface in ca.qc.banq.gia.authentication.services">GiaBackOfficeService</a></code>
+                            </dd>
+                            <dt><span class="returnLabel">Returns:</span></dt>
+                        </dl>
+                    </li>
+                </ul>
+                <a id="findById(java.lang.Long)">
+                    <!--   -->
+                </a>
+                <ul class="blockListLast">
+                    <li class="blockList">
+                        <h4>findById</h4>
+                        <pre class="methodSignature">public&nbsp;<a href="../entities/App.html"
+                                                                    title="class in ca.qc.banq.gia.authentication.entities">App</a>&nbsp;findById&#8203;(java.lang.Long&nbsp;id)</pre>
+                        <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a
+                                href="GiaBackOfficeService.html#findById(java.lang.Long)">GiaBackOfficeService</a></code></span>
+                        </div>
+                        <div class="block">Recherche une application a partir de son Id</div>
+                        <dl>
+                            <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+                            <dd><code><a href="GiaBackOfficeService.html#findById(java.lang.Long)">findById</a></code>&nbsp;in
+                                interface&nbsp;<code><a href="GiaBackOfficeService.html"
+                                                        title="interface in ca.qc.banq.gia.authentication.services">GiaBackOfficeService</a></code>
+                            </dd>
+                            <dt><span class="returnLabel">Returns:</span></dt>
+                        </dl>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </section>
 </li>
 </ul>
 </div>

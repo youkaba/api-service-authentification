@@ -4,30 +4,30 @@
   th:replace="~{fragments/layout :: layout (~{::body},'apps')}">
 
   <body>
-  
-  
-    <h2>Infos sur l'application</h2>
-  
-    <table class="table table-striped" th:object="${app}">
+
+
+  <h2>Infos sur l'application</h2>
+
+  <table class="table table-striped" th:object="${appPayload}">
       <tr>
-        <th>Nom de l'application:</th>
-        <td><b th:text="*{title}"></b></td>
+          <th>Nom de l'application:</th>
+          <td><b th:text="*{title}"></b></td>
       </tr>
       <tr>
-        <th>Id Client (Azure):</th>
-        <td th:text="*{clientId}"></td>
+          <th>Id Client (Azure):</th>
+          <td th:text="*{clientId}"></td>
       </tr>
       <tr>
-        <th>Certificat secret:</th>
-        <td th:text="*{hiddenCert}"></td>
+          <th>Certificat secret:</th>
+          <td th:text="*{hiddenCert}"></td>
       </tr>
       <tr>
-        <th>Type d'authentification:</th>
-        <td th:text="*{typeAuth}"></td>
+          <th>Type d'authentification:</th>
+          <td th:text="*{authenticationType}"></td>
       </tr>
       <tr>
-        <th>Flux de connexion:</th>
-        <td th:text="*{policySignUpSignIn}"></td>
+          <th>Flux de connexion:</th>
+          <td th:text="*{policySignUpSignIn}"></td>
       </tr>
       <tr>
         <th>ID du groupe utilisateurs:</th>
@@ -43,20 +43,20 @@
       </tr>
       <tr>
         <th>Url de connexion:</th>
-        <td th:text="*{loginURL}"></td>
+          <td th:text="*{loginURL}"></td>
       </tr>
       <tr>
-        <th>Url de la Page d'accueil:</th>
-        <td th:text="*{homeUrl}"></td>
+          <th>Url de la Page d'accueil:</th>
+          <td th:text="*{homeUrl}"></td>
       </tr>
       <tr>
-        <th>Url de deconnexion:</th>
-        <td th:text="*{logoutURL}"></td>
+          <th>Url de deconnexion:</th>
+          <td th:text="*{logoutURL}"></td>
       </tr>
-    </table>
-  
-    <a th:href="@{{id}/edit(id=${app.clientId})}" class="btn btn-default">Modifier</a>
-    
+  </table>
+
+  <a class="btn btn-default" th:href="@{{id}/edit(id=${appPayload.clientId})}">Modifier</a>
+
   </body>
 
 </html>

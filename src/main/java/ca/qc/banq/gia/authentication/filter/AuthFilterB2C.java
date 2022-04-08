@@ -6,7 +6,7 @@ package ca.qc.banq.gia.authentication.filter;
 import ca.qc.banq.gia.authentication.exceptions.GIAException;
 import ca.qc.banq.gia.authentication.helpers.*;
 import ca.qc.banq.gia.authentication.models.*;
-import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
+import ca.qc.banq.gia.authentication.services.GiaBackOfficeService;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
 import com.microsoft.aad.msal4j.MsalException;
 import com.nimbusds.jwt.JWTParser;
@@ -75,7 +75,7 @@ public class AuthFilterB2C {
                         CookieHelper.removeStateNonceCookies(httpResponse);
                     } else {
                         // not authenticated, redirecting to login.microsoft.com so user can authenticate
-                        sendAuthRedirect(authHelper.getConfiguration().getSignUpSignInAuthority(authHelper.getApp().getPolicySignUpSignIn()), httpRequest, httpResponse);
+                        sendAuthRedirect(authHelper.getAzureB2CConfig().getSignUpSignInAuthority(authHelper.getApp().getPolicySignUpSignIn()), httpRequest, httpResponse);
                         return;
                     }
                 }
@@ -104,13 +104,14 @@ public class AuthFilterB2C {
                     GetIdentitiesResponse identities = authHelperAAD.getUserIdentities(token, uid);
 
                     // Recherche de l'identite de type "userName"
-                    List<IdentityPayload> idsUserName = identities.getValue().stream().filter(ip -> ip.getSignInType().equals(SignInType.USERNAME.getValue())).collect(Collectors.toList());
+                    List<IdentityPayload> idsUserName = identities.value().stream()
+                            .filter(ip -> ip.getSignInType().equals(SignInType.USERNAME.getValue())).toList();
                     if (!idsUserName.isEmpty()) {
                         // Si on a trouve une identite de type "userName", c'est elle qu'on recupere comme identifiant de l'usager
                         uid = idsUserName.stream().findFirst().orElse(null).getIssuerAssignedId();
                     } else {
                         // Si on n'a pas trouve une identite de type "userName", on recupere celle de type "emailAddress" comme identifiant
-                        idsUserName = identities.getValue().stream().filter(ip -> ip.getSignInType().equals(SignInType.EMAIL.getValue())).collect(Collectors.toList());
+                        idsUserName = identities.value().stream().filter(ip -> ip.getSignInType().equals(SignInType.EMAIL.getValue())).collect(Collectors.toList());
                         if (!idsUserName.isEmpty())
                             uid = idsUserName.stream().findFirst().orElse(null).getIssuerAssignedId();
                     }
@@ -122,7 +123,7 @@ public class AuthFilterB2C {
                 // something went wrong (like expiration or revocation of token)
                 // we should invalidate AuthData stored in session and redirect to Authorization server
                 authHelper.removePrincipalFromSession(httpRequest);
-                sendAuthRedirect(authHelper.getConfiguration().getSignUpSignInAuthority(authHelper.getApp().getPolicySignUpSignIn()), httpRequest, httpResponse);
+                sendAuthRedirect(authHelper.getAzureB2CConfig().getSignUpSignInAuthority(authHelper.getApp().getPolicySignUpSignIn()), httpRequest, httpResponse);
                 authException.printStackTrace();
             }
         }

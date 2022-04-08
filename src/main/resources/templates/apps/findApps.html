@@ -1,32 +1,35 @@
 <html xmlns:th="https://www.thymeleaf.org"
-  th:replace="~{fragments/layout :: layout (~{::body},'apps')}">
+      th:replace="~{fragments/layout :: layout (~{::body},'apps')}">
 
 <body>
+<h2>Rechercher les applications...</h2>
 
-  <h2>Rechercher les applications...</h2>
-
-  <form th:object="${app}" th:action="@{/apps}" method="get" class="form-horizontal" id="search-app-form">
+<form class="form-horizontal" id="search-app-form" method="get" th:action="@{/apps}" th:object="${app}">
     <div class="form-group">
-      <div class="control-group" id="lastNameGroup">
-        <label class="col-sm-3 control-label">Nom de l'application:</label>
-        <div class="col-sm-7">
-          <input class="form-control" th:field="*{title}" size="30" maxlength="80" /> <span class="help-inline">
-          <div th:if="${#fields.hasAnyErrors()}">
-              <p th:each="err : ${#fields.allErrors()}" th:text="${err}">Error</p>
-            </div></span>
+        <div class="control-group" id="lastNameGroup">
+            <label class="col-sm-3 control-label">Nom de l'application:</label>
+            <div class="col-sm-7">
+                <input class="form-control" maxlength="80" size="30" th:field="*{title}"/> <span class="help-inline">
+              <div th:if="${#fields.hasAnyErrors()}">
+                  <p th:each="err : ${#fields.allErrors()}" th:text="${err}">Error</p>
+                </div></span>
+            </div>
+            <div class="form-group col-sm-2">
+                <!--<div class="col-sm-offset-12 col-sm-12"></div> -->
+                <button class="btn btn-default" type="submit">
+                    <span aria-hidden="true" class="glyphicon glyphicon-search"></span>
+                    <span>Soumettre</span>
+                </button>
+
+            </div>
         </div>
-	    <div class="form-group col-sm-2">
-	      <!--<div class="col-sm-offset-12 col-sm-12"></div> -->
-	        <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search" aria-hidden="true"></span><span>Soumettre</span></button>
-	      
-	    </div>
-      </div>
     </div>
+</form>
 
-  </form>
-
-  <br />
-  <a class="btn btn-default" th:href="@{/apps/new}"><span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span><span>Ajouter une application</span></a>
-
+<br/>
+<a class="btn btn-default" th:href="@{/apps/new}">
+    <span aria-hidden="true" class="glyphicon glyphicon-plus-sign"></span>
+    <span>Ajouter une application</span>
+</a>
 </body>
 </html>

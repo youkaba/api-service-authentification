@@ -18,6 +18,7 @@ public interface GiaBackOfficeController {
 
     /**
      * Enregistre une App
+     *
      * @param app
      * @return
      */

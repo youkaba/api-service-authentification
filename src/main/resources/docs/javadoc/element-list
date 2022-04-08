@@ -7,4 +7,4 @@ ca.qc.banq.gia.authentication.helpers
 ca.qc.banq.gia.authentication.models
 ca.qc.banq.gia.authentication.repositories
 ca.qc.banq.gia.authentication.rest
-ca.qc.banq.gia.authentication.servicesmetier
+ca.qc.banq.gia.authentication.services

@@ -11,8 +11,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.commons.lang3.StringUtils.*;
+
 /**
  * Payload de la requete de creation d'un nouvel utilisateur
+ *
  * @author <a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a>
  * @since 2021-05-13
  */
@@ -109,7 +112,7 @@ public class UserRequestPayload implements Serializable {
     public void buildIdentities(String tenant) {
 
         // Initialisation
-        this.identities = new ArrayList<IdentityPayload>();
+        this.identities = new ArrayList<>();
         if (this.state != null && (this.state.isEmpty() || this.state.isBlank())) this.state = null;
         if (this.usageLocation != null && (this.usageLocation.isEmpty() || this.usageLocation.isBlank()))
             this.usageLocation = null;
@@ -117,24 +120,24 @@ public class UserRequestPayload implements Serializable {
             this.streetAddress = null;
 
         // Ajout de l'adresse mail comme identifiant de connexion
-        if (this.mail != null && !this.mail.isEmpty()) {
+        if (isNotEmpty(this.mail)) {
             identities.add(new IdentityPayload(SignInType.EMAIL.getValue(), tenant, this.mail));
-            if (this.userPrincipalName == null || this.userPrincipalName.isEmpty())
+            if (isEmpty(userPrincipalName))
                 this.userPrincipalName = this.mail.substring(0, StringUtils.indexOf(this.mail, "@"));
             this.mailNickname = this.mail.substring(0, StringUtils.indexOf(this.mail, "@"));
         }
 
         // Nettoyage du userPrincipalName (si necessaire)
-        if (this.userPrincipalName != null && !this.userPrincipalName.isEmpty()) {
-            if (StringUtils.contains(this.userPrincipalName, "@"))
-                this.userPrincipalName = this.userPrincipalName.substring(0, StringUtils.indexOf(this.userPrincipalName, "@"));
+        if (isNotEmpty(this.userPrincipalName)
+                && contains(this.userPrincipalName, "@")) {
+            this.userPrincipalName = this.userPrincipalName.substring(0, StringUtils.indexOf(this.userPrincipalName, "@"));
         }
 
         // Ajout du userPrincipalName comme identifiant de connexion
-        if (this.userPrincipalName != null && !this.userPrincipalName.isEmpty()) {
+        if (isNotEmpty(userPrincipalName)) {
             identities.add(new IdentityPayload(SignInType.PRINCIPALNAME.getValue(), tenant, this.userPrincipalName.concat("@").concat(tenant)));
             identities.add(new IdentityPayload(SignInType.FEDERATED.getValue(), tenant, this.userPrincipalName));
-            if (!StringUtils.contains(this.mail, this.userPrincipalName))
+            if (!contains(this.mail, this.userPrincipalName))
                 identities.add(new IdentityPayload(SignInType.USERNAME.getValue(), tenant, this.userPrincipalName));
         }
     }

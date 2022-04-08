@@ -33,15 +33,6 @@ public class ErrorHandlerController implements ErrorController {
         return mav;
     }
 
-    /*
-     * (non-javadoc)
-     * @see org.springframework.boot.web.servlet.error.ErrorController#getErrorPath()
-     */
-    @Override
-    public String getErrorPath() {
-        return PATH;
-    }
-
     @GetMapping("/oups")
     public ModelAndView triggerException() {
         ModelAndView mav = new ModelAndView("error");

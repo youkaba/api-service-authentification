@@ -1,4 +1,4 @@
-package ca.qc.banq.gia.authentication.servicesmetier;
+package ca.qc.banq.gia.authentication.services;
 
 import ca.qc.banq.gia.authentication.entities.App;
 import ca.qc.banq.gia.authentication.models.AppPayload;

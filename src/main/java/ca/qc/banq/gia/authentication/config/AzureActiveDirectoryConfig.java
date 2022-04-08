@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 @Data
 @Component
 @ConfigurationProperties("aad")
-public class AADConfig {
+public class AzureActiveDirectoryConfig {
 
     private String tenantId;
     private String authority;

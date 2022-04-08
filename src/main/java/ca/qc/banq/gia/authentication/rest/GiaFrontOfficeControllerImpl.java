@@ -8,14 +8,13 @@ import ca.qc.banq.gia.authentication.helpers.AuthHelperAAD;
 import ca.qc.banq.gia.authentication.helpers.AuthHelperB2C;
 import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
 import ca.qc.banq.gia.authentication.models.*;
-import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
+import ca.qc.banq.gia.authentication.services.GiaBackOfficeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -34,11 +33,7 @@ public class GiaFrontOfficeControllerImpl {
 
     private final AuthHelperB2C authHelperB2C;
     private final AuthHelperAAD authHelperAAD;
-    private final GiaBackOfficeService business;
-    @Value("${server.host}")
-    String serverHost;
-    @Value("${server.servlet.context-path}")
-    String servletPath;
+    private final GiaBackOfficeService giaBackOfficeService;
 
     /*
      * (non-javadoc)
@@ -51,20 +46,20 @@ public class GiaFrontOfficeControllerImpl {
         // Check params
         if (appId == null) throw new GIAException("invalid client_id");
 
-        AppPayload app = business.findByClientId(appId);
+        AppPayload app = giaBackOfficeService.findByClientId(appId);
         if (app == null) throw new GIAException("invalid client_id");
 
         // Obtention du Token d'acces a GraphAPI
         TokenResponse token = authHelperAAD.getAccessToken(app);
 
         // Creation de l'utilisateur
-        UserInfo user = authHelperAAD.createUser(token, request.toUserRequestPayload(authHelperB2C.getConfiguration().getTenant()));
+        UserInfo user = authHelperAAD.createUser(token, request.toUserRequestPayload(authHelperB2C.getAzureB2CConfig().getTenant()));
 
         // Ajout de l'utilisateur dans le groupe defini
         //if(app.getUsersGroupId() != null && !app.getUsersGroupId().isEmpty()) authHelperAAD.addUserTGroup(token, user.getId(), app.getUsersGroupId());
 
         // Affectation de l'utilisateur a l'application
-        authHelperAAD.assignUserToApp(token, user.getId(), appId);
+        authHelperAAD.assignUserToApp(token, user.id(), appId);
 
         // Retourne l'utilisateur cree
         return user;
@@ -84,7 +79,7 @@ public class GiaFrontOfficeControllerImpl {
             @NotNull(message = "invalid.createuser.request")
                     EditB2CUserRequestPayload request) throws Throwable {
 
-        AppPayload app = business.findByClientId(appId);
+        AppPayload app = giaBackOfficeService.findByClientId(appId);
         if (app == null) throw new GIAException("invalid client_id");
 
         // Obtention du Token d'acces a GraphAPI
@@ -94,10 +89,10 @@ public class GiaFrontOfficeControllerImpl {
         GetIdentitiesResponse identities = authHelperAAD.getUserIdentities(token, request.getId());
 
         // MAJ des identities de l'utilisateur
-        authHelperAAD.editUserIdentities(token, request.getId(), request.getPatchIdentitiesRequest(identities, authHelperB2C.getConfiguration().getTenant()));
+        authHelperAAD.editUserIdentities(token, request.getId(), request.getPatchIdentitiesRequest(identities, authHelperB2C.getAzureB2CConfig().getTenant()));
 
         // MAJ des infos de l'utilisateur
-        request.setUserPrincipalName((request.getUserPrincipalName().matches(HttpClientHelper.EMAIL_REGEX) ? StringUtils.replace(request.getUserPrincipalName(), "@", ".") : request.getUserPrincipalName()).concat("@").concat(authHelperB2C.getConfiguration().getTenant()));
+        request.setUserPrincipalName((request.getUserPrincipalName().matches(HttpClientHelper.EMAIL_REGEX) ? StringUtils.replace(request.getUserPrincipalName(), "@", ".") : request.getUserPrincipalName()).concat("@").concat(authHelperB2C.getAzureB2CConfig().getTenant()));
         log.error("Request edit User = " + new ObjectMapper().writeValueAsString(request));
         authHelperAAD.editUser(token, request);
     }

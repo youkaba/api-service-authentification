@@ -69,7 +69,7 @@ public class AuthFilterAAD {
                 // check if user has a AuthData in the session
                 if (!isAuthenticated(httpRequest)) {
                     // not authenticated, redirecting to login.microsoft.com so user can authenticate
-                    authHelper.sendAuthRedirect(httpRequest, httpResponse, authHelper.getConfiguration().getScope(), authHelper.getRedirectUriSignIn());
+                    authHelper.sendAuthRedirect(httpRequest, httpResponse, authHelper.getAzureActiveDirectoryConfig().getScope(), authHelper.getRedirectUriSignIn());
                     return;
                 }
 
@@ -85,7 +85,7 @@ public class AuthFilterAAD {
                 // we should invalidate AuthData stored in session and redirect to Authorization server
                 authException.printStackTrace();
                 SessionManagementHelper.removePrincipalFromSession(httpRequest);
-                authHelper.sendAuthRedirect(httpRequest, httpResponse, authHelper.getConfiguration().getScope(), authHelper.getRedirectUriSignIn());
+                authHelper.sendAuthRedirect(httpRequest, httpResponse, authHelper.getAzureActiveDirectoryConfig().getScope(), authHelper.getRedirectUriSignIn());
             }
         }
         //chain.doFilter(request, response);
@@ -94,7 +94,7 @@ public class AuthFilterAAD {
     private void redirectToAppHomePage(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
         IAuthenticationResult auth = authHelper.getAuthResultBySilentFlow(httpRequest, httpResponse);
         UserInfo user = authHelper.getADUserInfos(auth.accessToken());
-        String uid = user.getUserPrincipalName().substring(0, StringUtils.indexOf(user.getUserPrincipalName(), "@"));
+        String uid = user.userPrincipalName().substring(0, StringUtils.indexOf(user.userPrincipalName(), "@"));
         httpResponse.sendRedirect(SessionManagementHelper.buildRedirectAppHomeUrl(auth, uid, authHelper.getApp(), authHelper.getGIAUrlPath()));
     }
 

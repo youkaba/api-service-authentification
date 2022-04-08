@@ -3,7 +3,6 @@
  */
 package ca.qc.banq.gia.authentication.entities;
 
-import ca.qc.banq.gia.authentication.models.AppPayload;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
@@ -11,17 +10,19 @@ import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Entite App : Representant une Application de BAnQ
+ *
  * @author <a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a>
  * @since 2021-05-12
  */
-@Data
+@Getter
+@Setter
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = false)
 @Entity
 @Table(name = "gia_app")
 public class App implements Serializable {
@@ -31,16 +32,16 @@ public class App implements Serializable {
      */
     @Id
     @Column(name = "client_id")
-    @NotNull(message = "App.clientId.NotNull")
-    @NotEmpty(message = "App.clientId.NotNull")
+    @NotNull(message = "app.clientId.NotNull")
+    @NotEmpty(message = "app.clientId.NotNull")
     private String clientId;
 
     /**
      * Nom de l'application
      */
     @Column(name = "title")
-    @NotNull(message = "App.title.NotNull")
-    @NotEmpty(message = "App.title.NotNull")
+    @NotNull(message = "app.title.NotNull")
+    @NotEmpty(message = "app.title.NotNull")
     private String title;
 
     /**
@@ -48,21 +49,21 @@ public class App implements Serializable {
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "type_auth")
-    @NotNull(message = "App.typeAuth.NotNull")
-    private TypeAuth typeAuth;
+    @NotNull(message = "app.authenticationType.NotNull")
+    private AuthenticationType authenticationType;
 
     /**
      * Page d'accueil de l'application
      */
     @Column(name = "home_url")
-    @NotNull(message = "App.homeUrl.NotNull")
+    @NotNull(message = "app.homeUrl.NotNull")
     private String homeUrl;
 
     /**
      * Valeur du certificat sur la plateforme Azure
      */
     @Column(name = "cert_secret")
-    @NotNull(message = "App.certSecretValue.NotNull")
+    @NotNull(message = "app.certSecretValue.NotNull")
     private String certSecretValue;
 
     /**
@@ -89,7 +90,7 @@ public class App implements Serializable {
     @Column(name = "users_group_id")
     private String usersGroupId;
     @Transient
-    private boolean nouveau = true;
+    private boolean nouveau;
 
     /**
      * MAJ de l'application
@@ -100,14 +101,32 @@ public class App implements Serializable {
         this.clientId = app.getClientId();
         this.homeUrl = app.getHomeUrl();
         this.title = app.getTitle();
-        this.typeAuth = app.getTypeAuth();
+        this.authenticationType = app.getAuthenticationType();
         this.policySignUpSignIn = app.getPolicySignUpSignIn();
         this.policyResetPassword = app.getPolicyResetPassword();
         this.policyEditProfile = app.getPolicyEditProfile();
         this.usersGroupId = app.getUsersGroupId();
     }
 
-    public AppPayload toDTO(String loginUrl, String redirectApp, String loginOut) {
-        return new AppPayload(this.clientId, this.title, this.typeAuth, this.homeUrl, this.certSecretValue, this.typeAuth.equals(TypeAuth.B2C) ? this.clientId : "", loginUrl, loginOut, this.policySignUpSignIn, this.policyResetPassword, this.policyEditProfile, this.usersGroupId, redirectApp);
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        App app = (App) o;
+        return nouveau == app.nouveau
+                && clientId.equals(app.clientId)
+                && title.equals(app.title)
+                && authenticationType == app.authenticationType
+                && homeUrl.equals(app.homeUrl)
+                && certSecretValue.equals(app.certSecretValue)
+                && Objects.equals(policySignUpSignIn, app.policySignUpSignIn)
+                && Objects.equals(policyResetPassword, app.policyResetPassword)
+                && Objects.equals(policyEditProfile, app.policyEditProfile)
+                && Objects.equals(usersGroupId, app.usersGroupId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(clientId, title, authenticationType, homeUrl, certSecretValue, policySignUpSignIn, policyResetPassword, policyEditProfile, usersGroupId, nouveau);
     }
 }

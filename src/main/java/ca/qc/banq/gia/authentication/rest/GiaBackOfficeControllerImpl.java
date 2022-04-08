@@ -1,11 +1,8 @@
-/**
- *
- */
 package ca.qc.banq.gia.authentication.rest;
 
 import ca.qc.banq.gia.authentication.entities.App;
 import ca.qc.banq.gia.authentication.models.AppPayload;
-import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
+import ca.qc.banq.gia.authentication.services.GiaBackOfficeService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;

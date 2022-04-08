@@ -49,7 +49,7 @@ public class ExceptionHandlerConfig extends ResponseEntityExceptionHandler {
         HttpStatus status = (ex instanceof GIAException) ? HttpStatus.BAD_REQUEST : HttpStatus.INTERNAL_SERVER_ERROR;
 
         // initialisation de la liste des erreurs a retourner
-        List<String> erreurs = new ArrayList<String>();
+        List<String> erreurs = new ArrayList<>();
         if (status.equals(HttpStatus.INTERNAL_SERVER_ERROR)) erreurs.add(translator.translate("server.error.msg"));
 
         // Verification s'il s'agit d'une exception liee a une violation de contrainte d'integrite

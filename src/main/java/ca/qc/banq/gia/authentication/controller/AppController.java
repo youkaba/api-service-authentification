@@ -16,10 +16,10 @@
 package ca.qc.banq.gia.authentication.controller;
 
 import ca.qc.banq.gia.authentication.entities.App;
-import ca.qc.banq.gia.authentication.entities.TypeAuth;
+import ca.qc.banq.gia.authentication.entities.AuthenticationType;
 import ca.qc.banq.gia.authentication.models.AppPayload;
 import ca.qc.banq.gia.authentication.repositories.GIARepository;
-import ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService;
+import ca.qc.banq.gia.authentication.services.GiaBackOfficeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -48,9 +48,9 @@ class AppController {
 
     private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "apps/createOrUpdateAppForm";
 
-    private final GIARepository apps;
+    private final GIARepository giaRepository;
 
-    private final GiaBackOfficeService business;
+    private final GiaBackOfficeService giaBackOfficeService;
 
     @InitBinder
     public void setAllowedFields(WebDataBinder dataBinder) {
@@ -62,7 +62,7 @@ class AppController {
         App app = new App();
         app.setNouveau(true);
         model.put("app", app);
-        model.put("types", Arrays.asList(TypeAuth.values()));
+        model.put("types", Arrays.asList(AuthenticationType.values()));
         return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
     }
 
@@ -71,7 +71,7 @@ class AppController {
         if (result.hasErrors()) {
             return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
         } else {
-            this.business.saveApp(app);
+            this.giaBackOfficeService.saveApp(app);
             return "redirect:/apps/" + app.getClientId();
         }
     }
@@ -89,7 +89,7 @@ class AppController {
         if (isNull(app.getTitle())) app.setTitle("");
 
         // find apps by last name
-        List<AppPayload> results = this.business.findLikeTitle(app.getTitle());
+        List<AppPayload> results = this.giaBackOfficeService.findLikeTitle(app.getTitle());
         if (results.isEmpty()) {
             // no apps found
             //result.rejectValue("title", "notFound", "Aucune application trouvee");
@@ -98,7 +98,7 @@ class AppController {
         }
         if (results.size() == 1) {
             // 1 app found
-            app = results.stream().findFirst().orElse(new AppPayload());//.iterator().next();
+            app = results.stream().findFirst().orElse(AppPayload.builder().build());//.iterator().next();
             return "redirect:/apps/" + app.getClientId();
         }
         // multiple apps found
@@ -108,10 +108,10 @@ class AppController {
 
     @GetMapping("/apps/{appId}/edit")
     public String initUpdateAppForm(@PathVariable("appId") String appId, Model model) {
-        App app = this.apps.findById(appId).orElse(null);
+        App app = giaRepository.findById(appId).orElse(null);
         assert app != null;
         model.addAttribute(app);
-        model.addAttribute("types", Arrays.asList(TypeAuth.values()));
+        model.addAttribute("types", Arrays.asList(AuthenticationType.values()));
         //model.addAttribute("isnew", false);
         return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
     }
@@ -122,7 +122,7 @@ class AppController {
             return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
         } else {
             app.setClientId(appId);
-            this.business.saveApp(app);
+            this.giaBackOfficeService.saveApp(app);
             return "redirect:/apps/{appId}";
         }
     }
@@ -136,15 +136,15 @@ class AppController {
     @GetMapping("/apps/{appId}")
     public ModelAndView showApp(@PathVariable("appId") String appId) {
         ModelAndView mav = new ModelAndView("apps/appDetails");
-        AppPayload app = this.business.findByClientId(appId); //.apps.findById(appId).orElse(null);
-        mav.addObject("app", app);
+        AppPayload appPayload = this.giaBackOfficeService.findByClientId(appId); //.apps.findById(appId).orElse(null);
+        mav.addObject("appPayload", appPayload);
         return mav;
     }
 
     @RequestMapping("/apps/remove")
     public String processDeleteApp(HttpServletRequest request) {
         String appId = request.getParameter("appid");
-        this.business.deleteApp(appId);
+        this.giaBackOfficeService.deleteApp(appId);
         return "redirect:/apps";
     }
 

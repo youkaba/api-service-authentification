@@ -2,24 +2,26 @@
 
 <body>
 
-  <h2>Application</h2>
-  <form th:object="${app}" class="form-horizontal" id="add-app-form" method="post">
+<h2>Application</h2>
+<form class="form-horizontal" id="add-app-form" method="post" th:object="${app}">
     <div class="form-group has-feedback">
-      <input th:replace="~{fragments/inputField :: input ('Nom de l\'application', 'title', 'text')}" />
-      <input th:replace="~{fragments/inputField :: input ('Client ID', 'clientId', 'text')}" />
-      <input th:replace="~{fragments/inputField :: input ('Valeur du certificat secret', 'certSecretValue', 'text')}" />
-      <input th:replace="~{fragments/inputField :: input ('Url de la page d\'accueil', 'homeUrl', 'text')}" />
-      <input th:replace="~{fragments/inputField :: input ('Flux de connexion', 'policySignUpSignIn', 'text')}" />
-      <input th:replace="~{fragments/inputField :: input ('Flux d\'activation', 'policyResetPassword', 'text')}" />
-      <input th:replace="~{fragments/selectField :: select ('Type d\'authentification', 'typeAuth', ${types})}" />
-      <input th:replace="~{fragments/inputField :: input ('ID du groupe d\'tilisateurs', 'usersGroupId', 'text')}" />
+        <input th:replace="~{fragments/inputField :: input ('Nom de l\'application', 'title', 'text')}"/>
+        <input th:replace="~{fragments/inputField :: input ('Client ID', 'clientId', 'text')}"/>
+        <input th:replace="~{fragments/inputField :: input ('Valeur du certificat secret', 'certSecretValue', 'text')}"/>
+        <input th:replace="~{fragments/inputField :: input ('Url de la page d\'accueil', 'homeUrl', 'text')}"/>
+        <input th:replace="~{fragments/inputField :: input ('Flux de connexion', 'policySignUpSignIn', 'text')}"/>
+        <input th:replace="~{fragments/inputField :: input ('Flux d\'activation', 'policyResetPassword', 'text')}"/>
+        <input th:replace="~{fragments/selectField :: select ('Type d\'authentification', 'authenticationType', ${types})}"/>
+        <input th:replace="~{fragments/inputField :: input ('ID du groupe d\'tilisateurs', 'usersGroupId', 'text')}"/>
     </div>
     <div class="form-group">
-      <div class="col-sm-offset-2 col-sm-10">
-        <button th:with="text=${app['nouveau']} ? 'Sauvegarder' : 'Mettre a jour'"
-          class="btn btn-default" type="submit" th:text="${text}">Sauvegarder</button>
-      </div>
+        <div class="col-sm-offset-2 col-sm-10">
+            <button class="btn btn-default"
+                    th:text="${text}" th:with="text=${app['nouveau']} ? 'Sauvegarder' : 'Mettre a jour'"
+                    type="submit">Sauvegarder
+            </button>
+        </div>
     </div>
-  </form>
+</form>
 </body>
 </html>

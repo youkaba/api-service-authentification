@@ -7,17 +7,17 @@ package ca.qc.banq.gia.authentication.entities;
  * @version 1.0
  * @since 13 sept. 2020
  */
-public enum TypeAuth {
+public enum AuthenticationType {
 
-    B2C("TypeAuth.B2C"),
-    AAD("TypeAuth.AAD");
+    B2C("authentication.B2C"),
+    AAD("authentication.AAD");
 
     /**
      * Valeur
      */
     private String value;
 
-    TypeAuth(String value) {
+    AuthenticationType(String value) {
         this.value = value;
     }
 

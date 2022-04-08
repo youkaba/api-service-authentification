@@ -209,7 +209,10 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#init(ca.qc.banq.gia.authentication.entities.App)">init</a></span>&#8203;(<a href="../entities/App.html" title="class in ca.qc.banq.gia.authentication.entities">App</a>&nbsp;app)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a
+        href="#init(ca.qc.banq.gia.authentication.entities.App)">init</a></span>&#8203;(<a href="../entities/App.html"
+                                                                                           title="class in ca.qc.banq.gia.authentication.entities">App</a>&nbsp;app)</code>
+</th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i5" class="rowColor">
@@ -265,63 +268,64 @@ extends java.lang.Object</pre>
 <a id="&lt;init&gt;()">
 <!--   -->
 </a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>AuthHelperB2C</h4>
-<pre>public&nbsp;AuthHelperB2C()</pre>
-</li>
-</ul>
+    <ul class="blockListLast">
+        <li class="blockList">
+            <h4>AuthHelperB2C</h4>
+            <pre>public&nbsp;AuthHelperB2C()</pre>
+        </li>
+    </ul>
 </li>
 </ul>
 </section>
-<!-- ============ METHOD DETAIL ========== -->
-<section role="region">
-<ul class="blockList">
-<li class="blockList"><a id="method.detail">
-<!--   -->
-</a>
-<h3>Method Detail</h3>
-<a id="init(ca.qc.banq.gia.authentication.entities.App)">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>init</h4>
-<pre class="methodSignature">public&nbsp;void&nbsp;init&#8203;(<a href="../entities/App.html" title="class in ca.qc.banq.gia.authentication.entities">App</a>&nbsp;app)</pre>
-</li>
-</ul>
-<a id="getAuthResultBySilentFlow(javax.servlet.http.HttpServletRequest,java.lang.String)">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getAuthResultBySilentFlow</h4>
-<pre class="methodSignature">public&nbsp;com.microsoft.aad.msal4j.IAuthenticationResult&nbsp;getAuthResultBySilentFlow&#8203;(javax.servlet.http.HttpServletRequest&nbsp;httpRequest,
+    <!-- ============ METHOD DETAIL ========== -->
+    <section role="region">
+        <ul class="blockList">
+            <li class="blockList"><a id="method.detail">
+                <!--   -->
+            </a>
+                <h3>Method Detail</h3>
+                <a id="init(ca.qc.banq.gia.authentication.entities.App)">
+                    <!--   -->
+                </a>
+                <ul class="blockList">
+                    <li class="blockList">
+                        <h4>init</h4>
+                        <pre class="methodSignature">public&nbsp;void&nbsp;init&#8203;(<a href="../entities/App.html"
+                                                                                          title="class in ca.qc.banq.gia.authentication.entities">App</a>&nbsp;app)</pre>
+                    </li>
+                </ul>
+                <a id="getAuthResultBySilentFlow(javax.servlet.http.HttpServletRequest,java.lang.String)">
+                    <!--   -->
+                </a>
+                <ul class="blockList">
+                    <li class="blockList">
+                        <h4>getAuthResultBySilentFlow</h4>
+                        <pre class="methodSignature">public&nbsp;com.microsoft.aad.msal4j.IAuthenticationResult&nbsp;getAuthResultBySilentFlow&#8203;(javax.servlet.http.HttpServletRequest&nbsp;httpRequest,
                                                                                 java.lang.String&nbsp;scope)
                                                                          throws java.lang.Throwable</pre>
-<dl>
-<dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Throwable</code></dd>
-</dl>
-</li>
-</ul>
-<a id="getAuthResultByAuthCode(javax.servlet.http.HttpServletRequest,com.nimbusds.oauth2.sdk.AuthorizationCode,java.lang.String,java.util.Set)">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getAuthResultByAuthCode</h4>
-<pre class="methodSignature">public&nbsp;com.microsoft.aad.msal4j.IAuthenticationResult&nbsp;getAuthResultByAuthCode&#8203;(javax.servlet.http.HttpServletRequest&nbsp;httpServletRequest,
+                        <dl>
+                            <dt><span class="throwsLabel">Throws:</span></dt>
+                            <dd><code>java.lang.Throwable</code></dd>
+                        </dl>
+                    </li>
+                </ul>
+                <a id="getAuthResultByAuthCode(javax.servlet.http.HttpServletRequest,com.nimbusds.oauth2.sdk.AuthorizationCode,java.lang.String,java.util.Set)">
+                    <!--   -->
+                </a>
+                <ul class="blockList">
+                    <li class="blockList">
+                        <h4>getAuthResultByAuthCode</h4>
+                        <pre class="methodSignature">public&nbsp;com.microsoft.aad.msal4j.IAuthenticationResult&nbsp;getAuthResultByAuthCode&#8203;(javax.servlet.http.HttpServletRequest&nbsp;httpServletRequest,
                                                                               com.nimbusds.oauth2.sdk.AuthorizationCode&nbsp;authorizationCode,
                                                                               java.lang.String&nbsp;currentUri,
                                                                               java.util.Set&lt;java.lang.String&gt;&nbsp;scopes)
                                                                        throws java.lang.Throwable</pre>
-<dl>
-<dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Throwable</code></dd>
-</dl>
-</li>
-</ul>
+                        <dl>
+                            <dt><span class="throwsLabel">Throws:</span></dt>
+                            <dd><code>java.lang.Throwable</code></dd>
+                        </dl>
+                    </li>
+                </ul>
 <a id="setSessionPrincipal(javax.servlet.http.HttpServletRequest,com.microsoft.aad.msal4j.IAuthenticationResult)">
 <!--   -->
 </a>
