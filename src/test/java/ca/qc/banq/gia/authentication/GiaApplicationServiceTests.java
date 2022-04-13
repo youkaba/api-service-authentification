@@ -1,18 +1,15 @@
 package ca.qc.banq.gia.authentication;
 
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-
-//@SpringBootTest
+@SpringBootTest
+@ActiveProfiles("test")
 class GiaApplicationServiceTests {
 
     @Test
     void contextLoads() {
-        var str = " ";
-
-        assertFalse(StringUtils.isNotEmpty(str));
 
     }
 

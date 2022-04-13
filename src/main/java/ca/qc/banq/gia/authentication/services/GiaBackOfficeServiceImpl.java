@@ -3,12 +3,13 @@ package ca.qc.banq.gia.authentication.services;
 import ca.qc.banq.gia.authentication.config.TranslatorConfig;
 import ca.qc.banq.gia.authentication.entities.App;
 import ca.qc.banq.gia.authentication.entities.AuthenticationType;
-import ca.qc.banq.gia.authentication.exceptions.GIAException;
+import ca.qc.banq.gia.authentication.exceptions.NotFoundException;
 import ca.qc.banq.gia.authentication.mapper.GIAMapper;
 import ca.qc.banq.gia.authentication.models.AppPayload;
 import ca.qc.banq.gia.authentication.repositories.GIARepository;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,38 +29,50 @@ import static ca.qc.banq.gia.authentication.helpers.HttpClientHelper.*;
  */
 @Service
 @RequiredArgsConstructor
+@Transactional
+@Slf4j
 public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
 
     private final GIARepository giaRepository;
-
     private final TranslatorConfig translator;
-
     private final GIAMapper giaMapper;
-	
-	/*@Autowired
-	PasswordEncoder passwordEncoder; */
 
-    @Value("${server.host}")
-    private String serverHost;
 
-    @Value("${server.servlet.context-path}")
-    private String servletPath;
+//	@Autowired
+//	PasswordEncoder passwordEncoder;
+
 
     /*
      * (non-javadoc)
      * @see ca.qc.banq.gia.authentication.servicesmetier.GiaBackOfficeService#saveApp(ca.qc.banq.gia.authentication.entities.App)
      */
     @Override
-    public String saveApp(App app) {
-        App saved = giaRepository.findById(app.getClientId()).orElse(null);
-
-        if (saved != null) {
-            saved.update(app);
-            giaRepository.save(saved);
-        } else {
-            giaRepository.save(app);
+    public String createApp(App app) {
+        Optional<App> saved = giaRepository.findById(app.getClientId());
+        if (saved.isPresent()) {
+            App newApp = this.updateApp(app);
+            giaRepository.save(newApp);
+            return translator.translate("app.updated.successfull");
         }
+
+        giaRepository.save(app);
         return translator.translate("app.saved.successfull");
+    }
+
+    @Override
+    @JsonIgnore
+    public App updateApp(App app) {
+        return App.builder()
+                .clientId(app.getClientId())
+                .title(app.getTitle())
+                .homeUrl(app.getHomeUrl())
+                .certSecretValue(app.getCertSecretValue())
+                .authenticationType(app.getAuthenticationType())
+                .policyEditProfile(app.getPolicyEditProfile())
+                .policySignUpSignIn(app.getPolicySignUpSignIn())
+                .policyResetPassword(app.getPolicyResetPassword())
+                .usersGroupId(app.getUsersGroupId())
+                .build();
     }
 
     /*
@@ -78,11 +91,12 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<AppPayload> findAll() {
+    public List<AppPayload> findAll(String serverHost, String servletPath) {
         return giaRepository.findAll().stream()
-                .map(giaEntity -> giaMapper.entityToAppPayload(giaEntity, getLoginUrl(giaEntity.getClientId()),
-                        getRedirectApp(giaEntity.getAuthenticationType()),
-                        getLogoutUrl(giaEntity.getClientId())))
+                .map(giaEntity -> giaMapper.entityToAppPayload(giaEntity,
+                        getLoginOrLogoutUrl(giaEntity.getClientId(), serverHost, servletPath, SIGNIN_ENDPOINT),
+                        getRedirectApp(giaEntity.getAuthenticationType(), serverHost, servletPath),
+                        getLoginOrLogoutUrl(giaEntity.getClientId(), serverHost, servletPath, SIGNOUT_ENDPOINT)))
                 .toList();
     }
 
@@ -92,59 +106,58 @@ public class GiaBackOfficeServiceImpl implements GiaBackOfficeService {
      */
     @Override
     @Transactional(readOnly = true)
-    public AppPayload findById(String id) {
+    public AppPayload findById(String id, String serverHost, String servletPath) {
         return giaRepository.findById(id)
-                .map(giaEntity -> giaMapper.entityToAppPayload(giaEntity, getLoginUrl(giaEntity.getClientId()),
-                        getRedirectApp(giaEntity.getAuthenticationType()),
-                        getLogoutUrl(giaEntity.getClientId())))
-                .orElseThrow(() -> new GIAException("app.notfound"));
+                .map(giaEntity -> giaMapper.entityToAppPayload(giaEntity,
+                        getLoginOrLogoutUrl(giaEntity.getClientId(), serverHost, servletPath, SIGNIN_ENDPOINT),
+                        getRedirectApp(giaEntity.getAuthenticationType(), serverHost, servletPath),
+                        getLoginOrLogoutUrl(giaEntity.getClientId(), serverHost, servletPath, SIGNOUT_ENDPOINT)))
+                .orElseThrow(() -> new NotFoundException(translator.translate("app.notfound")));
 
     }
 
     @Override
     @Transactional(readOnly = true)
-    public AppPayload findByClientId(String clientId) {
+    public AppPayload findByClientId(String clientId, String serverHost, String servletPath) {
         return giaRepository.findById(clientId)
-                .map(giaEntity -> giaMapper.entityToAppPayload(giaEntity, getLoginUrl(giaEntity.getClientId()),
-                        getRedirectApp(giaEntity.getAuthenticationType()),
-                        getLogoutUrl(giaEntity.getClientId())))
-                .orElseThrow(() -> new GIAException("app.notfound"));
+                .map(giaEntity ->
+                        giaMapper.entityToAppPayload(giaEntity,
+                                getLoginOrLogoutUrl(giaEntity.getClientId(), serverHost, servletPath, SIGNIN_ENDPOINT),
+                                getRedirectApp(giaEntity.getAuthenticationType(), serverHost, servletPath),
+                                getLoginOrLogoutUrl(giaEntity.getClientId(), serverHost, servletPath, SIGNOUT_ENDPOINT)))
+                .orElseThrow(() -> new NotFoundException(translator.translate("app.notfound")));
     }
 
-
-    private String getLoginUrl(String id) {
+    private String getLoginOrLogoutUrl(String id, String serverHost, String servletPath, String endPoint) {
         return serverHost.concat(servletPath)
-                .concat(SIGNIN_ENDPOINT)
+                .concat(endPoint)
                 .concat("?" + CLIENTID_PARAM + "=" + id);
     }
 
-    private String getRedirectApp(AuthenticationType authenticationType) {
+
+    private String getRedirectApp(AuthenticationType authenticationType, String serverHost, String servletPath) {
         return serverHost.concat(servletPath)
                 .concat(authenticationType.equals(B2C) ? REDIRECTB2C_ENDPOINT : REDIRECTAAD_ENDPOINT);
     }
 
-    private String getLogoutUrl(String id) {
-        return serverHost.concat(servletPath).concat(SIGNOUT_ENDPOINT).concat("?" + CLIENTID_PARAM + "=" + id);
-    }
-
-    @Override
     @Transactional(readOnly = true)
-    public List<AppPayload> findLikeTitle(String title) {
-        return giaRepository.findLikeTitle(title)
+    public List<AppPayload> findByTitle(String title, String serverHost, String servletPath) {
+        return giaRepository.findByTitle(title)
                 .stream()
                 .map(giaEntity -> giaMapper.entityToAppPayload(giaEntity,
-                        getLoginUrl(giaEntity.getClientId()),
-                        getRedirectApp(giaEntity.getAuthenticationType()),
-                        getLogoutUrl(giaEntity.getClientId())))
+                        getLoginOrLogoutUrl(giaEntity.getClientId(), serverHost, servletPath, SIGNIN_ENDPOINT),
+                        getRedirectApp(giaEntity.getAuthenticationType(), serverHost, servletPath),
+                        getLoginOrLogoutUrl(giaEntity.getClientId(), serverHost, servletPath, SIGNOUT_ENDPOINT)))
                 .toList();
     }
 
     @Override
-    public AppPayload checkClientID(HttpServletRequest httpRequest) {
+    public AppPayload checkClientID(HttpServletRequest httpRequest, String serverHost, String servletPath) {
         // Recuperation de l'id de l'application dans la requete
         Optional<String> clientId = Optional.ofNullable(httpRequest.getParameter(CLIENTID_PARAM));
         return clientId
-                .map(this::findByClientId)
-                .orElseThrow(() -> new GIAException("unable to find appid"));
+                .map(id -> findByClientId(id, serverHost, servletPath))
+                .orElseThrow(() -> new NotFoundException("unable to find appid"));
     }
+
 }

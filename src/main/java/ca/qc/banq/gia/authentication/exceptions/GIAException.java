@@ -1,7 +1,7 @@
-/**
- *
- */
 package ca.qc.banq.gia.authentication.exceptions;
+
+import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
 /**
  * Exception GIA
@@ -9,30 +9,13 @@ package ca.qc.banq.gia.authentication.exceptions;
  * @author <a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a>
  * @since 2021-05-12
  */
+@Getter
 public class GIAException extends RuntimeException {
+    private final HttpStatus httpStatus;
 
-    /**
-     * Initialisation de l'exception a partir d'un message
-     */
-    public GIAException(String message) {
+    public GIAException(HttpStatus httpStatus, String message) {
         super(message);
+        this.httpStatus = httpStatus;
     }
 
-    /**
-     * Initialisation de l'exception a partir d'un throwable
-     */
-    public GIAException(Throwable ex) {
-        super(ex);
-    }
-
-    /**
-     * Initialisation de l'exception a partir d'un message et d'un throwable
-     */
-    public GIAException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public GIAException() {
-
-    }
 }

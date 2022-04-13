@@ -21,6 +21,7 @@ import ca.qc.banq.gia.authentication.models.AppPayload;
 import ca.qc.banq.gia.authentication.repositories.GIARepository;
 import ca.qc.banq.gia.authentication.services.GiaBackOfficeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -52,6 +53,11 @@ class AppController {
 
     private final GiaBackOfficeService giaBackOfficeService;
 
+    @Value("${server.host}")
+    private String serverHost;
+    @Value("${server.servlet.context-path}")
+    private String servletPath;
+
     @InitBinder
     public void setAllowedFields(WebDataBinder dataBinder) {
         dataBinder.setDisallowedFields("id");
@@ -71,7 +77,7 @@ class AppController {
         if (result.hasErrors()) {
             return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
         } else {
-            this.giaBackOfficeService.saveApp(app);
+            this.giaBackOfficeService.createApp(app);
             return "redirect:/apps/" + app.getClientId();
         }
     }
@@ -89,7 +95,7 @@ class AppController {
         if (isNull(app.getTitle())) app.setTitle("");
 
         // find apps by last name
-        List<AppPayload> results = this.giaBackOfficeService.findLikeTitle(app.getTitle());
+        List<AppPayload> results = this.giaBackOfficeService.findByTitle(app.getTitle(), serverHost, servletPath);
         if (results.isEmpty()) {
             // no apps found
             //result.rejectValue("title", "notFound", "Aucune application trouvee");
@@ -122,7 +128,7 @@ class AppController {
             return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
         } else {
             app.setClientId(appId);
-            this.giaBackOfficeService.saveApp(app);
+            this.giaBackOfficeService.createApp(app);
             return "redirect:/apps/{appId}";
         }
     }
@@ -136,7 +142,7 @@ class AppController {
     @GetMapping("/apps/{appId}")
     public ModelAndView showApp(@PathVariable("appId") String appId) {
         ModelAndView mav = new ModelAndView("apps/appDetails");
-        AppPayload appPayload = this.giaBackOfficeService.findByClientId(appId); //.apps.findById(appId).orElse(null);
+        AppPayload appPayload = this.giaBackOfficeService.findByClientId(appId, serverHost, servletPath); //.apps.findById(appId).orElse(null);
         mav.addObject("appPayload", appPayload);
         return mav;
     }

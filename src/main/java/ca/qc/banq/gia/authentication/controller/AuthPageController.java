@@ -66,7 +66,7 @@ public class AuthPageController {
      */
     @RequestMapping(SIGNIN_ENDPOINT)
     public void signIn(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
-        AppPayload app = giaBackOfficeService.checkClientID(httpRequest);
+        AppPayload app = giaBackOfficeService.checkClientID(httpRequest, serverHost, servletPath);
         if (app.getAuthenticationType().equals(B2C)) {
             authFilterB2C.getAuthHelper().init(app);
             authFilterB2C.doFilter(httpRequest, httpResponse);
@@ -81,7 +81,7 @@ public class AuthPageController {
      */
     @RequestMapping(SIGNOUT_ENDPOINT)
     public void signOut(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
-        AppPayload app = giaBackOfficeService.checkClientID(httpRequest);
+        AppPayload app = giaBackOfficeService.checkClientID(httpRequest, serverHost, servletPath);
 
         httpRequest.getSession().invalidate();
         if (app.getAuthenticationType().equals(B2C)) {
@@ -96,7 +96,7 @@ public class AuthPageController {
      */
     @RequestMapping(RESETPWD_ENDPOINT)
     public void resetUserPassword(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Throwable {
-        AppPayload app = giaBackOfficeService.checkClientID(httpRequest);
+        AppPayload app = giaBackOfficeService.checkClientID(httpRequest, serverHost, servletPath);
 
         // Initialisation de l'application dans le helper
         if (app.getAuthenticationType().equals(B2C)) authFilterB2C.getAuthHelper().init(app);

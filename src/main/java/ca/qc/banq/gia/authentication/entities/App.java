@@ -3,7 +3,6 @@
  */
 package ca.qc.banq.gia.authentication.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
@@ -23,6 +22,7 @@ import java.util.Objects;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "gia_app")
 public class App implements Serializable {
@@ -91,22 +91,6 @@ public class App implements Serializable {
     private String usersGroupId;
     @Transient
     private boolean nouveau;
-
-    /**
-     * MAJ de l'application
-     */
-    @JsonIgnore
-    public void update(App app) {
-        this.certSecretValue = app.getCertSecretValue();
-        this.clientId = app.getClientId();
-        this.homeUrl = app.getHomeUrl();
-        this.title = app.getTitle();
-        this.authenticationType = app.getAuthenticationType();
-        this.policySignUpSignIn = app.getPolicySignUpSignIn();
-        this.policyResetPassword = app.getPolicyResetPassword();
-        this.policyEditProfile = app.getPolicyEditProfile();
-        this.usersGroupId = app.getUsersGroupId();
-    }
 
     @Override
     public boolean equals(Object o) {

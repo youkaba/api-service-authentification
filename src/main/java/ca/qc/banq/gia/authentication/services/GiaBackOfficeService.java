@@ -2,6 +2,7 @@ package ca.qc.banq.gia.authentication.services;
 
 import ca.qc.banq.gia.authentication.entities.App;
 import ca.qc.banq.gia.authentication.models.AppPayload;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -17,43 +18,33 @@ public interface GiaBackOfficeService {
 
     /**
      * Enregistre une App
-     *
-     * @param app
      */
-    default String saveApp(App app) {
-        return null;
-    }
+    String createApp(App app);
+
+    App updateApp(App app);
 
     /**
      * Supprime une App
-     *
-     * @param id
      */
     String deleteApp(String id);
 
     /**
      * Recherche la liste de toutes les applications enregistrees
      */
-    List<AppPayload> findAll();
+    List<AppPayload> findAll(String serverHost, String servletPath);
 
     /**
      * Recherche une application a partir de son Id
-     *
-     * @param id
      */
-    AppPayload findById(String id);
+    AppPayload findById(String id, String serverHost, String servletPath);
 
-    /**
-     * @param clientId
-     */
-    AppPayload findByClientId(String clientId);
+    @Transactional(readOnly = true)
+    AppPayload findByClientId(String clientId, String serverHost, String servletPath);
 
     /**
      * Recherche par nom d'application
-     *
-     * @param title
      */
-    List<AppPayload> findLikeTitle(String title);
+    List<AppPayload> findByTitle(String title, String serverHost, String servletPath);
 
-    AppPayload checkClientID(HttpServletRequest httpRequest);
+    AppPayload checkClientID(HttpServletRequest httpRequest, String serverHost, String servletPath);
 }

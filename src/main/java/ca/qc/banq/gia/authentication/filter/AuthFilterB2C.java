@@ -3,7 +3,7 @@
 
 package ca.qc.banq.gia.authentication.filter;
 
-import ca.qc.banq.gia.authentication.exceptions.GIAException;
+import ca.qc.banq.gia.authentication.exceptions.ClientErrorException;
 import ca.qc.banq.gia.authentication.helpers.*;
 import ca.qc.banq.gia.authentication.models.*;
 import ca.qc.banq.gia.authentication.services.GiaBackOfficeService;
@@ -53,14 +53,15 @@ public class AuthFilterB2C {
 
     private final AuthHelperAAD authHelperAAD;
 
-    private final GiaBackOfficeService business;
+    private final GiaBackOfficeService giaBackOfficeService;
 
     @Value("${server.host}")
     private String serverHost;
+    @Value("${server.servlet.context-path}")
+    private String servletPath;
 
     public void doFilter(ServletRequest request, ServletResponse response) throws Throwable {
-        if (request instanceof HttpServletRequest) {
-            HttpServletRequest httpRequest = (HttpServletRequest) request;
+        if (request instanceof HttpServletRequest httpRequest) {
             HttpServletResponse httpResponse = (HttpServletResponse) response;
             try {
                 String currentUri = serverHost.concat(httpRequest.getRequestURI());  // httpRequest.getRequestURL().toString();
@@ -87,7 +88,7 @@ public class AuthFilterB2C {
                     Map<String, Object> claims = JWTParser.parse(auth.idToken()).getJWTClaimsSet().getClaims();
                     String uid = claims.get(HttpClientHelper.CLAIM_USERID).toString();
                     String appid = StringUtils.remove(StringUtils.remove(claims.get("aud").toString(), '['), ']');
-                    AppPayload app = business.findByClientId(appid);
+                    AppPayload app = giaBackOfficeService.findByClientId(appid, serverHost, servletPath);
 
                     // Si le claim ne contient pas les attributs requis on leve une exception
                     if (uid == null || app == null) {
@@ -159,7 +160,7 @@ public class AuthFilterB2C {
             authHelper.setSessionPrincipal(httpRequest, result);
         } else {
             AuthenticationErrorResponse oidcResponse = (AuthenticationErrorResponse) authResponse;
-            throw new GIAException(String.format("Request for auth code failed: %s - %s", oidcResponse.getErrorObject().getCode(), oidcResponse.getErrorObject().getDescription()));
+            throw new ClientErrorException(String.format("Request for auth code failed: %s - %s", oidcResponse.getErrorObject().getCode(), oidcResponse.getErrorObject().getDescription()));
         }
     }
 

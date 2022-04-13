@@ -1,9 +1,6 @@
-/**
- *
- */
-package ca.qc.banq.gia.authentication.rest;
+package ca.qc.banq.gia.authentication.controller;
 
-import ca.qc.banq.gia.authentication.exceptions.GIAException;
+import ca.qc.banq.gia.authentication.exceptions.InvalidException;
 import ca.qc.banq.gia.authentication.helpers.AuthHelperAAD;
 import ca.qc.banq.gia.authentication.helpers.AuthHelperB2C;
 import ca.qc.banq.gia.authentication.helpers.HttpClientHelper;
@@ -15,6 +12,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -35,6 +33,11 @@ public class GiaFrontOfficeControllerImpl {
     private final AuthHelperAAD authHelperAAD;
     private final GiaBackOfficeService giaBackOfficeService;
 
+    @Value("${server.host}")
+    private String serverHost;
+    @Value("${server.servlet.context-path}")
+    private String servletPath;
+
     /*
      * (non-javadoc)
      * @see ca.qc.banq.gia.authentication.rest.GiaFrontOfficeController#createUserIntoAzureB2C(javax.servlet.http.HttpServletRequest, ca.qc.banq.gia.authentication.models.UserRequestPayload)
@@ -44,10 +47,10 @@ public class GiaFrontOfficeControllerImpl {
     public UserInfo createUserIntoAzureB2C(@NotNull @RequestParam(HttpClientHelper.CLIENTID_PARAM) String appId, @RequestBody @Valid @NotNull(message = "invalid.createuser.request") CreateB2CUserRequestPayload request) {
 
         // Check params
-        if (appId == null) throw new GIAException("invalid client_id");
+        if (appId == null) throw new InvalidException("invalid client_id");
 
-        AppPayload app = giaBackOfficeService.findByClientId(appId);
-        if (app == null) throw new GIAException("invalid client_id");
+        AppPayload app = giaBackOfficeService.findByClientId(appId, serverHost, servletPath);
+        if (app == null) throw new InvalidException("invalid client_id");
 
         // Obtention du Token d'acces a GraphAPI
         TokenResponse token = authHelperAAD.getAccessToken(app);
@@ -79,8 +82,8 @@ public class GiaFrontOfficeControllerImpl {
             @NotNull(message = "invalid.createuser.request")
                     EditB2CUserRequestPayload request) throws Throwable {
 
-        AppPayload app = giaBackOfficeService.findByClientId(appId);
-        if (app == null) throw new GIAException("invalid client_id");
+        AppPayload app = giaBackOfficeService.findByClientId(appId, serverHost, servletPath);
+        if (app == null) throw new InvalidException("invalid client_id");
 
         // Obtention du Token d'acces a GraphAPI
         TokenResponse token = authHelperAAD.getAccessToken(app);

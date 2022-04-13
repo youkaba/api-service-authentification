@@ -1,0 +1,5 @@
+server:
+  host: http://localhost:${server.port}
+  port: 0
+  servlet:
+    context-path: /gia
