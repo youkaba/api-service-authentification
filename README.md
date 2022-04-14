@@ -24,9 +24,9 @@ Il s'agit d'un programme java 11 développé avec le framework Spring Boot 2.4.3
 
 ## Dependances
 
-* 💪  [Java 11](https://www.java.com/)
+* 💪  [Java 17](https://www.java.com/)
 * 💪  [maven-3.6.2](https://maven.apache.org/)
-* 💪  [Spring Boot 2.4.3](https://spring.io/projects/spring-boot)
+* 💪  [Spring Boot 2.6.6](https://spring.io/projects/spring-boot)
 * 💪  [Hibernate 5.3.3](https://hibernate.org/)
 * 💪  [Tomcat 9](http://tomcat.apache.org/)
 * 💪  [Swagger-UI 2.9.2](https://swagger.io/tools/swagger-ui/)
@@ -36,10 +36,12 @@ Il s'agit d'un programme java 11 développé avec le framework Spring Boot 2.4.3
 
 
 ## Installation
-- Installer Java JDK11
+
+- Installer Java JDK17
 - Installer Maven
-- Installer sts (Spring Tool Suite)
-- Installer les sources : 
+- Installer sts (Spring Tool Suite) ou Intellij
+- Installer les sources :
+
 ```bash
 git clone https://djiomoufrancis@bitbucket.org/banq-dgtit/api-service-authentification.git
 cd api-service-authentification
@@ -55,14 +57,16 @@ api-service-authentification/
 │   ├── main/
 │   │   ├── java/
 │   │   │   ├── ca.qc.banq.gia.authentication/
-│   │   │   ├── ca.qc.banq.gia.authentication.helpers/
-│   │   │   ├── ca.qc.banq.gia.authentication.entities/
-│   │   │   ├── ca.qc.banq.gia.authentication.servicemetier/
-│   │   │   ├── ca.qc.banq.gia.authentication.models/
 │   │   │   ├── ca.qc.banq.gia.authentication.config/
+│   │   │   └── ca.qc.banq.gia.authentication.controller/
+│   │   │   ├── ca.qc.banq.gia.authentication.entities/
+│   │   │   ├── ca.qc.banq.gia.authentication.exceptions/
 │   │   │   ├── ca.qc.banq.gia.authentication.filter/
-│   │   │   ├── ca.qc.banq.gia.authentication.exception/
-│   │   │   └── ca.qc.banq.gia.authentication.rest/
+│   │   │   ├── ca.qc.banq.gia.authentication.helpers/
+│   │   │   ├── ca.qc.banq.gia.authentication.mapper/
+│   │   │   ├── ca.qc.banq.gia.authentication.models/
+│   │   │   ├── ca.qc.banq.gia.authentication.repositories/
+│   │   │   ├── ca.qc.banq.gia.authentication.services/
 │   │   ├── resources/
 │   │   │   ├── config/
 │   │   │   ├── docs/
@@ -70,9 +74,13 @@ api-service-authentification/
 │   │   │   └── application.properties
 │   ├── test/
 │   │   ├── java/
-│   │   │   ├── ca.qc.banq.gia.authentication.test.integration/
+│   │   │   ├── ca.qc.banq.gia.authentication/
+│   │   │   ├── ca.qc.banq.gia.authentication.controller/
+│   │   │   ├── ca.qc.banq.gia.authentication.mapper/
+│   │   │   ├── ca.qc.banq.gia.authentication.repositories/
+│   │   │   ├── ca.qc.banq.gia.authentication.services/
 │   │   ├── resources/
-│   │   │   └── application-dev.properties
+│   │   │   └── application-test.yml
 ├── .gitignore
 ├── README.md
 └── pom.xml
@@ -81,18 +89,22 @@ api-service-authentification/
 
 ## Comments
 
-- Package **ca.qc.banq.gia.authentication:** Package de base contenat la classe de demarrage de l'application
-- Package **ca.qc.banq.gia.authentication.helpers:** Contient les objets partages par tous les composants de l'application
+- Package **ca.qc.banq.gia.authentication:** Package de base contenant la classe de demarrage de l'application
+- Package **ca.qc.banq.gia.authentication.helpers:** Contient les objets partages par tous les composants de
+  l'application
 - Package **ca.qc.banq.gia.authentication.config:** Contient les differentes configurations
 - Package **ca.qc.banq.gia.authentication.exception:** Contient les Exceptions
-- Package **ca.qc.banq.gia.authentication.servicemetier:** Couche des traitements métier
+- Package **ca.qc.banq.gia.authentication.services:** Couche des traitements métier
 - Package **ca.qc.banq.gia.authentication.entities:** Couche des entités du modèle de données
 - Package **ca.qc.banq.gia.authentication.models:** Couche des modèles de données
-- Package **ca.qc.banq.gia.authentication.rest:** Couche des webservices rest
+- Package **ca.qc.banq.gia.authentication.controller:** Couche des webservices rest
+- Package **ca.qc.banq.gia.authentication.mapper:** Couche de transformation DTO to Entity or Entity to DTO
+- Package **ca.qc.banq.gia.authentication.repositories:** Couche pour operation sur les Entity
 - ressource **config** Contient les differents profils de configuration
-- ressource **docs** Contient les ressources representant la documentation des API et la documentation des sources du projet
+- ressource **docs** Contient les ressources representant la documentation des API et la documentation des sources du
+  projet
 - ressource **i18n** Contient les fichiers de messages utilises pour l'internationalisation
-- ressource **application.properties** Fichier de configuration de base de l'application  
+- ressource **application.properties** Fichier de configuration de base de l'application
 
 **Differentes configurations de l'application**:  
 		+ *AppConfig.java* : Configuration globale de l'application  
@@ -107,8 +119,8 @@ api-service-authentification/
 |  2 | config        | configurations du module                               |
 |  3 | exception     | Les Exceptions                                         |
 |  4 | models        | Les DTO                                                |
-|  5 | servicemetier | Les traitements métier                                 |
-|  6 | rest          | Webservices Rest                                       |
+|  5 | service 		 | Les traitements métier                                 |
+|  6 | controller    | Webservices Rest                                       |
 ```
 
 ## Convention de Codage
@@ -135,7 +147,7 @@ The documentation for the banq-authentication-service is hosted at :
 |----|:-------------------------------:|------------------------:|
 |  1 | utilisateur de base de données  | sa                      |
 |  2 | mot de passe de base de données | UEA1NXcwckQ=            |
-|  3 | Datasource Url                  | jdbc:h2:./data/gia      |
+|  3 | Datasource Url                  | jdbc:h2:mem:gia      	 |
 ```
 
 
