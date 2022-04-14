@@ -30,6 +30,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import static ca.qc.banq.gia.authentication.helpers.HttpClientHelper.callRestAPI;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -190,7 +191,7 @@ public class AuthHelperB2C {
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED); //MediaType.APPLICATION_JSON);
 
-        return HttpClientHelper.callRestAPI(url, HttpMethod.POST, null, TokenResponse.class, null, requestHeaders);
+        return callRestAPI(url, HttpMethod.POST, null, TokenResponse.class, null, requestHeaders);
     }
 
     /**
@@ -209,6 +210,6 @@ public class AuthHelperB2C {
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED); //MediaType.APPLICATION_JSON);
 
-        return HttpClientHelper.callRestAPI(url, HttpMethod.POST, null, TokenResponse.class, null, requestHeaders);
+        return callRestAPI(url, HttpMethod.POST, null, TokenResponse.class, null, requestHeaders);
     }
 }

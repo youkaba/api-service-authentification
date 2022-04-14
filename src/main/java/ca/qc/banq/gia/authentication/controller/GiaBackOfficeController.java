@@ -1,46 +1,77 @@
-/**
- *
- */
 package ca.qc.banq.gia.authentication.controller;
 
 import ca.qc.banq.gia.authentication.entities.App;
 import ca.qc.banq.gia.authentication.models.AppPayload;
+import ca.qc.banq.gia.authentication.services.GiaBackOfficeService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
-
 /**
- * Services web backoffice de gestion des applications BAnQ
+ * Implementation des services web backoffice de gestion des applications BAnQ
+ *
  * @author <a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a>
  * @since 2021-05-12
  */
-public interface GiaBackOfficeController {
+@RestController
+@RequestMapping("/api/bo")
+@RequiredArgsConstructor
+@Api("Implementation des services web backoffice de gestion des applications")
+public class GiaBackOfficeController implements GiaBackOffice {
 
-    /**
-     * Enregistre une App
-     *
-     * @param app
-     * @return
+    private final GiaBackOfficeService giaBackOfficeService;
+
+    @Value("${server.host}")
+    private String serverHost;
+    @Value("${server.servlet.context-path}")
+    private String servletPath;
+
+    /*
+     * (non-javadoc)
+     * @see ca.qc.banq.gia.authentication.controller.GiaBackOfficeController#saveApp(ca.qc.banq.gia.authentication.entities.App)
      */
-    String saveApp(App app);
+    @Override
+    @PostMapping("/sauvegarderApplication")
+    @ApiOperation("Sauvegarder une application")
+    public String saveApp(@RequestBody @Valid App app) {
+        return giaBackOfficeService.createApp(app);
+    }
 
-    /**
-     * Supprime une App
-     * @param id
+    /*
+     * (non-javadoc)
+     * @see ca.qc.banq.gia.authentication.controller.GiaBackOfficeController#deleteApp(java.lang.Long)
      */
-    String deleteApp(String id);
+    @Override
+    @DeleteMapping("/supprimerApplication/{id}")
+    @ApiOperation("Supprimer une application")
+    public String deleteApp(@PathVariable("id") String id) {
+        return giaBackOfficeService.deleteApp(id);
+    }
 
-    /**
-     * Recherche la liste de toutes les applications enregistrees
-     * @return
+    /*
+     * (non-javadoc)
+     * @see ca.qc.banq.gia.authentication.controller.GiaBackOfficeController#findAll()
      */
-    List<AppPayload> findAll();
+    @Override
+    @GetMapping("/obtenirApplications")
+    @ApiOperation("Afficher la liste des applications")
+    public List<AppPayload> findAll() {
+        return giaBackOfficeService.findAll(serverHost, servletPath);
+    }
 
-    /**
-     * Recherche une application a partir de son Id
-     * @param id
-     * @return
+    /*
+     * (non-javadoc)
+     * @see ca.qc.banq.gia.authentication.controller.GiaBackOfficeController#findById(java.lang.Long)
      */
-    AppPayload findById(String id);
-
+    @Override
+    @GetMapping("/obtenirApplication/{id}")
+    @ApiOperation("Retrouver une application a partir de son id")
+    public AppPayload findById(@PathVariable("id") String id) {
+        return giaBackOfficeService.findById(id, serverHost, servletPath);
+    }
 }

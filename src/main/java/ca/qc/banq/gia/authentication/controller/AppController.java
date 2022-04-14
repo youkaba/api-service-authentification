@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
@@ -34,8 +35,6 @@ import javax.validation.Valid;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-import static java.util.Objects.isNull;
 
 /**
  * Controlleur de gestion des applications dans la console d'administration du service d'authentification
@@ -91,11 +90,11 @@ class AppController {
     @GetMapping("/apps")
     public String processFindForm(AppPayload app, BindingResult result, Map<String, Object> model) {
 
-        // allow parameterless GET request for /apps to return all records
-        if (isNull(app.getTitle())) app.setTitle("");
-
         // find apps by last name
-        List<AppPayload> results = this.giaBackOfficeService.findByTitle(app.getTitle(), serverHost, servletPath);
+        List<AppPayload> results = StringUtils.hasText(app.getTitle())
+                ? giaBackOfficeService.findByTitle(app.getTitle(), serverHost, servletPath)
+                : giaBackOfficeService.findAll(serverHost, servletPath);
+
         if (results.isEmpty()) {
             // no apps found
             //result.rejectValue("title", "notFound", "Aucune application trouvee");

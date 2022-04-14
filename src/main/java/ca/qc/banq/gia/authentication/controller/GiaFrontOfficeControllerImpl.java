@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import static ca.qc.banq.gia.authentication.helpers.HttpClientHelper.CLIENTID_PARAM;
+import static ca.qc.banq.gia.authentication.helpers.HttpClientHelper.CREATEUSER_ENDPOINT;
+
 /**
  * @author <a href="mailto:francis.djiomou@banq.qc.ca">Francis DJIOMOU</a>
  * @since 2021-05-17
@@ -42,9 +45,14 @@ public class GiaFrontOfficeControllerImpl {
      * (non-javadoc)
      * @see ca.qc.banq.gia.authentication.rest.GiaFrontOfficeController#createUserIntoAzureB2C(javax.servlet.http.HttpServletRequest, ca.qc.banq.gia.authentication.models.UserRequestPayload)
      */
-    @PostMapping(HttpClientHelper.CREATEUSER_ENDPOINT)
+    @PostMapping(CREATEUSER_ENDPOINT)
     @ApiOperation("Cree un nouvel utilisateur dans Azure B2C")
-    public UserInfo createUserIntoAzureB2C(@NotNull @RequestParam(HttpClientHelper.CLIENTID_PARAM) String appId, @RequestBody @Valid @NotNull(message = "invalid.createuser.request") CreateB2CUserRequestPayload request) {
+    public UserInfo createUserIntoAzureB2C(
+            @NotNull
+            @RequestParam(CLIENTID_PARAM) String appId,
+            @RequestBody
+            @Valid
+            @NotNull(message = "invalid.createuser.request") CreateB2CUserRequestPayload request) {
 
         // Check params
         if (appId == null) throw new InvalidException("invalid client_id");
@@ -76,7 +84,7 @@ public class GiaFrontOfficeControllerImpl {
     @ApiOperation("Modifie un utilisateur dans Azure B2C")
     public void editUserIntoAzureB2C(
             @NotNull
-            @RequestParam(HttpClientHelper.CLIENTID_PARAM) String appId,
+            @RequestParam(CLIENTID_PARAM) String appId,
             @RequestBody
             @Valid
             @NotNull(message = "invalid.createuser.request")
